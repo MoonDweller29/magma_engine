@@ -1,0 +1,100 @@
+cmake_minimum_required (VERSION 3.8)
+set(PROJECT_NAME vulkan_HelloWorld)
+set(EXE_NAME vk_HW)
+project (${PROJECT_NAME})
+
+# get rid of annoying MSVC warnings.
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
+# set cpp std=c++17
+	set(CMAKE_CXX_STANDARD 17)
+	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+	set(CMAKE_CXX_EXTENSIONS OFF)
+
+
+# //////////////////////////////////////////////////////
+# include Vulkan
+# //////////////////////////////////////////////////////
+find_package(Vulkan)
+if (NOT Vulkan_FOUND)
+	message(SEND_ERROR "FAILED to find Vulkan")
+	return()
+else()
+	include_directories(${Vulkan_INCLUDE_DIR})
+	set(ALL_LIBS  ${Vulkan_LIBRARY} )
+endif()
+
+message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+# //////////////////////////////////////////////////////
+#
+# //////////////////////////////////////////////////////
+
+
+# //////////////////////////////////////////////////////
+# external_libs
+# //////////////////////////////////////////////////////
+include_directories(external_libs/include)
+include_directories(external_libs/glfw-3.3.2/include)
+
+# compiling glfw
+	set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+	add_subdirectory(external_libs/glfw-3.3.2/)
+	set(ALL_LIBS  ${ALL_LIBS} glfw)
+
+# //////////////////////////////////////////////////////
+#
+# //////////////////////////////////////////////////////
+
+
+add_executable(${EXE_NAME} 
+	src/main.cpp
+	src/glm_inc.h
+
+	src/hw_app/HelloWorldApp.h
+	src/hw_app/HelloWorldApp.cpp
+)
+
+target_link_libraries(${EXE_NAME} ${ALL_LIBS} )
+
+
+
+# //////////////////////////////////////////////////////
+# shaders compilation
+# //////////////////////////////////////////////////////
+
+# create dir for shaders
+set(SHADER_EXE_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+file(MAKE_DIRECTORY ${SHADER_EXE_DIR})
+
+# shaders_compilation for linux
+set(SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/shaders)
+set(SHADERS
+	shader.vert
+	shader.frag
+)
+
+set(COMPILED_SHADERS)
+foreach(SHADER_NAME ${SHADERS})
+	set(COMPILED_SHADERS ${COMPILED_SHADERS} ${SHADER_EXE_DIR}/${SHADER_NAME}.spv)	
+endforeach(SHADER_NAME)
+
+foreach(SHADER_NAME ${SHADERS})
+	add_custom_command(OUTPUT ${SHADER_EXE_DIR}/${SHADER_NAME}.spv
+	  # COMMAND glslc shader.vert -o vert.spv
+	  COMMAND glslc ${SHADER_SRC_DIR}/${SHADER_NAME} -o ${SHADER_EXE_DIR}/${SHADER_NAME}.spv
+	  # COMMAND echo ${CMAKE_SOURCE_DIR}
+	  WORKING_DIRECTORY "./"
+	  DEPENDS ${SHADER_SRC_DIR}/${SHADER_NAME}
+	  COMMENT "compiling shader: ${SHADER_NAME}"
+	  VERBATIM
+	)
+endforeach()
+
+add_custom_target(shaders_compilation ALL DEPENDS ${COMPILED_SHADERS})
+
+# //////////////////////////////////////////////////////
+#
+# //////////////////////////////////////////////////////
