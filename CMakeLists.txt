@@ -34,6 +34,7 @@ message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 # //////////////////////////////////////////////////////
 # external_libs
 # //////////////////////////////////////////////////////
+include_directories(src)
 include_directories(external_libs/include)
 include_directories(external_libs/glfw-3.3.2/include)
 
@@ -53,8 +54,17 @@ add_executable(${EXE_NAME}
 	src/main.cpp
 	src/glm_inc.h
 
-	src/hw_app/HelloWorldApp.h
-	src/hw_app/HelloWorldApp.cpp
+	src/app/App.h
+	src/app/App.cpp
+
+	src/vk/vulkan_common.h
+	src/vk/vulkan_common.cpp
+	src/vk/vkInstanceHolder.h
+	src/vk/vkInstanceHolder.cpp
+	src/vk/vk_extentions.h
+	src/vk/vk_extentions.cpp
+	src/vk/validationLayers.h
+	src/vk/validationLayers.cpp
 )
 
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )
@@ -94,6 +104,7 @@ foreach(SHADER_NAME ${SHADERS})
 endforeach()
 
 add_custom_target(shaders_compilation ALL DEPENDS ${COMPILED_SHADERS})
+add_dependencies(vk_HW shaders_compilation)
 
 # //////////////////////////////////////////////////////
 #
