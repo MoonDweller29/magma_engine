@@ -65,6 +65,14 @@ add_executable(${EXE_NAME}
 	src/vk/vk_extentions.cpp
 	src/vk/validationLayers.h
 	src/vk/validationLayers.cpp
+	src/vk/physicalDevice.h
+	src/vk/physicalDevice.cpp
+	src/vk/logicalDevice.h
+	src/vk/logicalDevice.cpp
+	src/vk/window.h
+	src/vk/window.cpp
+	src/vk/swapChain.h
+	src/vk/swapChain.cpp
 )
 
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )
