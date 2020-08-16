@@ -31,20 +31,6 @@ const std::vector<const char*> deviceExtensions = {
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 
-
-VkShaderModule createShaderModule(const VkDevice& device, const std::vector<char>& code) {
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-    VkShaderModule shaderModule;
-    VkResult result = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
-    vk_check_err(result, "failed to create shader module!");
-    
-    return shaderModule;
-}
-
 const int WIDTH = 800;
 const int HEIGHT = 600;
 class HelloTriangleApplication {
@@ -61,7 +47,7 @@ private:
     std::unique_ptr<VkInstanceHolder> instance;
     std::unique_ptr<DebugMessenger> debugMessenger;
 
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    std::unique_ptr<PhysicalDevice> physicalDevice;
     VkDevice device; //logical device
     
     VkQueue graphicsQueue;
@@ -102,7 +88,7 @@ private:
         instance = std::make_unique<VkInstanceHolder>();
         debugMessenger = std::make_unique<DebugMessenger>(instance->get());
         surface = createSurface(instance->get(), window);
-        physicalDevice = PhysicalDevice::selectDevice(instance->get(), surface);
+        physicalDevice = std::make_unique<PhysicalDevice>(instance->get(), surface);
         createLogicalDevice();
         createSwapChain();
         createImageViews();
@@ -184,7 +170,7 @@ private:
     }
 
     void createCommandPool() {
-        QueueFamilyIndices queueFamilyIndices = PhysicalDevice::findQueueFamilies(physicalDevice, surface);
+        QueueFamilyIndices queueFamilyIndices = physicalDevice->getQueueFamilyInds();
 
         VkCommandPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -422,7 +408,7 @@ private:
     }
 
     void createSwapChain() {
-        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice->device(), surface);
 
         VkSurfaceFormatKHR surfaceFormat = SwapChain::chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = SwapChain::chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -447,7 +433,7 @@ private:
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices indices = PhysicalDevice::findQueueFamilies(physicalDevice, surface);
+        QueueFamilyIndices indices = physicalDevice->getQueueFamilyInds();
         uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
         if (indices.graphicsFamily != indices.presentFamily) {
@@ -478,7 +464,7 @@ private:
     }
 
     void createLogicalDevice() {
-        QueueFamilyIndices indices = PhysicalDevice::findQueueFamilies(physicalDevice, surface);
+        QueueFamilyIndices indices = physicalDevice->getQueueFamilyInds();
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t> uniqueQueueFamilies = {
@@ -502,7 +488,7 @@ private:
 
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-        
+
         createInfo.pEnabledFeatures = &deviceFeatures;
 
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
@@ -515,7 +501,7 @@ private:
             createInfo.enabledLayerCount = 0;
         }
 
-        VkResult result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
+        VkResult result = vkCreateDevice(physicalDevice->device(), &createInfo, nullptr, &device);
         vk_check_err(result, "failed to create logical device!");
 
         vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
@@ -545,7 +531,7 @@ private:
 
         uint32_t imageIndex;
         vkAcquireNextImageKHR(
-            device, swapChain, UINT64_MAX/*timeout off*/, 
+            device, swapChain, UINT64_MAX/*timeout off*/,
             imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex
         );
 
@@ -629,8 +615,8 @@ private:
 };
 
 int main() {
-//    HelloTriangleApplication app;
-    App app;
+    HelloTriangleApplication app;
+//    App app;
 
     try {
         app.run();
