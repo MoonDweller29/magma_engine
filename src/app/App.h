@@ -6,6 +6,8 @@
 #include "vk/logicalDevice.h"
 #include "vk/window.h"
 #include "vk/swapChain.h"
+#include "vk/renderPass.h"
+#include "vk/graphicsPipeline.h"
 
 class App {
     uint32_t WIN_WIDTH = 800, WIN_HEIGHT = 600;
@@ -16,6 +18,8 @@ class App {
     std::unique_ptr<LogicalDeviceHolder> device;
     std::unique_ptr<Window> window;
     std::unique_ptr<SwapChain> swapChain;
+    std::unique_ptr<RenderPass> renderPass;
+    std::unique_ptr<GraphicsPipeline> graphicsPipeline;
 
 	void initWindow();
 

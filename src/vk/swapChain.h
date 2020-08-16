@@ -9,10 +9,12 @@ class SwapChain
     VkSwapchainKHR swapChain;
     VkDevice device;
     std::vector<VkImage> images;
+    std::vector<VkImageView> imageViews;
     VkFormat imageFormat;
     VkExtent2D extent;
 
     void acquireImages();
+    void createImageViews();
 public:
     static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
     static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
@@ -20,4 +22,6 @@ public:
 
     SwapChain(VkDevice device, const PhysicalDevice &physicalDevice, const Window &window);
     ~SwapChain();
+
+    VkFormat getImageFormat() const { return imageFormat; }
 };

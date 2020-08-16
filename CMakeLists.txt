@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.8)
-set(PROJECT_NAME vulkan_HelloWorld)
-set(EXE_NAME vk_HW)
+set(PROJECT_NAME vulkan_3d)
+set(EXE_NAME vk_3D)
 project (${PROJECT_NAME})
 
 # get rid of annoying MSVC warnings.
@@ -73,6 +73,12 @@ add_executable(${EXE_NAME}
 	src/vk/window.cpp
 	src/vk/swapChain.h
 	src/vk/swapChain.cpp
+	src/vk/graphicsPipeline.h
+	src/vk/graphicsPipeline.cpp
+	src/vk/shaderModule.h
+	src/vk/shaderModule.cpp
+	src/vk/renderPass.h
+	src/vk/renderPass.cpp
 )
 
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )
@@ -112,7 +118,7 @@ foreach(SHADER_NAME ${SHADERS})
 endforeach()
 
 add_custom_target(shaders_compilation ALL DEPENDS ${COMPILED_SHADERS})
-add_dependencies(vk_HW shaders_compilation)
+add_dependencies(${EXE_NAME} shaders_compilation)
 
 # //////////////////////////////////////////////////////
 #

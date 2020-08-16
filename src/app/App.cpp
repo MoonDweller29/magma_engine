@@ -38,6 +38,9 @@ void App::initVulkan()
     physicalDevice = std::make_unique<PhysicalDevice>(instance->get(), window->getSurface());
     device = std::make_unique<LogicalDeviceHolder>(*physicalDevice);
     swapChain = std::make_unique<SwapChain>(device->handler(), *physicalDevice, *window);
+    renderPass = std::make_unique<RenderPass>(device->handler(), swapChain->getImageFormat());
+    PipelineInfo pipelineInfo(window->getResolution());
+    graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 }
 
 void App::mainLoop()
@@ -51,6 +54,8 @@ void App::mainLoop()
 
 void App::cleanUp()
 {
+    graphicsPipeline.reset();
+    renderPass.reset();
     swapChain.reset();
     device.reset();
     physicalDevice.reset();

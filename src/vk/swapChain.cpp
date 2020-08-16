@@ -111,9 +111,10 @@ SwapChain::SwapChain(VkDevice device, const PhysicalDevice &physicalDevice, cons
     VkResult result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain);
     vk_check_err(result, "failed to create swap chain!");
 
-    acquireImages();
     imageFormat = surfaceFormat.format;
     extent = resolution;
+    acquireImages();
+    createImageViews();
 }
 
 void SwapChain::acquireImages()
@@ -124,7 +125,40 @@ void SwapChain::acquireImages()
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data());
 }
 
+void SwapChain::createImageViews()
+{
+    size_t imgCount = images.size();
+    imageViews.resize(imgCount);
+    for (size_t i = 0; i < imgCount; ++i)
+    {
+        VkImageViewCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image = images[i];
+        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.format = imageFormat;
+
+        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;
+
+        VkResult result = vkCreateImageView(device, &createInfo, nullptr, &imageViews[i]);
+        vk_check_err(result, "failed to create image views!");
+    }
+}
+
+
 SwapChain::~SwapChain()
 {
+    for (auto imageView : imageViews)
+    {
+        vkDestroyImageView(device, imageView, nullptr);
+    }
     vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
