@@ -1,6 +1,7 @@
 #pragma once
 #include "physicalDevice.h"
 #include "window.h"
+#include "frameBuffer.h"
 #include <vulkan/vulkan.h>
 #include <vector>
 
@@ -10,6 +11,7 @@ class SwapChain
     VkDevice device;
     std::vector<VkImage> images;
     std::vector<VkImageView> imageViews;
+    std::vector<FrameBuffer> frameBuffers;
     VkFormat imageFormat;
     VkExtent2D extent;
 
@@ -23,5 +25,10 @@ public:
     SwapChain(VkDevice device, const PhysicalDevice &physicalDevice, const Window &window);
     ~SwapChain();
 
+    VkSwapchainKHR getSwapChain() const { return swapChain; }
     VkFormat getImageFormat() const { return imageFormat; }
+    size_t imgCount() const { return imageViews.size(); }
+    std::vector<VkFramebuffer> getVkFrameBuffers() const;
+    void createFrameBuffers(VkRenderPass renderPass);
+    void clearFrameBuffers();
 };

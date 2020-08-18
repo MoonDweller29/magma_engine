@@ -26,15 +26,15 @@ class PhysicalDevice
 
     static bool isSuitable(VkPhysicalDevice device, const VkSurfaceKHR &surface);
     static int rateSuitability(VkPhysicalDevice device, const VkSurfaceKHR &surface);
+    static VkPhysicalDevice selectDevice(VkInstance instance, const VkSurfaceKHR &surface);
+    static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, const VkSurfaceKHR &surface);
+
 public:
     static const std::vector<const char*> extensions;
 
     PhysicalDevice(VkInstance instance, VkSurfaceKHR surface);
+
     QueueFamilyIndices getQueueFamilyInds() const { return inds; }
-
     VkPhysicalDevice device() const { return physicalDevice; }
-
-    static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, const VkSurfaceKHR &surface);
-    static VkPhysicalDevice selectDevice(VkInstance instance, const VkSurfaceKHR &surface);
-//    ~PhysicalDeviceHolder();
+    ~PhysicalDevice() = default;
 };

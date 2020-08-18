@@ -153,6 +153,29 @@ void SwapChain::createImageViews()
     }
 }
 
+void SwapChain::createFrameBuffers(VkRenderPass renderPass)
+{
+    for (size_t i = 0; i < imageViews.size(); i++)
+    {
+        std::vector<VkImageView> currImage = { imageViews[i] };
+        frameBuffers.emplace_back(currImage, extent, renderPass, device);
+    }
+}
+void SwapChain::clearFrameBuffers()
+{
+    frameBuffers.clear();
+}
+
+std::vector<VkFramebuffer> SwapChain::getVkFrameBuffers() const
+{
+    std::vector<VkFramebuffer> buffers;
+    for (size_t i = 0; i < frameBuffers.size(); ++i)
+    {
+        buffers.push_back(frameBuffers[i].getHandler());
+    }
+
+    return buffers;
+}
 
 SwapChain::~SwapChain()
 {

@@ -79,6 +79,12 @@ add_executable(${EXE_NAME}
 	src/vk/shaderModule.cpp
 	src/vk/renderPass.h
 	src/vk/renderPass.cpp
+	src/vk/frameBuffer.h
+	src/vk/frameBuffer.cpp
+	src/vk/commandPool.h
+	src/vk/commandPool.cpp
+	src/vk/commandBuffer.h
+	src/vk/commandBuffer.cpp
 )
 
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )

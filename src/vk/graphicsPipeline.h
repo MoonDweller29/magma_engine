@@ -45,4 +45,6 @@ class GraphicsPipeline
 public:
     GraphicsPipeline(VkDevice device, PipelineInfo pipelineSettings, VkRenderPass renderPass);
     ~GraphicsPipeline();
+
+    VkPipeline getHandler() const { return graphicsPipeline; }
 };

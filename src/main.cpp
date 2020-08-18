@@ -15,7 +15,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
-#include <map>
 #include <optional>
 #include <set>
 #include <cstdint> // Necessary for UINT32_MAXs
@@ -615,8 +614,8 @@ private:
 };
 
 int main() {
-    HelloTriangleApplication app;
-//    App app;
+//    HelloTriangleApplication app;
+    App app;
 
     try {
         app.run();

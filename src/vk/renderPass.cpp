@@ -31,16 +31,16 @@ RenderPass::RenderPass(VkDevice device, VkFormat imageFormat)
     renderPassInfo.pSubpasses = &subpass;
 
     //external dependency subpass
-//    VkSubpassDependency dependency = {};
-//    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-//    dependency.dstSubpass = 0;
-//    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-//    dependency.srcAccessMask = 0;
-//    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-//    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-//
-//    renderPassInfo.dependencyCount = 1;
-//    renderPassInfo.pDependencies = &dependency;
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0; //this subpass
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &dependency;
 
     VkResult result = vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
     vk_check_err(result, "failed to create render pass!");
