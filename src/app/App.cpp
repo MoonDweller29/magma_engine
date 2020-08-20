@@ -30,15 +30,29 @@ void App::initWindow()
 	glfwSetKeyCallback(window->getGLFWp(), key_callback);
 }
 
-void App::createSemaphores()
+void App::createSyncObjects()
 {
+    imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    imagesInFlight.resize(swapChain->imgCount(), VK_NULL_HANDLE);
+
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    VkResult result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &imageAvailableSemaphore);
-    vk_check_err(result, "failed to create semaphores!");
-    result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &renderFinishedSemaphore);
-    vk_check_err(result, "failed to create semaphores!");
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        VkResult result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
+        vk_check_err(result, "failed to create semaphores!");
+        result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
+        vk_check_err(result, "failed to create semaphores!");
+        result = vkCreateFence(device->handler(), &fenceInfo, nullptr, &inFlightFences[i]);
+        vk_check_err(result, "failed to create fences!");
+    }
 }
 
 void App::initVulkan()
@@ -66,21 +80,31 @@ void App::initVulkan()
             window->getResolution(),
             swapChain->getVkFrameBuffers(),
             graphicsPipeline->getHandler());
-    createSemaphores();
+    createSyncObjects();
 }
 
 void App::drawFrame()
 {
+    vkWaitForFences(device->handler(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
     uint32_t imageIndex;
     vkAcquireNextImageKHR(
             device->handler(), swapChain->getSwapChain(),
-            UINT64_MAX/*timeout off*/, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+            UINT64_MAX/*timeout off*/, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+    // Check if a previous frame is using this image (i.e. there is its fence to wait on)
+    if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
+    {
+        vkWaitForFences(device->handler(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+    }
+    // Mark the image as now being in use by this frame
+    imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
     //Submitting the command buffer
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -89,11 +113,13 @@ void App::drawFrame()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    VkResult result = vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+    vkResetFences(device->handler(), 1, &inFlightFences[currentFrame]);
+
+    VkResult result = vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]);
     vk_check_err(result, "failed to submit draw command buffer!");
 
     VkPresentInfoKHR presentInfo{};
@@ -109,6 +135,7 @@ void App::drawFrame()
     presentInfo.pResults = nullptr; // Optional
 
     vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void App::mainLoop()
@@ -127,8 +154,12 @@ void App::mainLoop()
 void App::cleanUp()
 {
     std::cout << "CLEAN UP\n";
-    vkDestroySemaphore(device->handler(), renderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(device->handler(), imageAvailableSemaphore, nullptr);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        vkDestroySemaphore(device->handler(), renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(device->handler(), imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(device->handler(), inFlightFences[i], nullptr);
+    }
     commandPool.reset();
     graphicsPipeline.reset();
     swapChain->clearFrameBuffers();
@@ -136,9 +167,12 @@ void App::cleanUp()
     swapChain.reset();
     device.reset();
     physicalDevice.reset();
-    window.reset();
+    std::cout << "6\n";
+    window->closeSurface();
+    std::cout << "7\n";
     debugMessenger.reset();
     instance.reset();
+    window.reset();
 
     glfwTerminate();
 }

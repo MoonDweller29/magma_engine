@@ -1,6 +1,8 @@
 #include "window.h"
 
 #include "vulkan_common.h"
+#include <iostream>
+
 
 VkSurfaceKHR createSurface(
         const VkInstance &instance,
@@ -34,11 +36,15 @@ void Window::closeSurface()
 {
     if (surface != VK_NULL_HANDLE)
         vkDestroySurfaceKHR(instance, surface, nullptr);
+    surface = VK_NULL_HANDLE;
 }
 
 
 Window::~Window()
 {
+    std::cout<<"destr\n";
     closeSurface();
+    std::cout<<"trying to destroy window\n";
     glfwDestroyWindow(window);
+    std::cout<<"WIN_CLOSED\n";
 }

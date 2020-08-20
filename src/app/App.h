@@ -13,6 +13,7 @@
 
 class App {
     uint32_t WIN_WIDTH = 800, WIN_HEIGHT = 600;
+    const int MAX_FRAMES_IN_FLIGHT = 2;
 
     std::unique_ptr<VkInstanceHolder>     instance;
     std::unique_ptr<DebugMessenger>       debugMessenger;
@@ -24,13 +25,16 @@ class App {
     std::unique_ptr<GraphicsPipeline>     graphicsPipeline;
     std::unique_ptr<CommandPool>          commandPool;
     CommandBufferArr commandBuffers;
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
+    std::vector<VkFence> imagesInFlight;
+    size_t currentFrame = 0;
 
 	void initWindow();
 
     void initVulkan();
-    void createSemaphores();
+    void createSyncObjects();
     void mainLoop();
     void drawFrame();
 
