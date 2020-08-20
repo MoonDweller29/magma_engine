@@ -29,6 +29,7 @@ Window::Window(uint32_t width, uint32_t height)
 
 void Window::initSurface(const VkInstance &instance)
 {
+    this->instance = instance;
     surface = createSurface(instance, window);
 }
 
@@ -42,9 +43,6 @@ void Window::closeSurface()
 
 Window::~Window()
 {
-    std::cout<<"destr\n";
     closeSurface();
-    std::cout<<"trying to destroy window\n";
     glfwDestroyWindow(window);
-    std::cout<<"WIN_CLOSED\n";
 }

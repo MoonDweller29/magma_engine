@@ -9,7 +9,7 @@ class Window
     uint32_t width, height;
     GLFWwindow* window;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkInstance instance;
+    VkInstance instance = VK_NULL_HANDLE;
 public:
     Window(uint32_t width, uint32_t height);
 

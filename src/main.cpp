@@ -14,7 +14,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    std::cout << "\n\n\n Bebyak \n\n\n";
+    std::cout << "\n\n Bebyak \n\n";
 
     return EXIT_SUCCESS;
 }

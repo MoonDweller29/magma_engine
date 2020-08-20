@@ -167,9 +167,7 @@ void App::cleanUp()
     swapChain.reset();
     device.reset();
     physicalDevice.reset();
-    std::cout << "6\n";
     window->closeSurface();
-    std::cout << "7\n";
     debugMessenger.reset();
     instance.reset();
     window.reset();
