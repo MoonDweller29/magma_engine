@@ -32,6 +32,8 @@ class App {
     size_t currentFrame = 0;
 
 	void initWindow();
+    void cleanupSwapChain();
+	void recreateSwapChain();
 
     void initVulkan();
     void createSyncObjects();

@@ -16,5 +16,7 @@ public:
             VkPipeline graphicsPipeline);
     ~CommandBufferArr();
 
+    const uint32_t size() const { return commandBuffers.size(); }
+    const VkCommandBuffer *data() const { return commandBuffers.data(); }
     const VkCommandBuffer &operator[] (const size_t index);
 };

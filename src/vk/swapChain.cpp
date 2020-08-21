@@ -55,8 +55,8 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 
 uint32_t chooseImageCount(const SwapChainSupportDetails &swapChainSupport)
 {
-    std::cout << "swap_chain minImageCount : " << swapChainSupport.capabilities.minImageCount << std::endl;
-    std::cout << "swap_chain maxImageCount : " << swapChainSupport.capabilities.maxImageCount << std::endl;
+//    std::cout << "swap_chain minImageCount : " << swapChainSupport.capabilities.minImageCount << std::endl;
+//    std::cout << "swap_chain maxImageCount : " << swapChainSupport.capabilities.maxImageCount << std::endl;
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1; //recommended
     if ((swapChainSupport.capabilities.maxImageCount > 0) &&
         (imageCount > swapChainSupport.capabilities.maxImageCount))

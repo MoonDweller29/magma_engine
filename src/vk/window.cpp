@@ -3,6 +3,14 @@
 #include "vulkan_common.h"
 #include <iostream>
 
+void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+//    bool volatile loop = true;
+    Window *app_window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+    app_window->_wasResized = true;
+//    while (loop);
+//    std::cout << "RESIZED\n";
+}
 
 VkSurfaceKHR createSurface(
         const VkInstance &instance,
@@ -22,9 +30,11 @@ Window::Window(uint32_t width, uint32_t height)
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); //call that turns off OpenGL context
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); //potential problem
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //potential problem. Resizable window is unstable
 
     window = glfwCreateWindow(width, height, "Triangle", nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
 void Window::initSurface(const VkInstance &instance)
@@ -40,6 +50,21 @@ void Window::closeSurface()
     surface = VK_NULL_HANDLE;
 }
 
+void Window::updateResolution()
+{
+    int new_w = 0, new_h = 0;
+
+    glfwGetFramebufferSize(window, &new_w, &new_h);
+    while (new_w == 0 || new_h == 0)
+    {
+        glfwWaitEvents();
+        glfwGetFramebufferSize(window, &new_w, &new_h);
+    }
+    width = new_w;
+    height = new_h;
+
+    _wasResized = false;
+}
 
 Window::~Window()
 {

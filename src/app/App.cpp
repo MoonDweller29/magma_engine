@@ -7,7 +7,8 @@ static bool esc_was_pressed = false;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    std::cout << "PRESSED\n";
+    if ( ((key == GLFW_KEY_ESCAPE) || (key == GLFW_KEY_Q))  && action == GLFW_PRESS)
         esc_was_pressed = true;
 }
 
@@ -62,6 +63,9 @@ void App::initVulkan()
     window->initSurface(instance->get());
     physicalDevice = std::make_unique<PhysicalDevice>(instance->get(), window->getSurface());
     device = std::make_unique<LogicalDeviceHolder>(*physicalDevice);
+    commandPool = std::make_unique<CommandPool>(
+            physicalDevice->getQueueFamilyInds().graphicsFamily.value(),
+            device->handler());
 
     swapChain = std::make_unique<SwapChain>(device->handler(), *physicalDevice, *window);
 
@@ -71,9 +75,6 @@ void App::initVulkan()
     PipelineInfo pipelineInfo(window->getResolution());
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
-    commandPool = std::make_unique<CommandPool>(
-            physicalDevice->getQueueFamilyInds().graphicsFamily.value(),
-            device->handler());
     commandBuffers.allocate(device->handler(), commandPool->getHandler(), swapChain->imgCount());
     commandBuffers.record(
             renderPass->getHandler(),
@@ -83,14 +84,67 @@ void App::initVulkan()
     createSyncObjects();
 }
 
+void App::cleanupSwapChain()
+{
+    vkFreeCommandBuffers(
+            device->handler(), commandPool->getHandler(),
+            commandBuffers.size(), commandBuffers.data());
+
+    graphicsPipeline.reset();
+    swapChain->clearFrameBuffers();
+    renderPass.reset();
+    swapChain.reset();
+}
+
+void App::recreateSwapChain()
+{
+    vkDeviceWaitIdle(device->handler());
+
+    cleanupSwapChain();
+
+    window->updateResolution();
+    VkExtent2D res = window->getResolution();
+    WIN_WIDTH = res.width;
+    WIN_HEIGHT = res.height;
+
+    swapChain = std::make_unique<SwapChain>(device->handler(), *physicalDevice, *window);
+
+    renderPass = std::make_unique<RenderPass>(device->handler(), swapChain->getImageFormat());
+    swapChain->createFrameBuffers(renderPass->getHandler());
+
+    PipelineInfo pipelineInfo(window->getResolution());
+    graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
+
+    commandBuffers.allocate(device->handler(), commandPool->getHandler(), swapChain->imgCount());
+    commandBuffers.record(
+            renderPass->getHandler(),
+            window->getResolution(),
+            swapChain->getVkFrameBuffers(),
+            graphicsPipeline->getHandler());
+}
+
 void App::drawFrame()
 {
     vkWaitForFences(device->handler(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
+    if (window->wasResized())
+        recreateSwapChain();
+
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(
+    VkResult result;
+    result = vkAcquireNextImageKHR(
             device->handler(), swapChain->getSwapChain(),
             UINT64_MAX/*timeout off*/, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        recreateSwapChain();
+        return;
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
 
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
@@ -119,7 +173,7 @@ void App::drawFrame()
 
     vkResetFences(device->handler(), 1, &inFlightFences[currentFrame]);
 
-    VkResult result = vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]);
+    result = vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]);
     vk_check_err(result, "failed to submit draw command buffer!");
 
     VkPresentInfoKHR presentInfo{};
@@ -134,7 +188,15 @@ void App::drawFrame()
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
+    result = vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->wasResized())
+    {
+        recreateSwapChain();
+    } else if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
@@ -154,17 +216,16 @@ void App::mainLoop()
 void App::cleanUp()
 {
     std::cout << "CLEAN UP\n";
+
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         vkDestroySemaphore(device->handler(), renderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(device->handler(), imageAvailableSemaphores[i], nullptr);
         vkDestroyFence(device->handler(), inFlightFences[i], nullptr);
     }
+
+    cleanupSwapChain();
     commandPool.reset();
-    graphicsPipeline.reset();
-    swapChain->clearFrameBuffers();
-    renderPass.reset();
-    swapChain.reset();
     device.reset();
     physicalDevice.reset();
     window->closeSurface();
