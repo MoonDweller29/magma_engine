@@ -22,6 +22,8 @@ void CommandBufferArr::allocate(VkDevice device, VkCommandPool commandPool, uint
 }
 
 void CommandBufferArr::record(
+        VkBuffer vertexBuffer,
+        uint32_t vertexCount,
         VkRenderPass renderPass,
         VkExtent2D extent,
         const std::vector<VkFramebuffer> &frameBuffers,
@@ -51,8 +53,15 @@ void CommandBufferArr::record(
             renderPassInfo.pClearValues = &clearColor;
 
             vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+            {
+                vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+                VkBuffer vertexBuffers[] = {vertexBuffer};
+                VkDeviceSize offsets[] = {0};
+                vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+                vkCmdDraw(commandBuffers[i], vertexCount, 1, 0, 0);
+            }
             vkCmdEndRenderPass(commandBuffers[i]);
         }
         result = vkEndCommandBuffer(commandBuffers[i]);

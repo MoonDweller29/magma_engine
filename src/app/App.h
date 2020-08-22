@@ -10,6 +10,15 @@
 #include "vk/graphicsPipeline.h"
 #include "vk/commandPool.h"
 #include "vk/commandBuffer.h"
+#include "glm_inc.h"
+
+struct Vertex {
+    glm::vec2 pos;
+    glm::vec3 color;
+
+    static std::vector<VkVertexInputBindingDescription> getBindingDescription();
+    static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
+};
 
 class App {
     uint32_t WIN_WIDTH = 800, WIN_HEIGHT = 600;
@@ -25,6 +34,8 @@ class App {
     std::unique_ptr<GraphicsPipeline>     graphicsPipeline;
     std::unique_ptr<CommandPool>          commandPool;
     CommandBufferArr commandBuffers;
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexBufferMemory;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
@@ -36,6 +47,8 @@ class App {
 	void recreateSwapChain();
 
     void initVulkan();
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    void createVertexBuffer();
     void createSyncObjects();
     void mainLoop();
     void drawFrame();

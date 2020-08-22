@@ -3,6 +3,40 @@
 #include "vk/window.h"
 #include <iostream>
 
+const std::vector<Vertex> vertices = {
+        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
+
+std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescription()
+{
+    std::vector<VkVertexInputBindingDescription>  bindingDescription(1, VkVertexInputBindingDescription{});
+    bindingDescription[0].binding = 0;
+    bindingDescription[0].stride = sizeof(Vertex);
+    bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    return bindingDescription;
+}
+
+std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions()
+{
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2, VkVertexInputAttributeDescription{});
+
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+    return attributeDescriptions;
+}
+
 static bool esc_was_pressed = false;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -56,6 +90,60 @@ void App::createSyncObjects()
     }
 }
 
+uint32_t App::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice->device(), &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+    {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+}
+
+//TODO: move this functionality to logical device
+void App::createVertexBuffer()
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    bufferInfo.flags = 0; //Optional
+
+    VkResult result = vkCreateBuffer(device->handler(), &bufferInfo, nullptr, &vertexBuffer);
+    vk_check_err(result, "failed to create vertex buffer!");
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(device->handler(), vertexBuffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(
+            memRequirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    );
+
+    result = vkAllocateMemory(device->handler(), &allocInfo, nullptr, &vertexBufferMemory);
+    vk_check_err(result, "failed to allocate vertex buffer memory!");
+
+    vkBindBufferMemory(device->handler(), vertexBuffer, vertexBufferMemory, 0);
+
+    //filling the buffer
+    void* data;
+    vkMapMemory(device->handler(), vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+    {
+        memcpy(data, vertices.data(), (size_t) bufferInfo.size);
+    }
+    vkUnmapMemory(device->handler(), vertexBufferMemory);
+}
+
 void App::initVulkan()
 {
     instance = std::make_unique<VkInstanceHolder>();
@@ -66,6 +154,7 @@ void App::initVulkan()
     commandPool = std::make_unique<CommandPool>(
             physicalDevice->getQueueFamilyInds().graphicsFamily.value(),
             device->handler());
+    createVertexBuffer();
 
     swapChain = std::make_unique<SwapChain>(device->handler(), *physicalDevice, *window);
 
@@ -73,10 +162,15 @@ void App::initVulkan()
     swapChain->createFrameBuffers(renderPass->getHandler());
 
     PipelineInfo pipelineInfo(window->getResolution());
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
     commandBuffers.allocate(device->handler(), commandPool->getHandler(), swapChain->imgCount());
     commandBuffers.record(
+            vertexBuffer,
+            vertices.size(),
             renderPass->getHandler(),
             window->getResolution(),
             swapChain->getVkFrameBuffers(),
@@ -113,10 +207,15 @@ void App::recreateSwapChain()
     swapChain->createFrameBuffers(renderPass->getHandler());
 
     PipelineInfo pipelineInfo(window->getResolution());
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
     commandBuffers.allocate(device->handler(), commandPool->getHandler(), swapChain->imgCount());
     commandBuffers.record(
+            vertexBuffer,
+            vertices.size(),
             renderPass->getHandler(),
             window->getResolution(),
             swapChain->getVkFrameBuffers(),
@@ -225,6 +324,8 @@ void App::cleanUp()
     }
 
     cleanupSwapChain();
+    vkDestroyBuffer(device->handler(), vertexBuffer, nullptr);
+    vkFreeMemory(device->handler(), vertexBufferMemory, nullptr);
     commandPool.reset();
     device.reset();
     physicalDevice.reset();

@@ -6,6 +6,7 @@ PipelineInfo::PipelineInfo(VkExtent2D extent)
     resolution = extent;
 
     //vertex input info
+    //use setVertexInputInfo to change
     vertexInputInfo = {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount = 0;
@@ -108,6 +109,18 @@ PipelineInfo::PipelineInfo(VkExtent2D extent)
     pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+}
+
+//TODO:: create VertexInputINFO class
+void PipelineInfo::setVertexInputInfo(
+        const std::vector<VkVertexInputBindingDescription> &bindingInfo,
+        const std::vector<VkVertexInputAttributeDescription> &attributeInfo
+)
+{
+    vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingInfo.size());
+    vertexInputInfo.pVertexBindingDescriptions = bindingInfo.data();
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeInfo.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributeInfo.data();
 }
 
 GraphicsPipeline::GraphicsPipeline(VkDevice device, PipelineInfo pipelineSettings, VkRenderPass renderPass)
