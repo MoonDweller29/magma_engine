@@ -2,6 +2,7 @@
 #include "vk/vulkan_common.h"
 #include "vk/window.h"
 #include <iostream>
+#include <ctime>
 
 const std::vector<Vertex> vertices = {
         {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -301,12 +302,18 @@ void App::drawFrame()
 
 void App::mainLoop()
 {
+    clock_t time, prev_time = 0;
     while (!glfwWindowShouldClose(window->getGLFWp()))
     {
         glfwPollEvents();
         if (isClosed())
-        	break;
+        {
+            break;
+        }
         drawFrame();
+        time = clock();
+        printf("\r %f",CLOCKS_PER_SEC/float(time - prev_time));
+        prev_time = time;
     }
 
     vkDeviceWaitIdle(device->handler());
