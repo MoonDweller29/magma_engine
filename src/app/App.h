@@ -49,6 +49,7 @@ class App {
     void initVulkan();
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     void createVertexBuffer();
+    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void createSyncObjects();
     void mainLoop();
     void drawFrame();
