@@ -149,7 +149,7 @@ void App::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = commandPool->getHandler();
+    allocInfo.commandPool = device->getGraphicsCmdPool();
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
@@ -177,7 +177,7 @@ void App::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(device->getGraphicsQueue()); //TODO:: it's not optimal
 
-    vkFreeCommandBuffers(device->handler(), commandPool->getHandler(), 1, &commandBuffer);
+    vkFreeCommandBuffers(device->handler(), device->getGraphicsCmdPool(), 1, &commandBuffer);
 }
 
 //TODO: move this functionality to logical device
@@ -252,9 +252,6 @@ void App::initVulkan()
     window->initSurface(instance->get());
     physicalDevice = std::make_unique<PhysicalDevice>(instance->get(), window->getSurface());
     device = std::make_unique<LogicalDeviceHolder>(*physicalDevice);
-    commandPool = std::make_unique<CommandPool>(
-            physicalDevice->getQueueFamilyInds().graphicsFamily.value(),
-            device->handler());
     createVertexBuffer();
     createIndexBuffer();
 
@@ -269,7 +266,7 @@ void App::initVulkan()
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
-    commandBuffers.allocate(device->handler(), commandPool->getHandler(), swapChain->imgCount());
+    commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());
     commandBuffers.record(
             indexBuffer,
             vertexBuffer,
@@ -284,7 +281,7 @@ void App::initVulkan()
 void App::cleanupSwapChain()
 {
     vkFreeCommandBuffers(
-            device->handler(), commandPool->getHandler(),
+            device->handler(), device->getGraphicsCmdPool(),
             commandBuffers.size(), commandBuffers.data());
 
     graphicsPipeline.reset();
@@ -315,7 +312,7 @@ void App::recreateSwapChain()
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
-    commandBuffers.allocate(device->handler(), commandPool->getHandler(), swapChain->imgCount());
+    commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());
     commandBuffers.record(
             indexBuffer,
             vertexBuffer,
@@ -438,7 +435,6 @@ void App::cleanUp()
     vkFreeMemory(device->handler(), indexBufferMemory, nullptr);
     vkDestroyBuffer(device->handler(), vertexBuffer, nullptr);
     vkFreeMemory(device->handler(), vertexBufferMemory, nullptr);
-    commandPool.reset();
     device.reset();
     physicalDevice.reset();
     window->closeSurface();

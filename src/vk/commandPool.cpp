@@ -1,9 +1,10 @@
 #include "commandPool.h"
 #include "vulkan_common.h"
 
-CommandPool::CommandPool(uint32_t queueFamilyIndex, VkDevice device)
+VkCommandPool CommandPool::createPool(VkDevice device, uint32_t queueFamilyIndex)
 {
-    this->device = device;
+    VkCommandPool commandPool;
+
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndex;
@@ -11,6 +12,15 @@ CommandPool::CommandPool(uint32_t queueFamilyIndex, VkDevice device)
 
     VkResult result = vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
     vk_check_err(result, "failed to create command pool!");
+
+    return commandPool;
+}
+
+
+CommandPool::CommandPool(VkDevice device, uint32_t queueFamilyIndex)
+{
+    this->device = device;
+    commandPool = createPool(device, queueFamilyIndex);
 }
 
 CommandPool::~CommandPool()

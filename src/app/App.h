@@ -32,7 +32,6 @@ class App {
     std::unique_ptr<SwapChain>            swapChain;
     std::unique_ptr<RenderPass>           renderPass;
     std::unique_ptr<GraphicsPipeline>     graphicsPipeline;
-    std::unique_ptr<CommandPool>          commandPool;
     CommandBufferArr commandBuffers;
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;

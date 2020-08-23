@@ -1,5 +1,6 @@
 #include "logicalDevice.h"
 
+#include "commandPool.h"
 #include "vulkan_common.h"
 #include "validationLayers.h"
 #include <iostream>
@@ -49,6 +50,7 @@ LogicalDeviceHolder::LogicalDeviceHolder(const PhysicalDevice &physicalDevice)
 
     std::cout << "Logical Device is created\n";
     acquireQueues(indices);
+    graphicsCmdPool = CommandPool::createPool(device, indices.graphicsFamily.value());
 }
 
 void LogicalDeviceHolder::acquireQueues(QueueFamilyIndices indices)
@@ -66,5 +68,6 @@ void LogicalDeviceHolder::acquireQueues(QueueFamilyIndices indices)
 
 LogicalDeviceHolder::~LogicalDeviceHolder()
 {
+    vkDestroyCommandPool(device, graphicsCmdPool, nullptr);
     vkDestroyDevice(device, nullptr);
 }
