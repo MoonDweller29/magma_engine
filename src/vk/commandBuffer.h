@@ -10,6 +10,7 @@ public:
     CommandBufferArr(VkDevice device, VkCommandPool commandPool, uint32_t count);
     void allocate(VkDevice device, VkCommandPool commandPool, uint32_t count);
     void record(
+            VkBuffer indexBuffer,
             VkBuffer vertexBuffer,
             uint32_t vertexCount,
             VkRenderPass renderPass,

@@ -22,6 +22,7 @@ void CommandBufferArr::allocate(VkDevice device, VkCommandPool commandPool, uint
 }
 
 void CommandBufferArr::record(
+        VkBuffer indexBuffer,
         VkBuffer vertexBuffer,
         uint32_t vertexCount,
         VkRenderPass renderPass,
@@ -59,8 +60,9 @@ void CommandBufferArr::record(
                 VkBuffer vertexBuffers[] = {vertexBuffer};
                 VkDeviceSize offsets[] = {0};
                 vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+                vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-                vkCmdDraw(commandBuffers[i], vertexCount, 1, 0, 0);
+                vkCmdDrawIndexed(commandBuffers[i], vertexCount, 1, 0, 0, 0);
             }
             vkCmdEndRenderPass(commandBuffers[i]);
         }

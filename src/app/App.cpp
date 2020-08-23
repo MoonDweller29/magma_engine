@@ -5,9 +5,14 @@
 #include <ctime>
 
 const std::vector<Vertex> vertices = {
-        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+};
+
+const std::vector<uint16_t> indices = {
+        0, 1, 2, 2, 3, 0
 };
 
 std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescription()
@@ -210,6 +215,36 @@ void App::createVertexBuffer()
     vkFreeMemory(device->handler(), stagingBufferMemory, nullptr);
 }
 
+void App::createIndexBuffer() {
+    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(
+            physicalDevice->device(), device->handler(),
+            bufferSize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(device->handler(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, indices.data(), (size_t) bufferSize);
+    vkUnmapMemory(device->handler(), stagingBufferMemory);
+
+    createBuffer(
+            physicalDevice->device(), device->handler(),
+            bufferSize,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            indexBuffer, indexBufferMemory);
+
+    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+    vkDestroyBuffer(device->handler(), stagingBuffer, nullptr);
+    vkFreeMemory(device->handler(), stagingBufferMemory, nullptr);
+}
+
 void App::initVulkan()
 {
     instance = std::make_unique<VkInstanceHolder>();
@@ -221,6 +256,7 @@ void App::initVulkan()
             physicalDevice->getQueueFamilyInds().graphicsFamily.value(),
             device->handler());
     createVertexBuffer();
+    createIndexBuffer();
 
     swapChain = std::make_unique<SwapChain>(device->handler(), *physicalDevice, *window);
 
@@ -235,8 +271,9 @@ void App::initVulkan()
 
     commandBuffers.allocate(device->handler(), commandPool->getHandler(), swapChain->imgCount());
     commandBuffers.record(
+            indexBuffer,
             vertexBuffer,
-            vertices.size(),
+            indices.size(),
             renderPass->getHandler(),
             window->getResolution(),
             swapChain->getVkFrameBuffers(),
@@ -280,8 +317,9 @@ void App::recreateSwapChain()
 
     commandBuffers.allocate(device->handler(), commandPool->getHandler(), swapChain->imgCount());
     commandBuffers.record(
+            indexBuffer,
             vertexBuffer,
-            vertices.size(),
+            indices.size(),
             renderPass->getHandler(),
             window->getResolution(),
             swapChain->getVkFrameBuffers(),
@@ -396,6 +434,8 @@ void App::cleanUp()
     }
 
     cleanupSwapChain();
+    vkDestroyBuffer(device->handler(), indexBuffer, nullptr);
+    vkFreeMemory(device->handler(), indexBufferMemory, nullptr);
     vkDestroyBuffer(device->handler(), vertexBuffer, nullptr);
     vkFreeMemory(device->handler(), vertexBufferMemory, nullptr);
     commandPool.reset();
