@@ -69,6 +69,7 @@ add_executable(${EXE_NAME}
 	src/vk/physicalDevice.cpp
 	src/vk/logicalDevice.h
 	src/vk/logicalDevice.cpp
+	src/vk/logicalDevice.hpp
 	src/vk/window.h
 	src/vk/window.cpp
 	src/vk/swapChain.h
@@ -85,6 +86,8 @@ add_executable(${EXE_NAME}
 	src/vk/commandPool.cpp
 	src/vk/commandBuffer.h
 	src/vk/commandBuffer.cpp
+	src/vk/buffer.h
+	src/vk/buffer.cpp
 )
 
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )

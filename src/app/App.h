@@ -10,7 +10,9 @@
 #include "vk/graphicsPipeline.h"
 #include "vk/commandPool.h"
 #include "vk/commandBuffer.h"
+#include "vk/buffer.h"
 #include "glm_inc.h"
+
 
 struct Vertex {
     glm::vec2 pos;
@@ -27,16 +29,14 @@ class App {
     std::unique_ptr<VkInstanceHolder>     instance;
     std::unique_ptr<DebugMessenger>       debugMessenger;
     std::unique_ptr<PhysicalDevice>       physicalDevice;
-    std::unique_ptr<LogicalDeviceHolder>  device;
+    std::unique_ptr<LogicalDevice>  device;
     std::unique_ptr<Window>               window;
     std::unique_ptr<SwapChain>            swapChain;
     std::unique_ptr<RenderPass>           renderPass;
     std::unique_ptr<GraphicsPipeline>     graphicsPipeline;
     CommandBufferArr commandBuffers;
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
+    Buffer vertexBuffer;
+    Buffer indexBuffer;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
@@ -48,10 +48,6 @@ class App {
 	void recreateSwapChain();
 
     void initVulkan();
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-    void createVertexBuffer();
-    void createIndexBuffer();
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void createSyncObjects();
     void mainLoop();
     void drawFrame();
