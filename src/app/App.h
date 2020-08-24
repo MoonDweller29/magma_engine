@@ -37,18 +37,28 @@ class App {
     CommandBufferArr commandBuffers;
     Buffer vertexBuffer;
     Buffer indexBuffer;
+    std::vector<Buffer> uniformBuffers;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
     std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
 
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+    VkDescriptorPool descriptorPool;
+    std::vector<VkDescriptorSet> descriptorSets;
+
 	void initWindow();
     void cleanupSwapChain();
 	void recreateSwapChain();
 
     void initVulkan();
+    void createDescriptorSetLayout();
+    void createUniformBuffers();
+    void updateUniformBuffer(uint32_t currentImage);
     void createSyncObjects();
+    void createDescriptorPool();
+    void createDescriptorSets();
     void mainLoop();
     void drawFrame();
 

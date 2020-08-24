@@ -48,7 +48,7 @@ PipelineInfo::PipelineInfo(VkExtent2D extent)
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL; //can be changed to line or point, req gpu feature
     rasterizer.lineWidth = 1.0f; //check wideLines gpu feature
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.cullMode = VK_CULL_MODE_NONE; //VK_CULL_MODE_BACK_BIT
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f; // Optional
@@ -105,8 +105,8 @@ PipelineInfo::PipelineInfo(VkExtent2D extent)
 
     pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+    pipelineLayoutInfo.setLayoutCount = 0; // setLayouts
+    pipelineLayoutInfo.pSetLayouts = nullptr; // setLayouts
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 }
@@ -123,7 +123,13 @@ void PipelineInfo::setVertexInputInfo(
     vertexInputInfo.pVertexAttributeDescriptions = attributeInfo.data();
 }
 
-GraphicsPipeline::GraphicsPipeline(VkDevice device, PipelineInfo pipelineSettings, VkRenderPass renderPass)
+void PipelineInfo::setLayouts(const std::vector<VkDescriptorSetLayout> &descriptorSetLayouts)
+{
+    pipelineLayoutInfo.setLayoutCount = descriptorSetLayouts.size();
+    pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+}
+
+GraphicsPipeline::GraphicsPipeline(VkDevice device, const PipelineInfo &pipelineSettings, VkRenderPass renderPass)
 {
     this->device = device;
     Shader vertShader(device, "shaders/shader.vert.spv", Shader::VERT_SH);

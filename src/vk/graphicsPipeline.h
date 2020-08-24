@@ -49,6 +49,7 @@ public:
             const std::vector<VkVertexInputBindingDescription> &bindingInfo,
             const std::vector<VkVertexInputAttributeDescription> &attributeInfo
     );
+    void setLayouts(const std::vector<VkDescriptorSetLayout> &descriptorSetLayouts);
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,8 +61,9 @@ class GraphicsPipeline
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 public:
-    GraphicsPipeline(VkDevice device, PipelineInfo pipelineSettings, VkRenderPass renderPass);
+    GraphicsPipeline(VkDevice device, const PipelineInfo &pipelineSettings, VkRenderPass renderPass);
     ~GraphicsPipeline();
 
     VkPipeline getHandler() const { return graphicsPipeline; }
+    VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
 };

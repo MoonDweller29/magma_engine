@@ -13,6 +13,8 @@ public:
             VkBuffer indexBuffer,
             VkBuffer vertexBuffer,
             uint32_t vertexCount,
+            const std::vector<VkDescriptorSet> &descriptorSets,
+            VkPipelineLayout pipelineLayout,
             VkRenderPass renderPass,
             VkExtent2D extent,
             const std::vector<VkFramebuffer> &frameBuffers,
