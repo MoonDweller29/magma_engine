@@ -21,11 +21,17 @@ VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfac
 // should be changed to turn on vertical sync
 VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
 {
-    for (const auto& availablePresentMode : availablePresentModes) {
-        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+    VkPresentModeKHR requiredMode = VK_PRESENT_MODE_MAILBOX_KHR;
+//    VkPresentModeKHR required_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+
+    for (const auto& availablePresentMode : availablePresentModes)
+    {
+        if (availablePresentMode == requiredMode) {
             return availablePresentMode;
         }
     }
+
+    std::cout << "Failed to find required present mode\n";
 
     return VK_PRESENT_MODE_FIFO_KHR;
 }
