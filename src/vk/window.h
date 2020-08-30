@@ -1,6 +1,10 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include "app/keyBoard.h"
+#include "app/mouse.h"
+#include "glm_inc.h"
+#include <memory>
 
 VkSurfaceKHR createSurface(const VkInstance &instance, GLFWwindow* window);
 
@@ -8,6 +12,8 @@ class Window
 {
     uint32_t width, height;
     GLFWwindow* window;
+    std::unique_ptr<Keyboard> keyboard;
+    std::unique_ptr<Mouse> mouse;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkInstance instance = VK_NULL_HANDLE;
     bool _wasResized = false;
@@ -24,6 +30,8 @@ public:
     GLFWwindow* getGLFWp() { return window; }
     VkSurfaceKHR getSurface() const { return surface; }
     bool wasResized() const { return _wasResized; }
+    Keyboard *getKeyboard() { return keyboard.get(); }
+    Mouse *getMouse() { return mouse.get(); }
 
     ~Window();
 };

@@ -56,6 +56,12 @@ add_executable(${EXE_NAME}
 
 	src/app/App.h
 	src/app/App.cpp
+	src/app/keyBoard.h
+	src/app/keyBoard.cpp
+	src/app/camera.h
+	src/app/camera.cpp
+	src/app/mouse.h
+	src/app/mouse.cpp
 
 	src/vk/vulkan_common.h
 	src/vk/vulkan_common.cpp

@@ -12,6 +12,7 @@
 #include "vk/commandBuffer.h"
 #include "vk/buffer.h"
 #include "glm_inc.h"
+#include "camera.h"
 
 
 struct Vertex {
@@ -31,6 +32,9 @@ class App {
     std::unique_ptr<PhysicalDevice>       physicalDevice;
     std::unique_ptr<LogicalDevice>  device;
     std::unique_ptr<Window>               window;
+    Keyboard *keyBoard;
+    Mouse *mouse;
+    std::unique_ptr<Camera> mainCamera;
     std::unique_ptr<SwapChain>            swapChain;
     std::unique_ptr<RenderPass>           renderPass;
     std::unique_ptr<GraphicsPipeline>     graphicsPipeline;

@@ -35,6 +35,8 @@ Window::Window(uint32_t width, uint32_t height)
     window = glfwCreateWindow(width, height, "Triangle", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    keyboard = std::make_unique<Keyboard>(window);
+    mouse = std::make_unique<Mouse>(this);
 }
 
 void Window::initSurface(const VkInstance &instance)
@@ -69,5 +71,7 @@ void Window::updateResolution()
 Window::~Window()
 {
     closeSurface();
+    keyboard.reset();
+    mouse.reset();
     glfwDestroyWindow(window);
 }

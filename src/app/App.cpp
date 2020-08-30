@@ -50,24 +50,17 @@ std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions(
     return attributeDescriptions;
 }
 
-static bool esc_was_pressed = false;
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    std::cout << "PRESSED\n";
-    if ( ((key == GLFW_KEY_ESCAPE) || (key == GLFW_KEY_Q))  && action == GLFW_PRESS)
-        esc_was_pressed = true;
-}
-
 bool App::isClosed()
 {
-	return esc_was_pressed;
+	return keyBoard->wasPressed(GLFW_KEY_ESCAPE) ||
+	    keyBoard->wasPressed(GLFW_KEY_Q);
 }
 
 void App::run()
 {
     initWindow();
     initVulkan();
+    mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 45.0f);
     mainLoop();
     cleanUp();
 }
@@ -75,7 +68,8 @@ void App::run()
 void App::initWindow()
 {
     window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT);
-	glfwSetKeyCallback(window->getGLFWp(), key_callback);
+    keyBoard = window->getKeyboard();
+    mouse = window->getMouse();
 }
 
 void App::createSyncObjects()
@@ -366,35 +360,15 @@ void App::drawFrame()
 
 void App::updateUniformBuffer(uint32_t currentImage)
 {
-    static float prev_time = 0;
-    static int frames_count = 0;
     static auto startTime = std::chrono::high_resolution_clock::now();
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-    if(frames_count % 100 == 0)
-    {
-        std::cout << 1 / (time - prev_time) << std::endl;
-    }
-    frames_count++;
-    prev_time = time;
-
     UniformBufferObject ubo{};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-//    ubo.model = glm::mat4x4( 1.0f );
-    ubo.view = glm::lookAt(
-            glm::vec3(0.0f, 0.0f, 2.0f),
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f));
-//    ubo.view = glm::mat4x4 (1.0f);
-//    ubo.view[3][2] = -2;
-    ubo.proj = glm::perspective(
-            glm::radians(45.0f),
-            window->getResolution().width / (float) window->getResolution().height,
-            0.1f, 10.0f);
-//    ubo.proj[0][0] *= -1;
-    ubo.proj[1][1] *= -1; //OpenGL legacy in glm
+    ubo.view = mainCamera->getViewMat();
+    ubo.proj = mainCamera->getProjMat();
 
     void* data_p;
     vkMapMemory(device->handler(), uniformBuffers[currentImage].mem, 0, sizeof(ubo), 0, &data_p);
@@ -404,9 +378,35 @@ void App::updateUniformBuffer(uint32_t currentImage)
 
 void App::mainLoop()
 {
+    static float prev_time = 0;
+    static int frames_count = 0;
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+
     while (!glfwWindowShouldClose(window->getGLFWp()))
     {
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        if(frames_count % 100 == 0)
+        {
+//        std::cout << 1 / (time - prev_time) << std::endl;
+        }
+        frames_count++;
+
+        keyBoard->flush();
         glfwPollEvents();
+        mouse->update();
+        mainCamera->update(*keyBoard, *mouse, time - prev_time);
+
+        prev_time = time;
+        if (keyBoard->wasPressed(GLFW_KEY_1))
+        {
+            if (mouse->isLocked())
+                mouse->unlock();
+            else
+                mouse->lock();
+        }
         if (isClosed())
         {
             break;
