@@ -360,10 +360,7 @@ void App::drawFrame()
 
 void App::updateUniformBuffer(uint32_t currentImage)
 {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    float time = global_clock.getTime();
 
     UniformBufferObject ubo{};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -378,15 +375,14 @@ void App::updateUniformBuffer(uint32_t currentImage)
 
 void App::mainLoop()
 {
-    static float prev_time = 0;
-    static int frames_count = 0;
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
+    float prev_time = global_clock.restart();
+    int frames_count = 0;
 
     while (!glfwWindowShouldClose(window->getGLFWp()))
     {
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+        float time = global_clock.getTime();
+        float frameTime = time-prev_time;
+        prev_time = time;
 
         if(frames_count % 100 == 0)
         {
@@ -397,9 +393,8 @@ void App::mainLoop()
         keyBoard->flush();
         glfwPollEvents();
         mouse->update();
-        mainCamera->update(*keyBoard, *mouse, time - prev_time);
+        mainCamera->update(*keyBoard, *mouse, frameTime);
 
-        prev_time = time;
         if (keyBoard->wasPressed(GLFW_KEY_1))
         {
             if (mouse->isLocked())

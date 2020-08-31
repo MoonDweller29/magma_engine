@@ -13,6 +13,7 @@
 #include "vk/buffer.h"
 #include "glm_inc.h"
 #include "camera.h"
+#include "clock.h"
 
 
 struct Vertex {
@@ -51,6 +52,8 @@ class App {
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
+
+    Clock global_clock;
 
 	void initWindow();
     void cleanupSwapChain();
