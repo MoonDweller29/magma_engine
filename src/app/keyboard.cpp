@@ -1,4 +1,4 @@
-#include "keyBoard.h"
+#include "keyboard.h"
 #include <iostream>
 #include "vk/window.h"
 

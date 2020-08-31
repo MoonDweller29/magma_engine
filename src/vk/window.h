@@ -1,7 +1,7 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include "app/keyBoard.h"
+#include "app/keyboard.h"
 #include "app/mouse.h"
 #include "glm_inc.h"
 #include <memory>

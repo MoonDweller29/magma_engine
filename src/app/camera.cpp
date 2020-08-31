@@ -1,5 +1,5 @@
 #include "camera.h"
-#include "keyBoard.h"
+#include "keyboard.h"
 #include "mouse.h"
 
 #include <algorithm>

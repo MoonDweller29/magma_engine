@@ -56,8 +56,8 @@ add_executable(${EXE_NAME}
 
 	src/app/App.h
 	src/app/App.cpp
-	src/app/keyBoard.h
-	src/app/keyBoard.cpp
+	src/app/keyboard.h
+	src/app/keyboard.cpp
 	src/app/camera.h
 	src/app/camera.cpp
 	src/app/mouse.h
