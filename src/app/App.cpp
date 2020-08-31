@@ -60,7 +60,7 @@ void App::run()
 {
     initWindow();
     initVulkan();
-    mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 45.0f);
+    mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
     mainLoop();
     cleanUp();
 }

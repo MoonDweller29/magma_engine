@@ -25,7 +25,7 @@ struct Vertex {
 };
 
 class App {
-    uint32_t WIN_WIDTH = 800, WIN_HEIGHT = 600;
+    uint32_t WIN_WIDTH = 800, WIN_HEIGHT = 450;
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
     std::unique_ptr<VkInstanceHolder>     instance;
