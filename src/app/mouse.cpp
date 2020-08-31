@@ -35,8 +35,6 @@ void Mouse::update()
     }
 
 //        std::cout << shift.x << "_" << shift.y <<std::endl;
-    if (locked)
-        std::cout << pos.x << "_" << pos.y <<std::endl;
 }
 
 const glm::ivec2 &Mouse::getShift() const

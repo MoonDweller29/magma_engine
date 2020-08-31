@@ -4,7 +4,7 @@
 
 void Keyboard::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    std::cout << "PRESSED\n";
+//    std::cout << "PRESSED\n";
     Keyboard *keyBoard = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window))->getKeyboard();
     if (action == GLFW_PRESS)
         keyBoard->keyWasPressed[key] = true;
