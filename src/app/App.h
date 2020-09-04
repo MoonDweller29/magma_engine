@@ -63,6 +63,7 @@ class App {
     void createDescriptorSetLayout();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
+    void createTextureImage();
     void createSyncObjects();
     void createDescriptorPool();
     void createDescriptorSets();

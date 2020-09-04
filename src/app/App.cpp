@@ -3,6 +3,7 @@
 #include "vk/window.h"
 #include <iostream>
 #include "glm_inc.h"
+#include "image.h"
 #include <chrono>
 
 const std::vector<Vertex> vertices = {
@@ -128,6 +129,12 @@ void App::createUniformBuffers()
     }
 }
 
+void App::createTextureImage()
+{
+    Image img("../logo.png", 4);
+    img.save("../logo1.png");
+}
+
 void App::createDescriptorPool()
 {
     VkDescriptorPoolSize poolSize{};
@@ -196,6 +203,7 @@ void App::initVulkan()
     createUniformBuffers();
     createDescriptorPool();
     createDescriptorSets();
+    createTextureImage();
 
     renderPass = std::make_unique<RenderPass>(device->handler(), swapChain->getImageFormat());
     swapChain->createFrameBuffers(renderPass->getHandler());

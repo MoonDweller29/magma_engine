@@ -64,6 +64,8 @@ add_executable(${EXE_NAME}
 	src/app/mouse.cpp
 	src/app/clock.h
 	src/app/clock.cpp
+	src/app/image.h
+	src/app/image.cpp
 
 	src/vk/vulkan_common.h
 	src/vk/vulkan_common.cpp
