@@ -13,12 +13,14 @@ struct StbDeleter {
     }
 };
 
-Image::Image(const char *filename, int channel_count)
+Image::Image(const char *filename, int channel_count):
+    depth(channel_count)
 {
-    data = std::shared_ptr<stbi_uc>(
-            stbi_load(filename, &width, &height, &depth, channel_count),
-            StbDeleter()
-    );
+    int actualChCount;
+    stbi_uc* pixels = stbi_load(filename, &width, &height, &actualChCount, channel_count);
+    if (!pixels)
+        throw std::runtime_error("failed to load image!");
+    data = std::shared_ptr<stbi_uc>(pixels, StbDeleter());
 }
 
 Image::Image(int w, int h, int ch):
