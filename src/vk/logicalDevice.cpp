@@ -112,6 +112,14 @@ Buffer LogicalDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
     return buffer;
 }
 
+Buffer LogicalDevice::createUniformBuffer(VkDeviceSize size)
+{
+    return createBuffer(
+            size,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+}
+
 void LogicalDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
     VkCommandBufferAllocateInfo allocInfo{};

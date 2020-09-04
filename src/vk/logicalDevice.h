@@ -33,6 +33,7 @@ public:
     Buffer createVertexBuffer(const std::vector<T> &data);
     template<class T>
     Buffer createIndexBuffer(const std::vector<T> &data);
+    Buffer createUniformBuffer(VkDeviceSize size);
 
     void deleteBuffer(Buffer &buffer);
     //////////////////////////////////////////////////////////////////////////////////////////////////////

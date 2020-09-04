@@ -124,10 +124,7 @@ void App::createUniformBuffers()
     uniformBuffers.resize(imgCount);
     for (size_t i = 0; i < imgCount; i++)
     {
-        uniformBuffers[i] = device->createBuffer(
-                bufferSize,
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        uniformBuffers[i] = device->createUniformBuffer(bufferSize);
     }
 }
 
@@ -216,11 +213,10 @@ void App::initVulkan()
             vertexBuffer.buf,
             indices.size(),
             descriptorSets,
-            graphicsPipeline->getPipelineLayout(),
             renderPass->getHandler(),
             window->getResolution(),
             swapChain->getVkFrameBuffers(),
-            graphicsPipeline->getHandler());
+            *graphicsPipeline);
     createSyncObjects();
 }
 
@@ -272,11 +268,10 @@ void App::recreateSwapChain()
             vertexBuffer.buf,
             indices.size(),
             descriptorSets,
-            graphicsPipeline->getPipelineLayout(),
             renderPass->getHandler(),
             window->getResolution(),
             swapChain->getVkFrameBuffers(),
-            graphicsPipeline->getHandler());
+            *graphicsPipeline);
 }
 
 void App::drawFrame()

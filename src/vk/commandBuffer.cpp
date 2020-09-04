@@ -1,5 +1,6 @@
 #include "commandBuffer.h"
 #include "vulkan_common.h"
+#include "graphicsPipeline.h"
 
 
 
@@ -26,11 +27,10 @@ void CommandBufferArr::record(
         VkBuffer vertexBuffer,
         uint32_t vertexCount,
         const std::vector<VkDescriptorSet> &descriptorSets,
-        VkPipelineLayout pipelineLayout,
         VkRenderPass renderPass,
         VkExtent2D extent,
         const std::vector<VkFramebuffer> &frameBuffers,
-        VkPipeline graphicsPipeline)
+        const GraphicsPipeline &graphicsPipeline)
 {
     for (size_t i = 0; i < commandBuffers.size(); i++)
     {
@@ -57,7 +57,7 @@ void CommandBufferArr::record(
 
             vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
             {
-                vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+                vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.getHandler());
 
                 VkBuffer vertexBuffers[] = {vertexBuffer};
                 VkDeviceSize offsets[] = {0};
@@ -65,7 +65,7 @@ void CommandBufferArr::record(
                 vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
                 vkCmdBindDescriptorSets(commandBuffers[i],
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+                                        graphicsPipeline.getPipelineLayout(), 0, 1, &descriptorSets[i], 0, nullptr);
 
                 vkCmdDrawIndexed(commandBuffers[i], vertexCount, 1, 0, 0, 0);
             }

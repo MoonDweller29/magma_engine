@@ -2,6 +2,8 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
+class GraphicsPipeline;
+
 class CommandBufferArr
 {
     std::vector<VkCommandBuffer> commandBuffers;
@@ -14,11 +16,10 @@ public:
             VkBuffer vertexBuffer,
             uint32_t vertexCount,
             const std::vector<VkDescriptorSet> &descriptorSets,
-            VkPipelineLayout pipelineLayout,
             VkRenderPass renderPass,
             VkExtent2D extent,
             const std::vector<VkFramebuffer> &frameBuffers,
-            VkPipeline graphicsPipeline);
+            const GraphicsPipeline &graphicsPipeline);
     ~CommandBufferArr();
 
     const uint32_t size() const { return commandBuffers.size(); }
