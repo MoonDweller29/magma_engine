@@ -32,7 +32,7 @@ Window::Window(uint32_t width, uint32_t height)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); //call that turns off OpenGL context
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //potential problem. Resizable window is unstable
 
-    window = glfwCreateWindow(width, height, "Triangle", nullptr, nullptr);
+    window = glfwCreateWindow(width, height, "Vulkan 3D", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     keyboard = std::make_unique<Keyboard>(window);

@@ -11,6 +11,7 @@
 #include "vk/commandPool.h"
 #include "vk/commandBuffer.h"
 #include "vk/buffer.h"
+#include "vk/texture.h"
 #include "glm_inc.h"
 #include "camera.h"
 #include "clock.h"
@@ -19,6 +20,7 @@
 struct Vertex {
     glm::vec2 pos;
     glm::vec3 color;
+    glm::vec2 texCoord;
 
     static std::vector<VkVertexInputBindingDescription> getBindingDescription();
     static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
@@ -48,6 +50,9 @@ class App {
     std::vector<VkFence> inFlightFences;
     std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
+    Texture texture;
+    VkImageView textureImageView;
+    VkSampler textureSampler;
 
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
     VkDescriptorPool descriptorPool;
@@ -64,6 +69,8 @@ class App {
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
     void createTextureImage();
+    void createTextureImageView();
+    void createTextureSampler();
     void createSyncObjects();
     void createDescriptorPool();
     void createDescriptorSets();

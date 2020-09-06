@@ -20,27 +20,27 @@ Image::Image(const char *filename, int channel_count):
     stbi_uc* pixels = stbi_load(filename, &width, &height, &actualChCount, channel_count);
     if (!pixels)
         throw std::runtime_error("failed to load image!");
-    data = std::shared_ptr<stbi_uc>(pixels, StbDeleter());
+    raw_data = std::shared_ptr<stbi_uc>(pixels, StbDeleter());
 }
 
 Image::Image(int w, int h, int ch):
     width(w), height(h), depth(ch)
 {
     stbi_uc *mem = new stbi_uc[width*height*depth];
-    data = std::shared_ptr<stbi_uc>(mem);
+    raw_data = std::shared_ptr<stbi_uc>(mem);
 }
 
 void Image::save(std::string filename)
 {
     int len = filename.size();
     if (strcmp(&(filename.data()[len - 3]), "png") == 0)
-        stbi_write_png(filename.data(), width, height, depth, data.get(), 0);
+        stbi_write_png(filename.data(), width, height, depth, raw_data.get(), 0);
     else if (strcmp(&(filename.data()[len - 3]), "bmp") == 0)
-        stbi_write_bmp(filename.data(), width, height, depth, data.get());
+        stbi_write_bmp(filename.data(), width, height, depth, raw_data.get());
     else if (strcmp(&(filename.data()[len - 3]), "tga") == 0)
-        stbi_write_tga(filename.data(), width, height, depth, data.get());
+        stbi_write_tga(filename.data(), width, height, depth, raw_data.get());
     else if (strcmp(&(filename.data()[len - 3]), "jpg") == 0)
-        stbi_write_jpg(filename.data(), width, height, depth, data.get(), 100);
+        stbi_write_jpg(filename.data(), width, height, depth, raw_data.get(), 100);
     else
         printf("WRONG FORMAT\n");
 }
@@ -51,5 +51,5 @@ stbi_uc &Image::operator()(int i, int j, int ch)
     i = std::clamp(i, 0, height-1);
     j = std::clamp(j, 0, width-1);
 
-    return data.get()[i*(width*depth) + j*depth + ch];
+    return raw_data.get()[i * (width * depth) + j * depth + ch];
 }

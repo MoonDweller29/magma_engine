@@ -98,6 +98,8 @@ add_executable(${EXE_NAME}
 	src/vk/commandBuffer.cpp
 	src/vk/buffer.h
 	src/vk/buffer.cpp
+	src/vk/texture.h
+	src/vk/texture.cpp
 )
 
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )

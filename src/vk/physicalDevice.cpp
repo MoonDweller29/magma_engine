@@ -70,10 +70,10 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice device)
 bool PhysicalDevice::isSuitable(VkPhysicalDevice device, const VkSurfaceKHR &surface)
 {
 //    VkPhysicalDeviceProperties deviceProperties;
-//    VkPhysicalDeviceFeatures deviceFeatures;
 //    vkGetPhysicalDeviceProperties(device, &deviceProperties);
-//    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-//
+    VkPhysicalDeviceFeatures deviceFeatures;
+    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
 //    return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
 //           deviceFeatures.geometryShader;
     QueueFamilyIndices indices = findQueueFamilies(device, surface);
@@ -87,7 +87,7 @@ bool PhysicalDevice::isSuitable(VkPhysicalDevice device, const VkSurfaceKHR &sur
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
 
-    return indices.isComplete() && extensionsSupported && swapChainAdequate;
+    return indices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
 }
 
 int PhysicalDevice::rateSuitability(VkPhysicalDevice device, const VkSurfaceKHR &surface)

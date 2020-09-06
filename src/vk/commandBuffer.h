@@ -26,3 +26,21 @@ public:
     const VkCommandBuffer *data() const { return commandBuffers.data(); }
     const VkCommandBuffer &operator[] (const size_t index);
 };
+
+class SingleTimeCommandBuffer
+{
+    VkCommandBuffer commandBuffer;
+
+    VkDevice device;
+    VkCommandPool commandPool;
+    VkQueue queue;
+
+    VkCommandBufferBeginInfo beginInfo;
+public:
+    SingleTimeCommandBuffer(VkDevice device, VkCommandPool commandPool, VkQueue queue);
+
+    const VkCommandBuffer &startRecording();
+    void endRecordingAndSubmit();
+
+    ~SingleTimeCommandBuffer();
+};
