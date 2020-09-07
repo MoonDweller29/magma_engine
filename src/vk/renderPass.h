@@ -6,7 +6,7 @@ class RenderPass
     VkDevice device;
     VkRenderPass renderPass;
 public:
-    RenderPass(VkDevice device, VkFormat imageFormat);
+    RenderPass(VkDevice device, VkPhysicalDevice physicalDevice, VkFormat imageFormat);
     VkRenderPass getHandler() const { return renderPass; }
     ~RenderPass();
 };

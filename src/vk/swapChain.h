@@ -30,6 +30,6 @@ public:
     VkFormat getImageFormat() const { return imageFormat; }
     size_t imgCount() const { return imageViews.size(); }
     std::vector<VkFramebuffer> getVkFrameBuffers() const;
-    void createFrameBuffers(VkRenderPass renderPass);
+    void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
     void clearFrameBuffers();
 };

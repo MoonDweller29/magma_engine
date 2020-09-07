@@ -7,14 +7,20 @@
 #include <chrono>
 
 const std::vector<Vertex> vertices = {
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
 
 const std::vector<uint16_t> indices = {
-        0, 1, 2, 2, 3, 0
+        0, 1, 2, 2, 3, 0,
+        4, 5, 6, 6, 7, 4
 };
 
 struct UniformBufferObject {
@@ -39,7 +45,7 @@ std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions(
 
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
     attributeDescriptions[1].binding = 0;
@@ -181,7 +187,7 @@ void App::createTextureImage()
 
 void App::createTextureImageView()
 {
-    textureImageView = device->createImageView(texture.img(), VK_FORMAT_R8G8B8A8_SRGB);
+    textureImageView = device->createImageView(texture.img(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void App::createTextureSampler()
@@ -208,6 +214,16 @@ void App::createTextureSampler()
 
     VkResult result = vkCreateSampler(device->handler(), &samplerInfo, nullptr, &textureSampler);
     vk_check_err(result, "failed to create texture sampler!");
+}
+
+void App::createDepthResources()
+{
+    VkFormat depthFormat = findDepthFormat(physicalDevice->device());
+    depthTex = device->createTexture2D(
+            WIN_WIDTH, WIN_HEIGHT, depthFormat,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    depthImageView = device->createImageView(depthTex.img(), depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void App::createDescriptorPool()
@@ -295,12 +311,13 @@ void App::initVulkan()
     createUniformBuffers();
     createTextureImage();
     createTextureImageView();
+    createDepthResources();
     createTextureSampler();
     createDescriptorPool();
     createDescriptorSets();
 
-    renderPass = std::make_unique<RenderPass>(device->handler(), swapChain->getImageFormat());
-    swapChain->createFrameBuffers(renderPass->getHandler());
+    renderPass = std::make_unique<RenderPass>(device->handler(), physicalDevice->device(), swapChain->getImageFormat());
+    swapChain->createFrameBuffers(renderPass->getHandler(), depthImageView);
 
     PipelineInfo pipelineInfo(window->getResolution());
     auto bindingDescription = Vertex::getBindingDescription();
@@ -332,6 +349,9 @@ void App::cleanupSwapChain()
             device->handler(), device->getGraphicsCmdPool(),
             commandBuffers.size(), commandBuffers.data());
 
+    vkDestroyImageView(device->handler(), depthImageView, nullptr);
+    device->deleteTexture(depthTex);
+
     vkDestroyDescriptorPool(device->handler(), descriptorPool, nullptr);
     graphicsPipeline.reset();
     swapChain->clearFrameBuffers();
@@ -352,16 +372,18 @@ void App::recreateSwapChain()
 
     swapChain = std::make_unique<SwapChain>(*device, *physicalDevice, *window);
     createUniformBuffers();
+    createDepthResources();
     createDescriptorPool();
     createDescriptorSets();
 
-    renderPass = std::make_unique<RenderPass>(device->handler(), swapChain->getImageFormat());
-    swapChain->createFrameBuffers(renderPass->getHandler());
+    renderPass = std::make_unique<RenderPass>(device->handler(), physicalDevice->device(), swapChain->getImageFormat());
+    swapChain->createFrameBuffers(renderPass->getHandler(), depthImageView);
 
     PipelineInfo pipelineInfo(window->getResolution());
     auto bindingDescription = Vertex::getBindingDescription();
     auto attributeDescriptions = Vertex::getAttributeDescriptions();
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
+    pipelineInfo.setLayouts(descriptorSetLayouts);
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
     commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());

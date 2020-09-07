@@ -66,7 +66,17 @@ PipelineInfo::PipelineInfo(VkExtent2D extent)
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
     //depth and stencil test
-    //To DO:
+    depthStencil = {};
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthBoundsTestEnable = VK_FALSE;
+    depthStencil.minDepthBounds = 0.0f; // Optional
+    depthStencil.maxDepthBounds = 1.0f; // Optional
+    depthStencil.stencilTestEnable = VK_FALSE;
+    depthStencil.front = {}; // Optional
+    depthStencil.back = {}; // Optional
 
     //color blending for one framebuffer
     colorBlendAttachment = {};
@@ -153,7 +163,7 @@ GraphicsPipeline::GraphicsPipeline(VkDevice device, const PipelineInfo &pipeline
     pipelineInfo.pViewportState = &pipelineSettings.getViewportState();
     pipelineInfo.pRasterizationState = &pipelineSettings.getRasterizer();
     pipelineInfo.pMultisampleState = &pipelineSettings.getMultisampling();
-    pipelineInfo.pDepthStencilState = nullptr; // Optional
+    pipelineInfo.pDepthStencilState = &pipelineSettings.getDepthStencil();
     pipelineInfo.pColorBlendState = &pipelineSettings.getColorBlending();
     pipelineInfo.pDynamicState = nullptr; // Optional
 

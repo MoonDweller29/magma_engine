@@ -18,7 +18,7 @@
 
 
 struct Vertex {
-    glm::vec2 pos;
+    glm::vec3 pos;
     glm::vec3 color;
     glm::vec2 texCoord;
 
@@ -53,6 +53,8 @@ class App {
     Texture texture;
     VkImageView textureImageView;
     VkSampler textureSampler;
+    Texture depthTex;
+    VkImageView depthImageView;
 
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
     VkDescriptorPool descriptorPool;
@@ -71,6 +73,7 @@ class App {
     void createTextureImage();
     void createTextureImageView();
     void createTextureSampler();
+    void createDepthResources();
     void createSyncObjects();
     void createDescriptorPool();
     void createDescriptorSets();

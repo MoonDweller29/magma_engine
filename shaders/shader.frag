@@ -12,4 +12,8 @@ void main() {
 //    outColor = vec4(fragColor, 1.0);
 //    outColor = vec4(fragTexCoord, 0.0, 1.0);
     outColor = texture(texSampler, fragTexCoord);
+//    if (outColor.w < 0.9)
+//    {
+//        outColor.rgb = vec3(1.0);
+//    }
 }

@@ -13,6 +13,7 @@ class PipelineInfo
     VkPipelineViewportStateCreateInfo viewportState;
     VkPipelineRasterizationStateCreateInfo rasterizer;
     VkPipelineMultisampleStateCreateInfo multisampling;
+    VkPipelineDepthStencilStateCreateInfo depthStencil;
     VkPipelineColorBlendAttachmentState colorBlendAttachment;
     VkPipelineColorBlendStateCreateInfo colorBlending;
     std::vector<VkDynamicState> dynamicStates;
@@ -34,6 +35,7 @@ public:
     const VkPipelineViewportStateCreateInfo &getViewportState()          const { return viewportState; }
     const VkPipelineRasterizationStateCreateInfo &getRasterizer()        const { return rasterizer; }
     const VkPipelineMultisampleStateCreateInfo &getMultisampling()       const { return multisampling; }
+    const VkPipelineDepthStencilStateCreateInfo &getDepthStencil()       const { return depthStencil; }
     const VkPipelineColorBlendAttachmentState &getColorBlendAttachment() const { return colorBlendAttachment; }
     const VkPipelineColorBlendStateCreateInfo &getColorBlending()        const { return colorBlending; }
     const VkPipelineDynamicStateCreateInfo &getDynamicState()            const { return dynamicState; }

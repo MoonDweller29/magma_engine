@@ -136,15 +136,15 @@ void SwapChain::createImageViews()
     imageViews.resize(images.size());
     for (uint32_t i = 0; i < imageViews.size(); i++)
     {
-        imageViews[i] = device.createImageView(images[i], imageFormat);
+        imageViews[i] = device.createImageView(images[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 
-void SwapChain::createFrameBuffers(VkRenderPass renderPass)
+void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView)
 {
     for (size_t i = 0; i < imageViews.size(); i++)
     {
-        std::vector<VkImageView> currImage = { imageViews[i] };
+        std::vector<VkImageView> currImage = { imageViews[i], depthImageView };
         frameBuffers.emplace_back(currImage, extent, renderPass, device.handler());
     }
 }
