@@ -100,6 +100,8 @@ add_executable(${EXE_NAME}
 	src/vk/buffer.cpp
 	src/vk/texture.h
 	src/vk/texture.cpp
+	src/vk/descriptors/descriptorSetLayout.h
+	src/vk/descriptors/descriptorSetLayout.cpp
 )
 
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )

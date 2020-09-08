@@ -110,30 +110,9 @@ void App::createSyncObjects()
 
 void App::createDescriptorSetLayout()
 {
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.descriptorCount = 1; //this can be used to create an array of uniform values
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
-
-    descriptorSetLayouts.resize(1);
-    VkResult result = vkCreateDescriptorSetLayout(device->handler(), &layoutInfo, nullptr, &descriptorSetLayouts[0]);
-    vk_check_err(result, "failed to create descriptor set layout!");
+    descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
+    descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
+    descriptorSetLayout.createLayout(device->handler());
 }
 
 void App::createUniformBuffers()
@@ -243,7 +222,7 @@ void App::createDescriptorPool()
 
 void App::createDescriptorSets()
 {
-    std::vector<VkDescriptorSetLayout> layouts(swapChain->imgCount(), descriptorSetLayouts[0]);
+    std::vector<VkDescriptorSetLayout> layouts(swapChain->imgCount(), descriptorSetLayout.getLayout());
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
@@ -318,7 +297,7 @@ void App::initVulkan()
     auto bindingDescription = Vertex::getBindingDescription();
     auto attributeDescriptions = Vertex::getAttributeDescriptions();
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
-    pipelineInfo.setLayouts(descriptorSetLayouts);
+    pipelineInfo.setLayout(descriptorSetLayout.getLayout());
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
     commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());
@@ -377,7 +356,7 @@ void App::recreateSwapChain()
     auto bindingDescription = Vertex::getBindingDescription();
     auto attributeDescriptions = Vertex::getAttributeDescriptions();
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
-    pipelineInfo.setLayouts(descriptorSetLayouts);
+    pipelineInfo.setLayout(descriptorSetLayout.getLayout());
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
     commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());
@@ -537,7 +516,7 @@ void App::cleanUp()
     }
 
     cleanupSwapChain();
-    vkDestroyDescriptorSetLayout(device->handler(), descriptorSetLayouts[0], nullptr);
+    descriptorSetLayout.clear();
     vkDestroySampler(device->handler(), textureSampler, nullptr);
     device->deleteTexture(texture);
     device->deleteBuffer(indexBuffer);

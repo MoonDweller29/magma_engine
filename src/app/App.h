@@ -12,6 +12,7 @@
 #include "vk/commandBuffer.h"
 #include "vk/buffer.h"
 #include "vk/texture.h"
+#include "vk/descriptors/descriptorSetLayout.h"
 #include "glm_inc.h"
 #include "camera.h"
 #include "clock.h"
@@ -54,7 +55,8 @@ class App {
     VkSampler textureSampler;
     Texture depthTex;
 
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+
+    DescriptorSetLayout descriptorSetLayout;
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
 

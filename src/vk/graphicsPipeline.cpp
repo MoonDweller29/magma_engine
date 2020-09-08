@@ -139,6 +139,13 @@ void PipelineInfo::setLayouts(const std::vector<VkDescriptorSetLayout> &descript
     pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 }
 
+void PipelineInfo::setLayout(const VkDescriptorSetLayout &descriptorSetLayout)
+{
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+}
+
+
 GraphicsPipeline::GraphicsPipeline(VkDevice device, const PipelineInfo &pipelineSettings, VkRenderPass renderPass)
 {
     this->device = device;
