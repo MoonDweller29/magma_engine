@@ -51,10 +51,8 @@ class App {
     std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
     Texture texture;
-    VkImageView textureImageView;
     VkSampler textureSampler;
     Texture depthTex;
-    VkImageView depthImageView;
 
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
     VkDescriptorPool descriptorPool;
@@ -70,8 +68,7 @@ class App {
     void createDescriptorSetLayout();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
-    void createTextureImage();
-    void createTextureImageView();
+    void createTexture();
     void createTextureSampler();
     void createDepthResources();
     void createSyncObjects();

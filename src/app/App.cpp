@@ -148,7 +148,7 @@ void App::createUniformBuffers()
     }
 }
 
-void App::createTextureImage()
+void App::createTexture()
 {
     Image img("../logo.png", 4);
     img.save("../logo1.png");
@@ -170,7 +170,8 @@ void App::createTextureImage()
             img.getWidth(), img.getHeight(),
             VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_IMAGE_ASPECT_COLOR_BIT
     );
     device->transitionImageLayout(
             texture.img(), VK_FORMAT_R8G8B8A8_SRGB,
@@ -183,11 +184,6 @@ void App::createTextureImage()
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     device->deleteBuffer(stagingBuffer);
-}
-
-void App::createTextureImageView()
-{
-    textureImageView = device->createImageView(texture.img(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void App::createTextureSampler()
@@ -222,8 +218,8 @@ void App::createDepthResources()
     depthTex = device->createTexture2D(
             WIN_WIDTH, WIN_HEIGHT, depthFormat,
             VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    depthImageView = device->createImageView(depthTex.img(), depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void App::createDescriptorPool()
@@ -267,7 +263,7 @@ void App::createDescriptorSets()
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = textureImageView;
+        imageInfo.imageView = texture.view();
         imageInfo.sampler = textureSampler;
 
         std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
@@ -309,15 +305,14 @@ void App::initVulkan()
     swapChain = std::make_unique<SwapChain>(*device, *physicalDevice, *window);
     createDescriptorSetLayout();
     createUniformBuffers();
-    createTextureImage();
-    createTextureImageView();
+    createTexture();
     createDepthResources();
     createTextureSampler();
     createDescriptorPool();
     createDescriptorSets();
 
     renderPass = std::make_unique<RenderPass>(device->handler(), physicalDevice->device(), swapChain->getImageFormat());
-    swapChain->createFrameBuffers(renderPass->getHandler(), depthImageView);
+    swapChain->createFrameBuffers(renderPass->getHandler(), depthTex.view());
 
     PipelineInfo pipelineInfo(window->getResolution());
     auto bindingDescription = Vertex::getBindingDescription();
@@ -349,7 +344,6 @@ void App::cleanupSwapChain()
             device->handler(), device->getGraphicsCmdPool(),
             commandBuffers.size(), commandBuffers.data());
 
-    vkDestroyImageView(device->handler(), depthImageView, nullptr);
     device->deleteTexture(depthTex);
 
     vkDestroyDescriptorPool(device->handler(), descriptorPool, nullptr);
@@ -377,7 +371,7 @@ void App::recreateSwapChain()
     createDescriptorSets();
 
     renderPass = std::make_unique<RenderPass>(device->handler(), physicalDevice->device(), swapChain->getImageFormat());
-    swapChain->createFrameBuffers(renderPass->getHandler(), depthImageView);
+    swapChain->createFrameBuffers(renderPass->getHandler(), depthTex.view());
 
     PipelineInfo pipelineInfo(window->getResolution());
     auto bindingDescription = Vertex::getBindingDescription();
@@ -544,7 +538,6 @@ void App::cleanUp()
 
     cleanupSwapChain();
     vkDestroyDescriptorSetLayout(device->handler(), descriptorSetLayouts[0], nullptr);
-    vkDestroyImageView(device->handler(), textureImageView, nullptr);
     vkDestroySampler(device->handler(), textureSampler, nullptr);
     device->deleteTexture(texture);
     device->deleteBuffer(indexBuffer);

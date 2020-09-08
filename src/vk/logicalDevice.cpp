@@ -147,7 +147,7 @@ void LogicalDevice::deleteBuffer(Buffer &buffer)
 
 Texture LogicalDevice::createTexture2D(
         uint32_t width, uint32_t height,
-        VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+        VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags)
 {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -183,7 +183,7 @@ Texture LogicalDevice::createTexture2D(
 
     vkBindImageMemory(device, textureImage, textureImageMemory, 0);
 
-    return Texture(textureImage, textureImageMemory, tiling);
+    return Texture(textureImage, textureImageMemory, device, imageInfo, aspectFlags);
 }
 
 bool hasStencilComponent(VkFormat format)
@@ -314,10 +314,11 @@ VkImageView LogicalDevice::createImageView(VkImage image, VkFormat format, VkIma
     return imageView;
 }
 
-void LogicalDevice::deleteTexture(const Texture& tex)
+void LogicalDevice::deleteTexture(Texture &tex)
 {
-    vkDestroyImage(device, tex.img(), nullptr);
-    vkFreeMemory(device, tex.mem(), nullptr);
+    tex.deleteView();
+    tex.deleteImage();
+    tex.freeMem();
 }
 
 LogicalDevice::~LogicalDevice()
