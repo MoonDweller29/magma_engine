@@ -57,7 +57,6 @@ class App {
 
 
     DescriptorSetLayout descriptorSetLayout;
-    VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
 
     Clock global_clock;
@@ -74,7 +73,6 @@ class App {
     void createTextureSampler();
     void createDepthResources();
     void createSyncObjects();
-    void createDescriptorPool();
     void createDescriptorSets();
     void mainLoop();
     void drawFrame();

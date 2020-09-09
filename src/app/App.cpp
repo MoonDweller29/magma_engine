@@ -201,74 +201,17 @@ void App::createDepthResources()
             VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-void App::createDescriptorPool()
-{
-    std::array<VkDescriptorPoolSize, 2> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChain->imgCount());
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChain->imgCount());
-
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-    poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(swapChain->imgCount());
-    poolInfo.flags = 0; //Optional
-
-    VkResult result = vkCreateDescriptorPool(device->handler(), &poolInfo, nullptr, &descriptorPool);
-    vk_check_err(result, "failed to create descriptor pool!");
-}
-
 void App::createDescriptorSets()
 {
-    std::vector<VkDescriptorSetLayout> layouts(swapChain->imgCount(), descriptorSetLayout.getLayout());
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
-    allocInfo.pSetLayouts = layouts.data();
-
-    descriptorSets.resize(layouts.size());
-    VkResult result = vkAllocateDescriptorSets(device->handler(), &allocInfo, descriptorSets.data());
-    vk_check_err(result, "failed to allocate descriptor sets!");
-
-    for (size_t i = 0; i < layouts.size(); i++)
+    uint32_t descriptorSetCount = swapChain->imgCount();
+    descriptorSetLayout.allocateSets(descriptorSetCount);
+    for (uint32_t i = 0; i < descriptorSetCount; ++i)
     {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffers[i].buf;
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = texture.view();
-        imageInfo.sampler = textureSampler;
-
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSets[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0; //first index in array
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-//        descriptorWrite.pImageInfo = nullptr; // Optional
-//        descriptorWrite.pTexelBufferView = nullptr; // Optional
-
-        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = descriptorSets[i];
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
-
-        vkUpdateDescriptorSets(device->handler(),
-                               static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),
-                               0, nullptr);
+        descriptorSetLayout.beginSet(i);
+        descriptorSetLayout.bindUniformBuffer(0, uniformBuffers[i].buf, 0, sizeof(UniformBufferObject));
+        descriptorSetLayout.bindCombinedImageSampler(1, texture.view(), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
+    descriptorSets = descriptorSetLayout.recordAndReturnSets();
 }
 
 void App::initVulkan()
@@ -287,7 +230,6 @@ void App::initVulkan()
     createTexture();
     createDepthResources();
     createTextureSampler();
-    createDescriptorPool();
     createDescriptorSets();
 
     renderPass = std::make_unique<RenderPass>(device->handler(), physicalDevice->device(), swapChain->getImageFormat());
@@ -325,7 +267,7 @@ void App::cleanupSwapChain()
 
     device->deleteTexture(depthTex);
 
-    vkDestroyDescriptorPool(device->handler(), descriptorPool, nullptr);
+    descriptorSetLayout.freePool();
     graphicsPipeline.reset();
     swapChain->clearFrameBuffers();
     renderPass.reset();
@@ -346,7 +288,6 @@ void App::recreateSwapChain()
     swapChain = std::make_unique<SwapChain>(*device, *physicalDevice, *window);
     createUniformBuffers();
     createDepthResources();
-    createDescriptorPool();
     createDescriptorSets();
 
     renderPass = std::make_unique<RenderPass>(device->handler(), physicalDevice->device(), swapChain->getImageFormat());
