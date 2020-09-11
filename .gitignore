@@ -2,4 +2,5 @@ build/*
 cmake-build-debug/*
 cmake-build-release/*
 external_libs/*
+models/*
 .idea/*

@@ -37,6 +37,7 @@ message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 include_directories(src)
 include_directories(external_libs/include)
 include_directories(external_libs/glfw-3.3.2/include)
+include_directories(external_libs/assimp/include)
 
 # compiling glfw
 	set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -44,6 +45,15 @@ include_directories(external_libs/glfw-3.3.2/include)
 	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 	add_subdirectory(external_libs/glfw-3.3.2/)
 	set(ALL_LIBS  ${ALL_LIBS} glfw)
+
+# compiling assimp
+	# ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT:False
+	# ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT:False
+	set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+	# ASSIMP_BUILD_STL_IMPORTER:True
+	set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+	add_subdirectory(external_libs/assimp)
+	set(ALL_LIBS ${ALL_LIBS} assimp)
 
 # //////////////////////////////////////////////////////
 #
@@ -66,6 +76,11 @@ add_executable(${EXE_NAME}
 	src/app/clock.cpp
 	src/app/image.h
 	src/app/image.cpp
+
+	src/app/scene/mesh.h
+	src/app/scene/mesh.cpp
+	src/app/scene/meshReader.h
+	src/app/scene/meshReader.cpp
 
 	src/vk/vulkan_common.h
 	src/vk/vulkan_common.cpp

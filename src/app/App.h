@@ -13,23 +13,23 @@
 #include "vk/buffer.h"
 #include "vk/texture.h"
 #include "vk/descriptors/descriptorSetLayout.h"
+#include "scene/mesh.h"
+#include "scene/meshReader.h"
 #include "glm_inc.h"
 #include "camera.h"
 #include "clock.h"
 
 
-struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
 
-    static std::vector<VkVertexInputBindingDescription> getBindingDescription();
-    static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
-};
 
 class App {
-    uint32_t WIN_WIDTH = 800, WIN_HEIGHT = 450;
+    uint32_t WIN_WIDTH = 960, WIN_HEIGHT = 540;
     const int MAX_FRAMES_IN_FLIGHT = 2;
+    const std::string TEXTURE_PATH = "../models/viking_room.png";
+    MeshReader meshReader;
+    std::vector<Mesh> scene;
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
 
     std::unique_ptr<VkInstanceHolder>     instance;
     std::unique_ptr<DebugMessenger>       debugMessenger;
@@ -64,6 +64,7 @@ class App {
 	void initWindow();
     void cleanupSwapChain();
 	void recreateSwapChain();
+	void loadScene();
 
     void initVulkan();
     void createDescriptorSetLayout();
