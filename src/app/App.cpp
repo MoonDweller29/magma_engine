@@ -29,6 +29,11 @@ struct UniformBufferObject {
     glm::mat4 proj;
 };
 
+struct FragmentUniform {
+    alignas(16) glm::vec3 cameraPos;
+    alignas(16) glm::vec3 lightPos;
+};
+
 std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescription()
 {
     std::vector<VkVertexInputBindingDescription>  bindingDescription(1, VkVertexInputBindingDescription{});
@@ -112,6 +117,7 @@ void App::createDescriptorSetLayout()
 {
     descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
     descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
+    descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
     descriptorSetLayout.createLayout(device->handler());
 }
 
@@ -124,6 +130,12 @@ void App::createUniformBuffers()
     for (size_t i = 0; i < imgCount; i++)
     {
         uniformBuffers[i] = device->createUniformBuffer(bufferSize);
+    }
+
+    fragmentUniforms.resize(imgCount);
+    for (size_t i = 0; i < imgCount; i++)
+    {
+        fragmentUniforms[i] = device->createUniformBuffer(bufferSize);
     }
 }
 
@@ -217,6 +229,7 @@ void App::createDescriptorSets()
         descriptorSetLayout.beginSet(i);
         descriptorSetLayout.bindUniformBuffer(0, uniformBuffers[i].buf, 0, sizeof(UniformBufferObject));
         descriptorSetLayout.bindCombinedImageSampler(1, texture.view(), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        descriptorSetLayout.bindUniformBuffer(2, fragmentUniforms[i].buf, 0, sizeof(FragmentUniform));
     }
     descriptorSets = descriptorSetLayout.recordAndReturnSets();
 }
@@ -268,6 +281,7 @@ void App::cleanupSwapChain()
     for (size_t i = 0; i < uniformBuffers.size(); i++)
     {
         device->deleteBuffer(uniformBuffers[i]);
+        device->deleteBuffer(fragmentUniforms[i]);
     }
     vkFreeCommandBuffers(
             device->handler(), device->getGraphicsCmdPool(),
@@ -413,6 +427,13 @@ void App::updateUniformBuffer(uint32_t currentImage)
     vkMapMemory(device->handler(), uniformBuffers[currentImage].mem, 0, sizeof(ubo), 0, &data_p);
     memcpy(data_p, &ubo, sizeof(ubo));
     vkUnmapMemory(device->handler(), uniformBuffers[currentImage].mem);
+
+    FragmentUniform fu{};
+    fu.cameraPos = mainCamera->getPos();
+    fu.lightPos = glm::vec3(sin(time), 0.4f, cos(time));
+    vkMapMemory(device->handler(), fragmentUniforms[currentImage].mem, 0, sizeof(ubo), 0, &data_p);
+    memcpy(data_p, &fu, sizeof(ubo));
+    vkUnmapMemory(device->handler(), fragmentUniforms[currentImage].mem);
 }
 
 void App::mainLoop()
@@ -428,7 +449,7 @@ void App::mainLoop()
 
         if(frames_count % 100 == 0)
         {
-//        std::cout << 1 / (time - prev_time) << std::endl;
+//            std::cout << 1 / frameTime << std::endl;
         }
         frames_count++;
 

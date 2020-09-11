@@ -46,6 +46,7 @@ class App {
     Buffer vertexBuffer;
     Buffer indexBuffer;
     std::vector<Buffer> uniformBuffers;
+    std::vector<Buffer> fragmentUniforms;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
