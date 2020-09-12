@@ -5,6 +5,7 @@
 #include "glm_inc.h"
 #include "image.h"
 #include <chrono>
+#include <unistd.h> //for sleep
 
 //const std::vector<Vertex> vertices = {
 //        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
@@ -34,37 +35,6 @@ struct FragmentUniform {
     alignas(16) glm::vec3 lightPos;
 };
 
-std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescription()
-{
-    std::vector<VkVertexInputBindingDescription>  bindingDescription(1, VkVertexInputBindingDescription{});
-    bindingDescription[0].binding = 0;
-    bindingDescription[0].stride = sizeof(Vertex);
-    bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    return bindingDescription;
-}
-
-std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions()
-{
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(3, VkVertexInputAttributeDescription{});
-
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(Vertex, normal);
-
-    attributeDescriptions[2].binding = 0;
-    attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-    return attributeDescriptions;
-}
 
 bool App::isClosed()
 {
@@ -91,34 +61,15 @@ void App::initWindow()
 void App::createSyncObjects()
 {
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    imagesInFlight.resize(swapChain->imgCount(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    VkFenceCreateInfo fenceInfo{};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkResult result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
         vk_check_err(result, "failed to create semaphores!");
-        result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
-        vk_check_err(result, "failed to create semaphores!");
-        result = vkCreateFence(device->handler(), &fenceInfo, nullptr, &inFlightFences[i]);
-        vk_check_err(result, "failed to create fences!");
     }
-}
-
-void App::createDescriptorSetLayout()
-{
-    descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
-    descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
-    descriptorSetLayout.createLayout(device->handler());
 }
 
 void App::createUniformBuffers()
@@ -220,19 +171,6 @@ void App::createDepthResources()
             VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-void App::createDescriptorSets()
-{
-    uint32_t descriptorSetCount = swapChain->imgCount();
-    descriptorSetLayout.allocateSets(descriptorSetCount);
-    for (uint32_t i = 0; i < descriptorSetCount; ++i)
-    {
-        descriptorSetLayout.beginSet(i);
-        descriptorSetLayout.bindUniformBuffer(0, uniformBuffers[i].buf, 0, sizeof(UniformBufferObject));
-        descriptorSetLayout.bindCombinedImageSampler(1, texture.view(), textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        descriptorSetLayout.bindUniformBuffer(2, fragmentUniforms[i].buf, 0, sizeof(FragmentUniform));
-    }
-    descriptorSets = descriptorSetLayout.recordAndReturnSets();
-}
 
 void App::initVulkan()
 {
@@ -246,25 +184,23 @@ void App::initVulkan()
     indexBuffer = device->createIndexBuffer(indices);
 
     swapChain = std::make_unique<SwapChain>(*device, *physicalDevice, *window);
-    createDescriptorSetLayout();
     createUniformBuffers();
     createTexture();
     createDepthResources();
     createTextureSampler();
-    createDescriptorSets();
 
-    renderPass = std::make_unique<RenderPass>(device->handler(), physicalDevice->device(), swapChain->getImageFormat());
-    swapChain->createFrameBuffers(renderPass->getHandler(), depthTex.view());
+    colorPass = std::make_unique<ColorPass>(*device, *swapChain);
+    colorPass->writeDescriptorSets(uniformBuffers, sizeof(UniformBufferObject),
+                                   fragmentUniforms, sizeof(FragmentUniform),
+                                   texture.view(), textureSampler);
+    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.view());
+    colorPass->recordCmdBuffers(
+            indexBuffer.buf,
+            vertexBuffer.buf,
+            indices.size(),
+            swapChain->getVkFrameBuffers()
+    );
 
-    PipelineInfo pipelineInfo(window->getResolution());
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
-    pipelineInfo.setLayout(descriptorSetLayout.getLayout());
-    graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
-
-    commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());
-    recordCmdBuffers();
     createSyncObjects();
 }
 
@@ -275,57 +211,12 @@ void App::cleanupSwapChain()
         device->deleteBuffer(uniformBuffers[i]);
         device->deleteBuffer(fragmentUniforms[i]);
     }
-    vkFreeCommandBuffers(
-            device->handler(), device->getGraphicsCmdPool(),
-            commandBuffers.size(), commandBuffers.data());
 
     device->deleteTexture(depthTex);
 
-    descriptorSetLayout.freePool();
-    graphicsPipeline.reset();
     swapChain->clearFrameBuffers();
-    renderPass.reset();
+    colorPass.reset();
     swapChain.reset();
-}
-
-void App::recordCmdBuffers()
-{
-    for (size_t i = 0; i < swapChain->imgCount(); ++i)
-    {
-        VkCommandBuffer cmdBuf = commandBuffers.beginCmdBuf(i);
-        {
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = renderPass->getHandler();
-            renderPassInfo.framebuffer = swapChain->getVkFrameBuffers()[i];
-
-            renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = window->getResolution();
-
-            std::array<VkClearValue, 2> clearValues{};
-            clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-            clearValues[1].depthStencil = {1.0f, 0};
-            renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-            renderPassInfo.pClearValues = clearValues.data();
-
-            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-            {
-                vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->getHandler());
-
-                VkBuffer vertexBuffers[] = {vertexBuffer.buf};
-                VkDeviceSize offsets[] = {0};
-                vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-                vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer.buf, 0, VK_INDEX_TYPE_UINT32);
-                vkCmdBindDescriptorSets(commandBuffers[i],
-                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        graphicsPipeline->getPipelineLayout(), 0, 1, &descriptorSets[i], 0, nullptr);
-
-                vkCmdDrawIndexed(commandBuffers[i], indices.size(), 1, 0, 0, 0);
-            }
-            vkCmdEndRenderPass(commandBuffers[i]);
-        }
-        commandBuffers.endCmdBuf(i);
-    }
 }
 
 void App::recreateSwapChain()
@@ -342,32 +233,25 @@ void App::recreateSwapChain()
     swapChain = std::make_unique<SwapChain>(*device, *physicalDevice, *window);
     createUniformBuffers();
     createDepthResources();
-    createDescriptorSets();
 
-    renderPass = std::make_unique<RenderPass>(device->handler(), physicalDevice->device(), swapChain->getImageFormat());
-    swapChain->createFrameBuffers(renderPass->getHandler(), depthTex.view());
-
-    PipelineInfo pipelineInfo(window->getResolution());
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
-    pipelineInfo.setLayout(descriptorSetLayout.getLayout());
-    graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
-
-    commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());
-    recordCmdBuffers();
+    colorPass = std::make_unique<ColorPass>(*device, *swapChain);
+    colorPass->writeDescriptorSets(uniformBuffers, sizeof(UniformBufferObject),
+                                   fragmentUniforms, sizeof(FragmentUniform),
+                                   texture.view(), textureSampler);
+    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.view());
+    colorPass->recordCmdBuffers(
+            indexBuffer.buf, vertexBuffer.buf, indices.size(),
+            swapChain->getVkFrameBuffers()
+    );
 }
 
 void App::drawFrame()
 {
-    vkWaitForFences(device->handler(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-
     if (window->wasResized())
         recreateSwapChain();
 
     uint32_t imageIndex;
-    VkResult result;
-    result = vkAcquireNextImageKHR(
+    VkResult result = vkAcquireNextImageKHR(
             device->handler(), swapChain->getSwapChain(),
             UINT64_MAX/*timeout off*/, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
@@ -381,43 +265,18 @@ void App::drawFrame()
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    // Check if a previous frame is using this image (i.e. there is its fence to wait on)
-    if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-    {
-        vkWaitForFences(device->handler(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-    }
-    // Mark the image as now being in use by this frame
-    imagesInFlight[imageIndex] = inFlightFences[currentFrame];
-
     updateUniformBuffer(imageIndex);
 
-    //Submitting the command buffer
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    std::vector<VkFence> waitFences = { colorPass->getSync().fence };
+    std::vector<VkSemaphore> waitSemaphores = { imageAvailableSemaphores[currentFrame] };
+    CmdSync colorPassSync = colorPass->draw(imageIndex, waitSemaphores, waitFences);
 
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
-
-    vkResetFences(device->handler(), 1, &inFlightFences[currentFrame]);
-
-    result = vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]);
-    vk_check_err(result, "failed to submit draw command buffer!");
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.pWaitSemaphores = &colorPassSync.semaphore;
 
     VkSwapchainKHR swapChains[] = {swapChain->getSwapChain()};
     presentInfo.swapchainCount = 1;
@@ -436,6 +295,7 @@ void App::drawFrame()
 
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
+
 
 void App::updateUniformBuffer(uint32_t currentImage)
 {
@@ -505,13 +365,10 @@ void App::cleanUp()
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroySemaphore(device->handler(), renderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(device->handler(), imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(device->handler(), inFlightFences[i], nullptr);
     }
 
     cleanupSwapChain();
-    descriptorSetLayout.clear();
     vkDestroySampler(device->handler(), textureSampler, nullptr);
     device->deleteTexture(texture);
     device->deleteBuffer(indexBuffer);

@@ -15,6 +15,7 @@
 #include "vk/descriptors/descriptorSetLayout.h"
 #include "scene/mesh.h"
 #include "scene/meshReader.h"
+#include "render/colorPass.h"
 #include "glm_inc.h"
 #include "camera.h"
 #include "clock.h"
@@ -40,25 +41,16 @@ class App {
     Mouse *mouse;
     std::unique_ptr<Camera> mainCamera;
     std::unique_ptr<SwapChain>            swapChain;
-    std::unique_ptr<RenderPass>           renderPass;
-    std::unique_ptr<GraphicsPipeline>     graphicsPipeline;
-    CommandBufferArr commandBuffers;
+    std::unique_ptr<ColorPass> colorPass;
     Buffer vertexBuffer;
     Buffer indexBuffer;
     std::vector<Buffer> uniformBuffers;
     std::vector<Buffer> fragmentUniforms;
     std::vector<VkSemaphore> imageAvailableSemaphores;
-    std::vector<VkSemaphore> renderFinishedSemaphores;
-    std::vector<VkFence> inFlightFences;
-    std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
     Texture texture;
     VkSampler textureSampler;
     Texture depthTex;
-
-
-    DescriptorSetLayout descriptorSetLayout;
-    std::vector<VkDescriptorSet> descriptorSets;
 
     Clock global_clock;
 
@@ -68,15 +60,12 @@ class App {
 	void loadScene();
 
     void initVulkan();
-    void recordCmdBuffers();
-    void createDescriptorSetLayout();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
     void createTexture();
     void createTextureSampler();
     void createDepthResources();
     void createSyncObjects();
-    void createDescriptorSets();
     void mainLoop();
     void drawFrame();
 

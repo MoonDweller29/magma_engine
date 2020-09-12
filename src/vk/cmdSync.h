@@ -12,5 +12,6 @@ public:
     CmdSync(VkDevice device);
     void create(VkDevice device);
     CmdSync(CmdSync &other);
+    CmdSync(CmdSync &&other);
     ~CmdSync();
 };

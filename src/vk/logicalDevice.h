@@ -23,6 +23,7 @@ public:
 
     LogicalDevice(const PhysicalDevice &physicalDevice);
     VkDevice handler() const { return device; }
+    const VkPhysicalDevice &physDevice() const { return physicalDevice; }
     VkQueue getGraphicsQueue() const { return graphicsQueue; }
     VkQueue getPresentQueue() const { return presentQueue; }
     const VkCommandPool &getGraphicsCmdPool() const { return graphicsCmdPool; }

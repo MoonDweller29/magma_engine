@@ -34,6 +34,12 @@ CmdSync::CmdSync(CmdSync &other):
     device(VK_NULL_HANDLE), semaphore(other.semaphore), fence(other.fence)
 {}
 
+CmdSync::CmdSync(CmdSync &&other):
+    device(other.device), semaphore(other.semaphore), fence(other.fence)
+{
+    other.device = VK_NULL_HANDLE;
+}
+
 void CmdSync::clear()
 {
     if (device != VK_NULL_HANDLE)

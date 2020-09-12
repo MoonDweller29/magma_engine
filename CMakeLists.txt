@@ -82,6 +82,9 @@ add_executable(${EXE_NAME}
 	src/app/scene/meshReader.h
 	src/app/scene/meshReader.cpp
 
+	src/app/render/colorPass.h
+	src/app/render/colorPass.cpp
+
 	src/vk/vulkan_common.h
 	src/vk/vulkan_common.cpp
 	src/vk/vkInstanceHolder.h

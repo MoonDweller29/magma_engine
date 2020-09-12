@@ -28,6 +28,7 @@ public:
 
     VkSwapchainKHR getSwapChain() const { return swapChain; }
     VkFormat getImageFormat() const { return imageFormat; }
+    VkExtent2D getExtent() const { return extent; }
     size_t imgCount() const { return imageViews.size(); }
     std::vector<VkFramebuffer> getVkFrameBuffers() const;
     void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
