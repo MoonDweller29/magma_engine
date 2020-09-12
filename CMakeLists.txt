@@ -121,6 +121,8 @@ add_executable(${EXE_NAME}
 	src/vk/descriptors/descriptorPool.cpp
 	src/vk/descriptors/descriptorSetInfo.h
 	src/vk/descriptors/descriptorSetInfo.cpp
+	src/vk/cmdSync.h
+	src/vk/cmdSync.cpp
 )
 
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )
