@@ -23,6 +23,26 @@ void CommandBufferArr::allocate(VkDevice device, VkCommandPool commandPool, uint
     vk_check_err(result, "failed to allocate command buffers!");
 }
 
+VkCommandBuffer CommandBufferArr::beginCmdBuf(uint32_t i)
+{
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = 0; // Optional
+    beginInfo.pInheritanceInfo = nullptr; // Optional
+
+    //resets command buffer
+    VkResult result = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
+    vk_check_err(result, "failed to begin recording command buffer!");
+
+    return commandBuffers.at(i);
+}
+
+void CommandBufferArr::endCmdBuf(uint32_t i)
+{
+    VkResult result = vkEndCommandBuffer(commandBuffers[i]);
+    vk_check_err(result, "failed to record command buffer!");
+}
+
 void CommandBufferArr::record(
         VkBuffer indexBuffer,
         VkBuffer vertexBuffer,

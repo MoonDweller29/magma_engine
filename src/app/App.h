@@ -68,6 +68,7 @@ class App {
 	void loadScene();
 
     void initVulkan();
+    void recordCmdBuffers();
     void createDescriptorSetLayout();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);

@@ -264,15 +264,7 @@ void App::initVulkan()
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
     commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());
-    commandBuffers.record(
-            indexBuffer.buf,
-            vertexBuffer.buf,
-            indices.size(),
-            descriptorSets,
-            renderPass->getHandler(),
-            window->getResolution(),
-            swapChain->getVkFrameBuffers(),
-            *graphicsPipeline);
+    recordCmdBuffers();
     createSyncObjects();
 }
 
@@ -294,6 +286,46 @@ void App::cleanupSwapChain()
     swapChain->clearFrameBuffers();
     renderPass.reset();
     swapChain.reset();
+}
+
+void App::recordCmdBuffers()
+{
+    for (size_t i = 0; i < swapChain->imgCount(); ++i)
+    {
+        VkCommandBuffer cmdBuf = commandBuffers.beginCmdBuf(i);
+        {
+            VkRenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = renderPass->getHandler();
+            renderPassInfo.framebuffer = swapChain->getVkFrameBuffers()[i];
+
+            renderPassInfo.renderArea.offset = {0, 0};
+            renderPassInfo.renderArea.extent = window->getResolution();
+
+            std::array<VkClearValue, 2> clearValues{};
+            clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+            clearValues[1].depthStencil = {1.0f, 0};
+            renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+            renderPassInfo.pClearValues = clearValues.data();
+
+            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            {
+                vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->getHandler());
+
+                VkBuffer vertexBuffers[] = {vertexBuffer.buf};
+                VkDeviceSize offsets[] = {0};
+                vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+                vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer.buf, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindDescriptorSets(commandBuffers[i],
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        graphicsPipeline->getPipelineLayout(), 0, 1, &descriptorSets[i], 0, nullptr);
+
+                vkCmdDrawIndexed(commandBuffers[i], indices.size(), 1, 0, 0, 0);
+            }
+            vkCmdEndRenderPass(commandBuffers[i]);
+        }
+        commandBuffers.endCmdBuf(i);
+    }
 }
 
 void App::recreateSwapChain()
@@ -323,15 +355,7 @@ void App::recreateSwapChain()
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device->handler(), pipelineInfo, renderPass->getHandler());
 
     commandBuffers.allocate(device->handler(), device->getGraphicsCmdPool(), swapChain->imgCount());
-    commandBuffers.record(
-            indexBuffer.buf,
-            vertexBuffer.buf,
-            indices.size(),
-            descriptorSets,
-            renderPass->getHandler(),
-            window->getResolution(),
-            swapChain->getVkFrameBuffers(),
-            *graphicsPipeline);
+    recordCmdBuffers();
 }
 
 void App::drawFrame()

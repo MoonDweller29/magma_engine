@@ -11,6 +11,8 @@ public:
     CommandBufferArr() = default;
     CommandBufferArr(VkDevice device, VkCommandPool commandPool, uint32_t count);
     void allocate(VkDevice device, VkCommandPool commandPool, uint32_t count);
+    VkCommandBuffer beginCmdBuf(uint32_t i);
+    void endCmdBuf(uint32_t i);
     void record(
             VkBuffer indexBuffer,
             VkBuffer vertexBuffer,
