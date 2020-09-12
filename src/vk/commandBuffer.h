@@ -13,15 +13,15 @@ public:
     void allocate(VkDevice device, VkCommandPool commandPool, uint32_t count);
     VkCommandBuffer beginCmdBuf(uint32_t i);
     void endCmdBuf(uint32_t i);
-    void record(
-            VkBuffer indexBuffer,
-            VkBuffer vertexBuffer,
-            uint32_t vertexCount,
-            const std::vector<VkDescriptorSet> &descriptorSets,
-            VkRenderPass renderPass,
-            VkExtent2D extent,
-            const std::vector<VkFramebuffer> &frameBuffers,
-            const GraphicsPipeline &graphicsPipeline);
+//    void record(
+//            VkBuffer indexBuffer,
+//            VkBuffer vertexBuffer,
+//            uint32_t vertexCount,
+//            const std::vector<VkDescriptorSet> &descriptorSets,
+//            VkRenderPass renderPass,
+//            VkExtent2D extent,
+//            const std::vector<VkFramebuffer> &frameBuffers,
+//            const GraphicsPipeline &graphicsPipeline);
     ~CommandBufferArr();
 
     const uint32_t size() const { return commandBuffers.size(); }
