@@ -243,6 +243,7 @@ void App::recreateSwapChain()
             indexBuffer.buf, vertexBuffer.buf, indices.size(),
             swapChain->getVkFrameBuffers()
     );
+    mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
 }
 
 void App::drawFrame()
