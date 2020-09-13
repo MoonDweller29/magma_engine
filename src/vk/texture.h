@@ -26,9 +26,11 @@ public:
             VkImage img, VkDeviceMemory mem,
             VkDevice device, VkImageCreateInfo imageCreateInfo, VkImageAspectFlags aspectFlags);
 
-    const VkImage &img() const { return image; }
-    const VkDeviceMemory &mem() const { return imageMemory; }
-    const VkImageView &view() const { return imageView; }
+    const VkImage         &img()       const { return image; }
+    const VkDeviceMemory  &mem()       const { return imageMemory; }
+    const VkImageView     &view()      const { return imageView; }
+    const TextureInfo     &getInfo()   const { return info; }
+
 
     VkImageViewCreateInfo getDefaultViewInfo();
     void setView(VkImageViewCreateInfo viewInfo);
