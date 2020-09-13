@@ -37,8 +37,8 @@ void ColorPass::initDescriptorSetLayout()
     descriptorSetLayout.createLayout(device.handler());
 }
 
-void ColorPass::writeDescriptorSets(const std::vector<Buffer> &uniformBuffers, uint32_t ubo_size,
-                                    const std::vector<Buffer> &fragmentUniforms, uint32_t fu_size,
+void ColorPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size,
+                                    const Buffer &fragmentUniform, uint32_t fu_size,
                                     VkImageView tex_view, VkSampler sampler)
 {
     uint32_t descriptorSetCount = swapChain.imgCount();
@@ -46,9 +46,9 @@ void ColorPass::writeDescriptorSets(const std::vector<Buffer> &uniformBuffers, u
     for (uint32_t i = 0; i < descriptorSetCount; ++i)
     {
         descriptorSetLayout.beginSet(i);
-        descriptorSetLayout.bindUniformBuffer(0, uniformBuffers[i].buf, 0, ubo_size);
+        descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.buf, 0, ubo_size);
         descriptorSetLayout.bindCombinedImageSampler(1, tex_view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        descriptorSetLayout.bindUniformBuffer(2, fragmentUniforms[i].buf, 0, fu_size);
+        descriptorSetLayout.bindUniformBuffer(2, fragmentUniform.buf, 0, fu_size);
     }
     descriptorSets = descriptorSetLayout.recordAndReturnSets();
 }

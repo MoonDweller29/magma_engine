@@ -77,17 +77,9 @@ void App::createUniformBuffers()
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     uint32_t imgCount = swapChain->imgCount();
 
-    uniformBuffers.resize(imgCount);
-    for (size_t i = 0; i < imgCount; i++)
-    {
-        uniformBuffers[i] = device->createUniformBuffer(bufferSize);
-    }
+    uniformBuffer = device->createUniformBuffer(bufferSize);
 
-    fragmentUniforms.resize(imgCount);
-    for (size_t i = 0; i < imgCount; i++)
-    {
-        fragmentUniforms[i] = device->createUniformBuffer(bufferSize);
-    }
+    fragmentUniform = device->createUniformBuffer(bufferSize);
 }
 
 void App::loadScene()
@@ -190,8 +182,8 @@ void App::initVulkan()
     createTextureSampler();
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
-    colorPass->writeDescriptorSets(uniformBuffers, sizeof(UniformBufferObject),
-                                   fragmentUniforms, sizeof(FragmentUniform),
+    colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
+                                   fragmentUniform, sizeof(FragmentUniform),
                                    texture.view(), textureSampler);
     swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.view());
     colorPass->recordCmdBuffers(
@@ -206,11 +198,8 @@ void App::initVulkan()
 
 void App::cleanupSwapChain()
 {
-    for (size_t i = 0; i < uniformBuffers.size(); i++)
-    {
-        device->deleteBuffer(uniformBuffers[i]);
-        device->deleteBuffer(fragmentUniforms[i]);
-    }
+    device->deleteBuffer(uniformBuffer);
+    device->deleteBuffer(fragmentUniform);
 
     device->deleteTexture(depthTex);
 
@@ -235,8 +224,8 @@ void App::recreateSwapChain()
     createDepthResources();
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
-    colorPass->writeDescriptorSets(uniformBuffers, sizeof(UniformBufferObject),
-                                   fragmentUniforms, sizeof(FragmentUniform),
+    colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
+                                   fragmentUniform, sizeof(FragmentUniform),
                                    texture.view(), textureSampler);
     swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.view());
     colorPass->recordCmdBuffers(
@@ -309,16 +298,16 @@ void App::updateUniformBuffer(uint32_t currentImage)
     ubo.proj = mainCamera->getProjMat();
 
     void* data_p;
-    vkMapMemory(device->handler(), uniformBuffers[currentImage].mem, 0, sizeof(ubo), 0, &data_p);
+    vkMapMemory(device->handler(), uniformBuffer.mem, 0, sizeof(ubo), 0, &data_p);
     memcpy(data_p, &ubo, sizeof(ubo));
-    vkUnmapMemory(device->handler(), uniformBuffers[currentImage].mem);
+    vkUnmapMemory(device->handler(), uniformBuffer.mem);
 
     FragmentUniform fu{};
     fu.cameraPos = mainCamera->getPos();
     fu.lightPos = glm::vec3(sin(time), 0.4f, cos(time));
-    vkMapMemory(device->handler(), fragmentUniforms[currentImage].mem, 0, sizeof(ubo), 0, &data_p);
+    vkMapMemory(device->handler(), fragmentUniform.mem, 0, sizeof(ubo), 0, &data_p);
     memcpy(data_p, &fu, sizeof(ubo));
-    vkUnmapMemory(device->handler(), fragmentUniforms[currentImage].mem);
+    vkUnmapMemory(device->handler(), fragmentUniform.mem);
 }
 
 void App::mainLoop()

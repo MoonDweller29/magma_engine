@@ -28,8 +28,8 @@ class ColorPass
 public:
     ColorPass(LogicalDevice &device, SwapChain &swapChain);
     void writeDescriptorSets(
-            const std::vector<Buffer> &uniformBuffers, uint32_t ubo_size,
-            const std::vector<Buffer> &fragmentUniforms, uint32_t fu_size,
+            const Buffer &uniformBuffer, uint32_t ubo_size,
+            const Buffer &fragmentUniform, uint32_t fu_size,
             VkImageView tex_view, VkSampler sampler);
     VkRenderPass getRenderPass() const { return renderPass; }
     void recordCmdBuffers(

@@ -39,8 +39,8 @@ class App {
     std::unique_ptr<ColorPass> colorPass;
     Buffer vertexBuffer;
     Buffer indexBuffer;
-    std::vector<Buffer> uniformBuffers;
-    std::vector<Buffer> fragmentUniforms;
+    Buffer uniformBuffer;
+    Buffer fragmentUniform;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     size_t currentFrame = 0;
     Texture texture;
