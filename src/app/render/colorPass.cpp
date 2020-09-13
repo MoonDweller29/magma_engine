@@ -1,5 +1,6 @@
 #include "colorPass.h"
 
+#include "vk/shaderModule.h"
 #include "vk/vulkan_common.h"
 
 ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
@@ -8,12 +9,21 @@ ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
 {
     initDescriptorSetLayout();
     createRenderPass();
+
     PipelineInfo pipelineInfo(extent);
     auto bindingDescription = Vertex::getBindingDescription();
     auto attributeDescriptions = Vertex::getAttributeDescriptions();
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     pipelineInfo.setLayout(descriptorSetLayout.getLayout());
-    graphicsPipeline = std::make_unique<GraphicsPipeline>(device.handler(), pipelineInfo, renderPass);
+
+    Shader vertShader(device.handler(), "shaders/shader.vert.spv", Shader::VERT_SH);
+    Shader fragShader(device.handler(), "shaders/shader.frag.spv", Shader::FRAG_SH);
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
+            vertShader.getStageInfo(),
+            fragShader.getStageInfo()
+    };
+    graphicsPipeline = std::make_unique<GraphicsPipeline>(device.handler(), shaderStages, pipelineInfo, renderPass);
+
     commandBuffers.allocate(device.handler(), device.getGraphicsCmdPool(), swapChain.imgCount());
 
     renderFinished.create(device.handler());

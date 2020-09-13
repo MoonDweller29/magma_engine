@@ -146,24 +146,20 @@ void PipelineInfo::setLayout(const VkDescriptorSetLayout &descriptorSetLayout)
 }
 
 
-GraphicsPipeline::GraphicsPipeline(VkDevice device, const PipelineInfo &pipelineSettings, VkRenderPass renderPass)
+GraphicsPipeline::GraphicsPipeline(
+        VkDevice device,
+        const std::vector<VkPipelineShaderStageCreateInfo> &shaderStages,
+        const PipelineInfo &pipelineSettings, VkRenderPass renderPass
+):
+    device(device)
 {
-    this->device = device;
-    Shader vertShader(device, "shaders/shader.vert.spv", Shader::VERT_SH);
-    Shader fragShader(device, "shaders/shader.frag.spv", Shader::FRAG_SH);
-
-    VkPipelineShaderStageCreateInfo shaderStages[] = {
-            vertShader.getStageInfo(),
-            fragShader.getStageInfo()
-    };
-
     VkResult result = vkCreatePipelineLayout(device, &pipelineSettings.getPipelineLayoutInfo(), nullptr, &pipelineLayout);
     vk_check_err(result, "failed to create pipeline layout!");
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+    pipelineInfo.pStages = shaderStages.data();
 
     pipelineInfo.pVertexInputState = &pipelineSettings.getVertexInputInfo();
     pipelineInfo.pInputAssemblyState = &pipelineSettings.getInputAssembly();

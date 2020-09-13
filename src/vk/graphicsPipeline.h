@@ -64,7 +64,10 @@ class GraphicsPipeline
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 public:
-    GraphicsPipeline(VkDevice device, const PipelineInfo &pipelineSettings, VkRenderPass renderPass);
+    GraphicsPipeline(
+            VkDevice device,
+            const std::vector<VkPipelineShaderStageCreateInfo> &shaderStages,
+            const PipelineInfo &pipelineSettings, VkRenderPass renderPass);
     ~GraphicsPipeline();
 
     VkPipeline getHandler() const { return graphicsPipeline; }
