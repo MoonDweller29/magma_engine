@@ -84,6 +84,8 @@ add_executable(${EXE_NAME}
 
 	src/app/render/colorPass.h
 	src/app/render/colorPass.cpp
+	src/app/render/depthPass.h
+	src/app/render/depthPass.cpp
 
 	src/vk/vulkan_common.h
 	src/vk/vulkan_common.cpp

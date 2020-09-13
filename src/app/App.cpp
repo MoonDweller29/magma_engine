@@ -181,6 +181,10 @@ void App::initVulkan()
     createDepthResources();
     createTextureSampler();
 
+    depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT});
+    depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
+    depthPass->recordCmdBuffers(indexBuffer.buf, vertexBuffer.buf, indices.size());
+
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                    fragmentUniform, sizeof(FragmentUniform),
@@ -205,6 +209,7 @@ void App::cleanupSwapChain()
 
     swapChain->clearFrameBuffers();
     colorPass.reset();
+    depthPass.reset();
     swapChain.reset();
 }
 
@@ -222,6 +227,10 @@ void App::recreateSwapChain()
     swapChain = std::make_unique<SwapChain>(*device, *physicalDevice, *window);
     createUniformBuffers();
     createDepthResources();
+
+    depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT});
+    depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
+    depthPass->recordCmdBuffers(indexBuffer.buf, vertexBuffer.buf, indices.size());
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
@@ -258,7 +267,11 @@ void App::drawFrame()
     updateUniformBuffer(imageIndex);
 
     std::vector<VkFence> waitFences = { colorPass->getSync().fence };
-    std::vector<VkSemaphore> waitSemaphores = { imageAvailableSemaphores[currentFrame] };
+    std::vector<VkSemaphore> waitSemaphores;
+    CmdSync depthPassSync = depthPass->draw(waitSemaphores, waitFences);
+    waitFences[0] = depthPassSync.fence;
+    waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
+    waitSemaphores.push_back(depthPassSync.semaphore);
     CmdSync colorPassSync = colorPass->draw(imageIndex, waitSemaphores, waitFences);
 
 

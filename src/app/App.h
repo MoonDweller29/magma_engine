@@ -10,6 +10,7 @@
 #include "vk/texture.h"
 #include "scene/mesh.h"
 #include "scene/meshReader.h"
+#include "render/depthPass.h"
 #include "render/colorPass.h"
 #include "glm_inc.h"
 #include "camera.h"
@@ -36,6 +37,7 @@ class App {
     Mouse *mouse;
     std::unique_ptr<Camera> mainCamera;
     std::unique_ptr<SwapChain>            swapChain;
+    std::unique_ptr<DepthPass> depthPass;
     std::unique_ptr<ColorPass> colorPass;
     Buffer vertexBuffer;
     Buffer indexBuffer;

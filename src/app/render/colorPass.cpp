@@ -15,6 +15,7 @@ ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     auto attributeDescriptions = Vertex::getAttributeDescriptions();
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     pipelineInfo.setLayout(descriptorSetLayout.getLayout());
+    pipelineInfo.setDepthCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
 
     Shader vertShader(device.handler(), "shaders/shader.vert.spv", Shader::VERT_SH);
     Shader fragShader(device.handler(), "shaders/shader.frag.spv", Shader::FRAG_SH);
@@ -117,11 +118,11 @@ void ColorPass::createRenderPass()
     VkAttachmentDescription depthAttachment{};
     depthAttachment.format = findDepthFormat(device.physDevice());
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference depthAttachmentRef{};
@@ -172,13 +173,18 @@ CmdSync ColorPass::draw(
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    if (waitSemaphores[0] != renderFinished.semaphore)
+    std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    if (waitSemaphores.size() == 0)
+    {
+        submitInfo.waitSemaphoreCount = 0;
+        submitInfo.pWaitSemaphores = nullptr;
+    }
+    else if (waitSemaphores[0] != renderFinished.semaphore)
     {
         submitInfo.waitSemaphoreCount = waitSemaphores.size();
         submitInfo.pWaitSemaphores = waitSemaphores.data();
     }
-    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.pWaitDstStageMask = waitStages.data();
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[i];

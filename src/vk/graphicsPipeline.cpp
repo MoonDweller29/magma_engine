@@ -145,6 +145,11 @@ void PipelineInfo::setLayout(const VkDescriptorSetLayout &descriptorSetLayout)
     pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 }
 
+void PipelineInfo::setDepthCompareOp(VkCompareOp op)
+{
+    depthStencil.depthCompareOp = op;
+}
+
 
 GraphicsPipeline::GraphicsPipeline(
         VkDevice device,
