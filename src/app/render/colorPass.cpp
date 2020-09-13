@@ -35,12 +35,16 @@ void ColorPass::initDescriptorSetLayout()
     descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
     descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
     descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
+    descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
+    descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
     descriptorSetLayout.createLayout(device.handler());
 }
 
 void ColorPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size,
                                     const Buffer &fragmentUniform, uint32_t fu_size,
-                                    VkImageView tex_view, VkSampler sampler)
+                                    VkImageView tex_view, VkSampler sampler,
+                                    const Buffer &lightSpaceUniform, uint32_t lu_size,
+                                    VkImageView shadow_map_view, VkSampler shadow_sampler)
 {
     uint32_t descriptorSetCount = swapChain.imgCount();
     descriptorSetLayout.allocateSets(descriptorSetCount);
@@ -50,6 +54,8 @@ void ColorPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_si
         descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.buf, 0, ubo_size);
         descriptorSetLayout.bindCombinedImageSampler(1, tex_view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         descriptorSetLayout.bindUniformBuffer(2, fragmentUniform.buf, 0, fu_size);
+        descriptorSetLayout.bindUniformBuffer(3, lightSpaceUniform.buf, 0, lu_size);
+        descriptorSetLayout.bindCombinedImageSampler(4, shadow_map_view, shadow_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
     descriptorSets = descriptorSetLayout.recordAndReturnSets();
 }
@@ -173,7 +179,7 @@ CmdSync ColorPass::draw(
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
     if (waitSemaphores.size() == 0)
     {
         submitInfo.waitSemaphoreCount = 0;

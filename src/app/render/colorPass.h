@@ -30,7 +30,9 @@ public:
     void writeDescriptorSets(
             const Buffer &uniformBuffer, uint32_t ubo_size,
             const Buffer &fragmentUniform, uint32_t fu_size,
-            VkImageView tex_view, VkSampler sampler);
+            VkImageView tex_view, VkSampler sampler,
+            const Buffer &lightSpaceUniform, uint32_t lu_size,
+            VkImageView shadow_map_view, VkSampler shadow_sampler);
     VkRenderPass getRenderPass() const { return renderPass; }
     void recordCmdBuffers(
             VkBuffer indexBuffer,

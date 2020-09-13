@@ -54,6 +54,7 @@ public:
     void setLayouts(const std::vector<VkDescriptorSetLayout> &descriptorSetLayouts);
     void setLayout(const VkDescriptorSetLayout &descriptorSetLayout);
     void setDepthCompareOp(VkCompareOp op);
+    void setDepthBias(VkBool32 depthBiasEnable, float depthBiasConstantFactor);
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////////////////

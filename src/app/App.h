@@ -10,6 +10,7 @@
 #include "vk/texture.h"
 #include "scene/mesh.h"
 #include "scene/meshReader.h"
+#include "scene/directLight.h"
 #include "render/depthPass.h"
 #include "render/colorPass.h"
 #include "glm_inc.h"
@@ -36,18 +37,24 @@ class App {
     Keyboard *keyBoard;
     Mouse *mouse;
     std::unique_ptr<Camera> mainCamera;
+    std::unique_ptr<DirectLight> light;
     std::unique_ptr<SwapChain>            swapChain;
     std::unique_ptr<DepthPass> depthPass;
     std::unique_ptr<ColorPass> colorPass;
+    std::unique_ptr<DepthPass> renderShadow;
     Buffer vertexBuffer;
     Buffer indexBuffer;
     Buffer uniformBuffer;
+    Buffer shadowUniform;
     Buffer fragmentUniform;
+    Buffer lightSpaceUniform;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     size_t currentFrame = 0;
     Texture texture;
     VkSampler textureSampler;
+    VkSampler shadowMapSampler;
     Texture depthTex;
+    Texture shadowMap;
 
     Clock global_clock;
 
@@ -61,6 +68,10 @@ class App {
     void updateUniformBuffer(uint32_t currentImage);
     void createTexture();
     void createTextureSampler();
+    void createShadowMapSampler();
+    void createShadowMapTex();
+    void createShadowMapResources();
+    void updateShadowUniform();
     void createDepthResources();
     void createSyncObjects();
     void mainLoop();

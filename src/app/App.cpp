@@ -35,6 +35,9 @@ struct FragmentUniform {
     alignas(16) glm::vec3 lightPos;
 };
 
+struct LightSpaceUniform {
+    glm::mat4 lightSpaceMat;
+};
 
 bool App::isClosed()
 {
@@ -87,6 +90,10 @@ void App::loadScene()
     scene = meshReader.load_scene("../models/viking_room.obj");
     vertices = scene[0].getVertices();
     indices = scene[0].getIndices();
+
+    light = std::make_unique<DirectLight>(
+            glm::vec3(1,1,0), glm::vec3(0,0,0) - glm::vec3(1,1,0),
+            0.1f, 20.f);
 }
 
 
@@ -153,6 +160,57 @@ void App::createTextureSampler()
     vk_check_err(result, "failed to create texture sampler!");
 }
 
+void App::createShadowMapSampler()
+{
+    VkSamplerCreateInfo samplerInfo{};
+    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerInfo.magFilter = VK_FILTER_NEAREST;
+    samplerInfo.minFilter = VK_FILTER_NEAREST;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.anisotropyEnable = VK_TRUE;
+    samplerInfo.maxAnisotropy = 16.0f;
+    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+    samplerInfo.compareEnable = VK_FALSE;
+    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.minLod = 0.0f;
+    samplerInfo.maxLod = 0.0f;
+
+    VkResult result = vkCreateSampler(device->handler(), &samplerInfo, nullptr, &shadowMapSampler);
+    vk_check_err(result, "failed to create texture sampler!");
+}
+
+
+void App::createShadowMapTex()
+{
+    shadowMap = device->createTexture2D(
+            2048, 2048,
+            VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_IMAGE_ASPECT_DEPTH_BIT
+    );
+    createShadowMapSampler();
+}
+
+void App::createShadowMapResources()
+{
+    createShadowMapTex();
+    shadowUniform = device->createUniformBuffer(sizeof(UniformBufferObject));
+    lightSpaceUniform = device->createUniformBuffer(sizeof(LightSpaceUniform));
+    renderShadow = std::make_unique<DepthPass>(*device, shadowMap, VkExtent2D{2048, 2048},
+                                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    renderShadow->writeDescriptorSets(shadowUniform, sizeof(UniformBufferObject));
+    renderShadow->recordCmdBuffers(indexBuffer.buf, vertexBuffer.buf, indices.size());
+}
+
+
 void App::createDepthResources()
 {
     VkFormat depthFormat = findDepthFormat(physicalDevice->device());
@@ -180,15 +238,19 @@ void App::initVulkan()
     createTexture();
     createDepthResources();
     createTextureSampler();
+    createShadowMapResources();
 
-    depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT});
+    depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
+                                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
     depthPass->recordCmdBuffers(indexBuffer.buf, vertexBuffer.buf, indices.size());
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                    fragmentUniform, sizeof(FragmentUniform),
-                                   texture.view(), textureSampler);
+                                   texture.view(), textureSampler,
+                                   lightSpaceUniform, sizeof(LightSpaceUniform),
+                                   shadowMap.view(), shadowMapSampler);
     swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.view());
     colorPass->recordCmdBuffers(
             indexBuffer.buf,
@@ -228,14 +290,17 @@ void App::recreateSwapChain()
     createUniformBuffers();
     createDepthResources();
 
-    depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT});
+    depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
+                                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
     depthPass->recordCmdBuffers(indexBuffer.buf, vertexBuffer.buf, indices.size());
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                    fragmentUniform, sizeof(FragmentUniform),
-                                   texture.view(), textureSampler);
+                                   texture.view(), textureSampler,
+                                   lightSpaceUniform, sizeof(LightSpaceUniform),
+                                   shadowMap.view(), shadowMapSampler);
     swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.view());
     colorPass->recordCmdBuffers(
             indexBuffer.buf, vertexBuffer.buf, indices.size(),
@@ -246,6 +311,8 @@ void App::recreateSwapChain()
 
 void App::drawFrame()
 {
+    vkWaitForFences(device->handler(), 1, &colorPass->getSync().fence, VK_TRUE, UINT64_MAX);
+
     if (window->wasResized())
         recreateSwapChain();
 
@@ -265,13 +332,14 @@ void App::drawFrame()
     }
 
     updateUniformBuffer(imageIndex);
+    updateShadowUniform();
 
     std::vector<VkFence> waitFences = { colorPass->getSync().fence };
     std::vector<VkSemaphore> waitSemaphores;
     CmdSync depthPassSync = depthPass->draw(waitSemaphores, waitFences);
-    waitFences[0] = depthPassSync.fence;
-    waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
-    waitSemaphores.push_back(depthPassSync.semaphore);
+    CmdSync shadowPassSync = renderShadow->draw(waitSemaphores, waitFences);
+    waitFences = { depthPassSync.fence, shadowPassSync.fence};
+    waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.semaphore, shadowPassSync.semaphore};
     CmdSync colorPassSync = colorPass->draw(imageIndex, waitSemaphores, waitFences);
 
 
@@ -303,12 +371,21 @@ void App::drawFrame()
 void App::updateUniformBuffer(uint32_t currentImage)
 {
     float time = global_clock.getTime();
+    static bool light_view = false;
+
+    if (keyBoard->wasPressed(GLFW_KEY_2))
+        light_view = !light_view;
 
     UniformBufferObject ubo{};
 //    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.model = glm::mat4x4( 1.0f );
     ubo.view = mainCamera->getViewMat();
     ubo.proj = mainCamera->getProjMat();
+    if (light_view)
+    {
+        ubo.view = light->getView();
+        ubo.proj = light->getProj();
+    }
 
     void* data_p;
     vkMapMemory(device->handler(), uniformBuffer.mem, 0, sizeof(ubo), 0, &data_p);
@@ -317,10 +394,29 @@ void App::updateUniformBuffer(uint32_t currentImage)
 
     FragmentUniform fu{};
     fu.cameraPos = mainCamera->getPos();
-    fu.lightPos = glm::vec3(sin(time), 0.4f, cos(time));
+    fu.lightPos = light->getPos();
     vkMapMemory(device->handler(), fragmentUniform.mem, 0, sizeof(ubo), 0, &data_p);
-    memcpy(data_p, &fu, sizeof(ubo));
+    memcpy(data_p, &fu, sizeof(fu));
     vkUnmapMemory(device->handler(), fragmentUniform.mem);
+}
+
+void App::updateShadowUniform()
+{
+    UniformBufferObject ubo{};
+    ubo.model = glm::mat4x4( 1.0f );
+    ubo.view = light->getView();
+    ubo.proj = light->getProj();
+
+    void* data_p;
+    vkMapMemory(device->handler(), shadowUniform.mem, 0, sizeof(ubo), 0, &data_p);
+    memcpy(data_p, &ubo, sizeof(ubo));
+    vkUnmapMemory(device->handler(), shadowUniform.mem);
+
+    LightSpaceUniform lu{};
+    lu.lightSpaceMat = ubo.proj * ubo.view;
+    vkMapMemory(device->handler(), lightSpaceUniform.mem, 0, sizeof(ubo), 0, &data_p);
+    memcpy(data_p, &lu, sizeof(lu));
+    vkUnmapMemory(device->handler(), lightSpaceUniform.mem);
 }
 
 void App::mainLoop()
@@ -336,7 +432,7 @@ void App::mainLoop()
 
         if(frames_count % 100 == 0)
         {
-//            std::cout << 1 / frameTime << std::endl;
+            std::cout << 1 / frameTime << std::endl;
         }
         frames_count++;
 
@@ -344,6 +440,8 @@ void App::mainLoop()
         glfwPollEvents();
         mouse->update();
         mainCamera->update(*keyBoard, *mouse, frameTime);
+//        light->lookAt(glm::vec3(0,0,0), glm::vec3(sin(time), 0.4f, cos(time)));
+        light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
 
         if (keyBoard->wasPressed(GLFW_KEY_1))
         {
@@ -372,7 +470,12 @@ void App::cleanUp()
     }
 
     cleanupSwapChain();
+    device->deleteBuffer(shadowUniform);
+    device->deleteBuffer(lightSpaceUniform);
+    renderShadow.reset();
     vkDestroySampler(device->handler(), textureSampler, nullptr);
+    vkDestroySampler(device->handler(), shadowMapSampler, nullptr);
+    device->deleteTexture(shadowMap);
     device->deleteTexture(texture);
     device->deleteBuffer(indexBuffer);
     device->deleteBuffer(vertexBuffer);

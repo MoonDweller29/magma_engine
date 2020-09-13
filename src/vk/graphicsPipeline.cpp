@@ -150,6 +150,11 @@ void PipelineInfo::setDepthCompareOp(VkCompareOp op)
     depthStencil.depthCompareOp = op;
 }
 
+void PipelineInfo::setDepthBias(VkBool32 depthBiasEnable, float depthBiasConstantFactor)
+{
+    rasterizer.depthBiasEnable = depthBiasEnable;
+    rasterizer.depthBiasConstantFactor = depthBiasConstantFactor;
+}
 
 GraphicsPipeline::GraphicsPipeline(
         VkDevice device,

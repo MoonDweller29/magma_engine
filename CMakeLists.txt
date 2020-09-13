@@ -81,6 +81,8 @@ add_executable(${EXE_NAME}
 	src/app/scene/mesh.cpp
 	src/app/scene/meshReader.h
 	src/app/scene/meshReader.cpp
+	src/app/scene/directLight.h
+	src/app/scene/directLight.cpp
 
 	src/app/render/colorPass.h
 	src/app/render/colorPass.cpp
@@ -147,6 +149,7 @@ set(SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/shaders)
 set(SHADERS
 	shader.vert
 	shader.frag
+	depth.vert
 )
 
 set(COMPILED_SHADERS)

@@ -3,8 +3,8 @@
 #include "vk/shaderModule.h"
 #include "vk/vulkan_common.h"
 
-DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent):
-    device(device), depthTex(depthTex), extent(extent)
+DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout):
+    device(device), depthTex(depthTex), extent(extent), depthFinalLayout(depthFinalLayout)
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -15,7 +15,7 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     pipelineInfo.setLayout(descriptorSetLayout.getLayout());
 
-    Shader vertShader(device.handler(), "shaders/shader.vert.spv", Shader::VERT_SH);
+    Shader vertShader(device.handler(), "shaders/depth.vert.spv", Shader::VERT_SH);
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShader.getStageInfo() };
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device.handler(), shaderStages, pipelineInfo, renderPass);
 
@@ -44,14 +44,14 @@ void DepthPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_si
 void DepthPass::createRenderPass()
 {
     VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = findDepthFormat(device.physDevice());
+    depthAttachment.format = depthTex.getInfo().imageInfo.format;
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depthAttachment.finalLayout = depthFinalLayout;
 
     VkAttachmentReference depthAttachmentRef{};
     depthAttachmentRef.attachment = 0;

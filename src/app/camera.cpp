@@ -50,6 +50,8 @@ void Camera::update(Keyboard& keyboard, Mouse& mouse, float elapsed_time)
     float curr_speed = speed;
     if (keyboard.isPressed(GLFW_KEY_LEFT_SHIFT))
         curr_speed = speed*4;
+    if (keyboard.isPressed(GLFW_KEY_LEFT_CONTROL))
+        curr_speed = speed/20;
 
     if (keyboard.isPressed(GLFW_KEY_W))
     {
