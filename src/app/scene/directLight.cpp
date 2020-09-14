@@ -14,7 +14,7 @@ DirectLight::DirectLight(
 //            zNear, zFar
 //    );
     proj = glm::ortho(
-            -4.0f, 4.0f, -4.0f, 4.0f,
+            -2.0f, 2.0f, -2.0f, 2.0f,
             zNear, zFar
     );
     proj[1][1] *= -1;
