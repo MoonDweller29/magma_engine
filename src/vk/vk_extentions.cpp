@@ -1,7 +1,7 @@
-#include "vk_extentions.h"
+#include "vk/vk_extentions.h"
 #include <vector>
 #include <iostream>
-#include "validationLayers.h"
+#include "vk/validationLayers.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>

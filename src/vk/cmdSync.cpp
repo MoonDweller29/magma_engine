@@ -1,5 +1,5 @@
-#include "cmdSync.h"
-#include "vulkan_common.h"
+#include "vk/cmdSync.h"
+#include "vk/vulkan_common.h"
 
 CmdSync::CmdSync():
     device(VK_NULL_HANDLE), semaphore(VK_NULL_HANDLE), fence(VK_NULL_HANDLE)

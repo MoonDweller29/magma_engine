@@ -1,5 +1,5 @@
-#include "commandPool.h"
-#include "vulkan_common.h"
+#include "vk/commandPool.h"
+#include "vk/vulkan_common.h"
 
 VkCommandPool CommandPool::createPool(VkDevice device, uint32_t queueFamilyIndex)
 {

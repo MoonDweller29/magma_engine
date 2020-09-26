@@ -2,11 +2,11 @@
 #include <iostream>
 #include <sstream>
 
-#include "App.h"
+#include "app/App.h"
 #include "vk/vulkan_common.h"
 #include "vk/window.h"
 #include "glm_inc.h"
-#include "image.h"
+#include "app/image.h"
 
 //const std::vector<Vertex> vertices = {
 //        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},

@@ -1,6 +1,6 @@
-#include "window.h"
+#include "vk/window.h"
 
-#include "vulkan_common.h"
+#include "vk/vulkan_common.h"
 #include <iostream>
 
 void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)

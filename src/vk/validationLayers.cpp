@@ -1,6 +1,6 @@
-#include "validationLayers.h"
+#include "vk/validationLayers.h"
 
-#include "vulkan_common.h"
+#include "vk/vulkan_common.h"
 #include <vulkan/vulkan.h>
 #include <cstring>
 #include <iostream>

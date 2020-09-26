@@ -1,5 +1,5 @@
-#include "swapChain.h"
-#include "vulkan_common.h"
+#include "vk/swapChain.h"
+#include "vk/vulkan_common.h"
 #include <cstdint> // Necessary for UINT32_MAX
 #include <algorithm>//for clamp
 #include <iostream>

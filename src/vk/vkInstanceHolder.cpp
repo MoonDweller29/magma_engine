@@ -1,8 +1,8 @@
-#include "vkInstanceHolder.h"
+#include "vk/vkInstanceHolder.h"
 
-#include "vulkan_common.h"
-#include "vk_extentions.h"
-#include "validationLayers.h"
+#include "vk/vulkan_common.h"
+#include "vk/vk_extentions.h"
+#include "vk/validationLayers.h"
 
 VkInstanceHolder::VkInstanceHolder()
 {

@@ -8,7 +8,7 @@
 #include "vk/swapChain.h"
 #include "vk/buffer.h"
 #include "vk/texture.h"
-#include "scene/mesh.h"
+#include "app/scene/mesh.h"
 #include "scene/meshReader.h"
 #include "scene/directLight.h"
 #include "render/depthPass.h"

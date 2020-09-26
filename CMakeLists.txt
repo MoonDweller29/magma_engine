@@ -16,14 +16,9 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 # //////////////////////////////////////////////////////
 # include Vulkan
 # //////////////////////////////////////////////////////
-find_package(Vulkan)
-if (NOT Vulkan_FOUND)
-	message(SEND_ERROR "FAILED to find Vulkan")
-	return()
-else()
-	include_directories(${Vulkan_INCLUDE_DIR})
-	set(ALL_LIBS  ${Vulkan_LIBRARY} )
-endif()
+find_package(Vulkan REQUIRED)
+include_directories(${Vulkan_INCLUDE_DIR})
+set(ALL_LIBS ${Vulkan_LIBRARY} )
 
 message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 # //////////////////////////////////////////////////////
@@ -60,78 +55,78 @@ include_directories(external_libs/assimp/include)
 # //////////////////////////////////////////////////////
 
 
-add_executable(${EXE_NAME} 
-	src/main.cpp
-	src/glm_inc.h
+add_executable(${EXE_NAME}
+		src/main.cpp
+		include/glm_inc.h
+		include/app/App.h
+		src/app/App.cpp
+		include/app/keyboard.h
+		src/app/keyboard.cpp
+		include/app/camera.h
+		src/app/camera.cpp
+		include/app/mouse.h
+		src/app/mouse.cpp
+		include/app/clock.h
+		src/app/clock.cpp
+		include/app/image.h
+		src/app/image.cpp
 
-	src/app/App.h
-	src/app/App.cpp
-	src/app/keyboard.h
-	src/app/keyboard.cpp
-	src/app/camera.h
-	src/app/camera.cpp
-	src/app/mouse.h
-	src/app/mouse.cpp
-	src/app/clock.h
-	src/app/clock.cpp
-	src/app/image.h
-	src/app/image.cpp
+		include/app/scene/mesh.h
+		src/app/scene/mesh.cpp
+		include/app/scene/meshReader.h
+		src/app/scene/meshReader.cpp
+		include/app/scene/directLight.h
+		src/app/scene/directLight.cpp
 
-	src/app/scene/mesh.h
-	src/app/scene/mesh.cpp
-	src/app/scene/meshReader.h
-	src/app/scene/meshReader.cpp
-	src/app/scene/directLight.h
-	src/app/scene/directLight.cpp
+		include/app/render/colorPass.h
+		src/app/render/colorPass.cpp
+		include/app/render/depthPass.h
+		src/app/render/depthPass.cpp
 
-	src/app/render/colorPass.h
-	src/app/render/colorPass.cpp
-	src/app/render/depthPass.h
-	src/app/render/depthPass.cpp
-
-	src/vk/vulkan_common.h
-	src/vk/vulkan_common.cpp
-	src/vk/vkInstanceHolder.h
-	src/vk/vkInstanceHolder.cpp
-	src/vk/vk_extentions.h
-	src/vk/vk_extentions.cpp
-	src/vk/validationLayers.h
-	src/vk/validationLayers.cpp
-	src/vk/physicalDevice.h
-	src/vk/physicalDevice.cpp
-	src/vk/logicalDevice.h
-	src/vk/logicalDevice.cpp
-	src/vk/logicalDevice.hpp
-	src/vk/window.h
-	src/vk/window.cpp
-	src/vk/swapChain.h
-	src/vk/swapChain.cpp
-	src/vk/graphicsPipeline.h
-	src/vk/graphicsPipeline.cpp
-	src/vk/shaderModule.h
-	src/vk/shaderModule.cpp
-	src/vk/renderPass.h
-	src/vk/renderPass.cpp
-	src/vk/frameBuffer.h
-	src/vk/frameBuffer.cpp
-	src/vk/commandPool.h
-	src/vk/commandPool.cpp
-	src/vk/commandBuffer.h
-	src/vk/commandBuffer.cpp
-	src/vk/buffer.h
-	src/vk/buffer.cpp
-	src/vk/texture.h
-	src/vk/texture.cpp
-	src/vk/descriptors/descriptorSetLayout.h
-	src/vk/descriptors/descriptorSetLayout.cpp
-	src/vk/descriptors/descriptorPool.h
-	src/vk/descriptors/descriptorPool.cpp
-	src/vk/descriptors/descriptorSetInfo.h
-	src/vk/descriptors/descriptorSetInfo.cpp
-	src/vk/cmdSync.h
-	src/vk/cmdSync.cpp
+		include/vk/vulkan_common.h
+		src/vk/vulkan_common.cpp
+		include/vk/vkInstanceHolder.h
+		src/vk/vkInstanceHolder.cpp
+		include/vk/vk_extentions.h
+		src/vk/vk_extentions.cpp
+		include/vk/validationLayers.h
+		src/vk/validationLayers.cpp
+		include/vk/physicalDevice.h
+		src/vk/physicalDevice.cpp
+		include/vk/logicalDevice.h
+		src/vk/logicalDevice.cpp
+		include/vk/logicalDevice.hpp
+		include/vk/window.h
+		src/vk/window.cpp
+		include/vk/swapChain.h
+		src/vk/swapChain.cpp
+		include/vk/graphicsPipeline.h
+		src/vk/graphicsPipeline.cpp
+		include/vk/shaderModule.h
+		src/vk/shaderModule.cpp
+		include/vk/renderPass.h
+		src/vk/renderPass.cpp
+		include/vk/frameBuffer.h
+		src/vk/frameBuffer.cpp
+		include/vk/commandPool.h
+		src/vk/commandPool.cpp
+		include/vk/commandBuffer.h
+		src/vk/commandBuffer.cpp
+		include/vk/buffer.h
+		src/vk/buffer.cpp
+		include/vk/texture.h
+		src/vk/texture.cpp
+		include/vk/descriptors/descriptorSetLayout.h
+		src/vk/descriptors/descriptorSetLayout.cpp
+		include/vk/descriptors/descriptorPool.h
+		src/vk/descriptors/descriptorPool.cpp
+		include/vk/descriptors/descriptorSetInfo.h
+		src/vk/descriptors/descriptorSetInfo.cpp
+		include/vk/cmdSync.h
+		src/vk/cmdSync.cpp
 )
 
+target_include_directories(${EXE_NAME} PUBLIC include)
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )
 
 

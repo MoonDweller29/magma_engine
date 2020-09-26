@@ -1,5 +1,5 @@
-#include "texture.h"
-#include "vulkan_common.h"
+#include "vk/texture.h"
+#include "vk/vulkan_common.h"
 
 Texture::Texture():
     image(VK_NULL_HANDLE), imageMemory(VK_NULL_HANDLE), imageView(VK_NULL_HANDLE)

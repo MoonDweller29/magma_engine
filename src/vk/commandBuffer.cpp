@@ -1,6 +1,6 @@
-#include "commandBuffer.h"
-#include "vulkan_common.h"
-#include "graphicsPipeline.h"
+#include "vk/commandBuffer.h"
+#include "vk/vulkan_common.h"
+#include "vk/graphicsPipeline.h"
 #include <array>
 
 

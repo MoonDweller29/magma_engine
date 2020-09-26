@@ -1,4 +1,4 @@
-#include "directLight.h"
+#include "app/scene/directLight.h"
 
 DirectLight::DirectLight(
         const glm::vec3 start_pos, const glm::vec3 start_dir,

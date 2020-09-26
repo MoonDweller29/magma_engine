@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "app/scene/mesh.h"
 
 std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescription()
 {

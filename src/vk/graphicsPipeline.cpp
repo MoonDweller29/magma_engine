@@ -1,5 +1,5 @@
-#include "graphicsPipeline.h"
-#include "vulkan_common.h"
+#include "vk/graphicsPipeline.h"
+#include "vk/vulkan_common.h"
 
 PipelineInfo::PipelineInfo(VkExtent2D extent)
 {

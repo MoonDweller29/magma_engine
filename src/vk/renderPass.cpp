@@ -1,5 +1,5 @@
-#include "renderPass.h"
-#include "vulkan_common.h"
+#include "vk/renderPass.h"
+#include "vk/vulkan_common.h"
 #include <array>
 
 RenderPass::RenderPass(VkDevice device, VkPhysicalDevice physicalDevice, VkFormat imageFormat):

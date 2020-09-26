@@ -1,10 +1,10 @@
-#include "logicalDevice.h"
+#include "vk/logicalDevice.h"
 
-#include "buffer.h"
-#include "commandPool.h"
-#include "vulkan_common.h"
-#include "validationLayers.h"
-#include "commandBuffer.h"
+#include "vk/buffer.h"
+#include "vk/commandPool.h"
+#include "vk/vulkan_common.h"
+#include "vk/validationLayers.h"
+#include "vk/commandBuffer.h"
 #include <iostream>
 #include <set>
 

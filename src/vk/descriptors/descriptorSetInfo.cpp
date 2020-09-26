@@ -1,4 +1,4 @@
-#include "descriptorSetInfo.h"
+#include "vk/descriptors/descriptorSetInfo.h"
 
 VkDescriptorBufferInfo *DescriptorSetInfo::newBufferInfo()
 {

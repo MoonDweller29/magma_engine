@@ -1,4 +1,4 @@
-#include "mouse.h"
+#include "app/mouse.h"
 #include "vk/window.h"
 
 #include <iostream>

@@ -1,5 +1,5 @@
-#include "frameBuffer.h"
-#include "vulkan_common.h"
+#include "vk/frameBuffer.h"
+#include "vk/vulkan_common.h"
 
 FrameBuffer::FrameBuffer(
         const std::vector<VkImageView> &attachments,

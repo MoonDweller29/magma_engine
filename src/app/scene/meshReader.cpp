@@ -1,4 +1,4 @@
-#include "meshReader.h"
+#include "app/scene/meshReader.h"
 
 #include <assimp/Importer.hpp>      // C++ importer interface
 #include <assimp/scene.h>           // Output data structure

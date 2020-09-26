@@ -1,4 +1,4 @@
-#include "image.h"
+#include "app/image.h"
 #include <algorithm>
 
 #define STB_IMAGE_IMPLEMENTATION

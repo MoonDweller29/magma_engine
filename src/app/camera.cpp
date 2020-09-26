@@ -1,6 +1,6 @@
-#include "camera.h"
-#include "keyboard.h"
-#include "mouse.h"
+#include "app/camera.h"
+#include "app/keyboard.h"
+#include "app/mouse.h"
 
 #include <algorithm>
 #include <iostream>

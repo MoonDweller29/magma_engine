@@ -1,5 +1,5 @@
-#include "shaderModule.h"
-#include "vulkan_common.h"
+#include "vk/shaderModule.h"
+#include "vk/vulkan_common.h"
 #include <fstream>
 
 Shader::Shader(VkDevice device, const std::string &name, Stage stage)
