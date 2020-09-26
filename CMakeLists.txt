@@ -51,10 +51,6 @@ include_directories(external_libs/assimp/include)
 	add_subdirectory(external/assimp)
 	set(ALL_LIBS ${ALL_LIBS} assimp)
 
-# include glm
-set(glm_DIR external/glm) # if necessary
-find_package(glm REQUIRED)
-
 # //////////////////////////////////////////////////////
 #
 # //////////////////////////////////////////////////////
@@ -133,9 +129,10 @@ add_executable(${EXE_NAME}
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
+		PUBLIC external/glm
 		PRIVATE external/stb
 )
-target_link_libraries(${EXE_NAME} ${ALL_LIBS} glm::glm)
+target_link_libraries(${EXE_NAME} ${ALL_LIBS})
 
 
 
