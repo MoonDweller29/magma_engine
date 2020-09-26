@@ -25,15 +25,6 @@ message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 #
 # //////////////////////////////////////////////////////
 
-
-# //////////////////////////////////////////////////////
-# external_libs
-# //////////////////////////////////////////////////////
-include_directories(src)
-include_directories(external_libs/include)
-include_directories(external_libs/glfw-3.3.2/include)
-include_directories(external_libs/assimp/include)
-
 # compiling glfw
 	set(GLFW_BUILD_DOCS OFF
 		GLFW_BUILD_TESTS OFF
