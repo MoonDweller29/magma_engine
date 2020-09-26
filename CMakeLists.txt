@@ -18,7 +18,6 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 # //////////////////////////////////////////////////////
 find_package(Vulkan REQUIRED)
 include_directories(${Vulkan_INCLUDE_DIR})
-set(ALL_LIBS ${Vulkan_LIBRARY} )
 
 message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 # //////////////////////////////////////////////////////
@@ -48,7 +47,10 @@ include_directories(external_libs/assimp/include)
 	# ASSIMP_BUILD_STL_IMPORTER:True
 	set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 	add_subdirectory(external_libs/assimp)
-	set(ALL_LIBS ${ALL_LIBS} assimp)
+
+# JSON
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(external/json)
 
 # //////////////////////////////////////////////////////
 #
@@ -127,7 +129,12 @@ add_executable(${EXE_NAME}
 )
 
 target_include_directories(${EXE_NAME} PUBLIC include)
-target_link_libraries(${EXE_NAME} ${ALL_LIBS} )
+target_link_libraries(${EXE_NAME}
+		PRIVATE ${Vulkan_LIBRARY}
+		PRIVATE glfw
+		PRIVATE assimp
+		PRIVATE nlohmann_json::nlohmann_json
+)
 
 
 
