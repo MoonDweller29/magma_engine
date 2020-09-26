@@ -35,19 +35,20 @@ include_directories(external_libs/glfw-3.3.2/include)
 include_directories(external_libs/assimp/include)
 
 # compiling glfw
-	set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-	set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-	add_subdirectory(external_libs/glfw-3.3.2/)
+	set(GLFW_BUILD_DOCS OFF
+		GLFW_BUILD_TESTS OFF
+		GLFW_BUILD_EXAMPLES OFF
+	)
+	add_subdirectory(external/glfw)
 	set(ALL_LIBS  ${ALL_LIBS} glfw)
 
 # compiling assimp
-	# ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT:False
-	# ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT:False
-	set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-	# ASSIMP_BUILD_STL_IMPORTER:True
-	set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-	add_subdirectory(external_libs/assimp)
+    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF
+		ASSIMP_BUILD_TESTS OFF
+		ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF
+		ASSIMP_BUILD_OBJ_IMPORTER ON
+	)
+	add_subdirectory(external/assimp)
 	set(ALL_LIBS ${ALL_LIBS} assimp)
 
 # //////////////////////////////////////////////////////
