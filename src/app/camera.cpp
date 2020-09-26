@@ -75,7 +75,7 @@ void Camera::update(Keyboard& keyboard, Mouse& mouse, float elapsed_time)
     {
         pos += elapsed_time*curr_speed*up;
     }
-    if (keyboard.isPressed(GLFW_KEY_C))
+    if (keyboard.isPressed(GLFW_KEY_Q))
     {
         pos -= elapsed_time*curr_speed*up;
     }

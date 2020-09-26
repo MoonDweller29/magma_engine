@@ -1,11 +1,12 @@
+#include <chrono>
+#include <iostream>
+#include <sstream>
+
 #include "App.h"
 #include "vk/vulkan_common.h"
 #include "vk/window.h"
-#include <iostream>
 #include "glm_inc.h"
 #include "image.h"
-#include <chrono>
-#include <unistd.h> //for sleep
 
 //const std::vector<Vertex> vertices = {
 //        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
@@ -24,6 +25,7 @@
 //        4, 5, 6, 6, 7, 4
 //};
 
+// Why is this still here? Just to suffer?
 struct UniformBufferObject {
     glm::mat4 model;
     glm::mat4 view;
@@ -432,7 +434,11 @@ void App::mainLoop()
 
         if(frames_count % 100 == 0)
         {
-            std::cout << 1 / frameTime << std::endl;
+            std::stringstream ss;
+
+            ss << "VULKAN ENGINE | FPS: " << 1 / frameTime << std::endl;
+
+            glfwSetWindowTitle(window->getGLFWp(), ss.str().c_str());
         }
         frames_count++;
 
@@ -443,17 +449,28 @@ void App::mainLoop()
 //        light->lookAt(glm::vec3(0,0,0), glm::vec3(sin(time), 0.4f, cos(time)));
         light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
 
-        if (keyBoard->wasPressed(GLFW_KEY_1))
-        {
-            if (mouse->isLocked())
-                mouse->unlock();
-            else
-                mouse->lock();
+        // @TODO Move this to input class
+        bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+        bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
+
+        // @TODO Add window focus handling 
+        if (mouse->isLocked()) {
+          if (isLeftMouseButtonReleased)
+          {
+            mouse->unlock();
+          }
+        } else {
+          if (isLeftMouseButtonPressed)
+          {
+            mouse->lock();
+          }
         }
+
         if (isClosed())
         {
-            break;
+          break;
         }
+
         drawFrame();
     }
 
