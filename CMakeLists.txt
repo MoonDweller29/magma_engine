@@ -130,7 +130,10 @@ add_executable(${EXE_NAME}
 		src/vk/cmdSync.cpp
 )
 
-target_include_directories(${EXE_NAME} PUBLIC include)
+target_include_directories(${EXE_NAME}
+		PUBLIC include
+		PRIVATE external/stb
+)
 target_link_libraries(${EXE_NAME} ${ALL_LIBS} )
 
 
