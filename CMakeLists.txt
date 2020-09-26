@@ -13,43 +13,36 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 
 
-# //////////////////////////////////////////////////////
-# include Vulkan
-# //////////////////////////////////////////////////////
-find_package(Vulkan REQUIRED)
-include_directories(${Vulkan_INCLUDE_DIR})
-
 message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-# //////////////////////////////////////////////////////
-#
-# //////////////////////////////////////////////////////
 
 
 # //////////////////////////////////////////////////////
 # external_libs
 # //////////////////////////////////////////////////////
-include_directories(src)
-include_directories(external_libs/include)
-include_directories(external_libs/glfw-3.3.2/include)
-include_directories(external_libs/assimp/include)
+
+# including Vulkan
+find_package(Vulkan REQUIRED)
+set(ALL_LIBS ${Vulkan_LIBRARY})
 
 # compiling glfw
-	set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-	set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-	add_subdirectory(external_libs/glfw-3.3.2/)
-	set(ALL_LIBS  ${ALL_LIBS} glfw)
+set(GLFW_BUILD_DOCS OFF
+	GLFW_BUILD_TESTS OFF
+	GLFW_BUILD_EXAMPLES OFF
+)
+add_subdirectory(external/glfw)
+set(ALL_LIBS  ${ALL_LIBS} glfw)
 
 # compiling assimp
-	# ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT:False
-	# ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT:False
-	set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-	# ASSIMP_BUILD_STL_IMPORTER:True
-	set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-	add_subdirectory(external_libs/assimp)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF
+	ASSIMP_BUILD_TESTS OFF
+	ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF
+	ASSIMP_BUILD_OBJ_IMPORTER ON
+)
+add_subdirectory(external/assimp)
+set(ALL_LIBS ${ALL_LIBS} assimp)
 
 # JSON
-set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_BuildTests OFF)
 add_subdirectory(external/json)
 
 # //////////////////////////////////////////////////////
@@ -128,13 +121,15 @@ add_executable(${EXE_NAME}
 		src/vk/cmdSync.cpp
 )
 
-target_include_directories(${EXE_NAME} PUBLIC include)
-target_link_libraries(${EXE_NAME}
-		PRIVATE ${Vulkan_LIBRARY}
-		PRIVATE glfw
-		PRIVATE assimp
-		PRIVATE nlohmann_json::nlohmann_json
+target_include_directories(${EXE_NAME}
+		PUBLIC include
+		PUBLIC ${Vulkan_INCLUDE_DIR}
+		PUBLIC external/glm
+		PRIVATE external/stb
+		PRIVATE external/glfw/include
+		PRIVATE external/assimp/include
 )
+target_link_libraries(${EXE_NAME} ${ALL_LIBS})
 
 
 
