@@ -51,6 +51,9 @@ include_directories(external_libs/assimp/include)
 	add_subdirectory(external/assimp)
 	set(ALL_LIBS ${ALL_LIBS} assimp)
 
+# include glm
+	add_subdirectory(external/glm)
+
 # //////////////////////////////////////////////////////
 #
 # //////////////////////////////////////////////////////
