@@ -43,8 +43,7 @@ struct LightSpaceUniform {
 
 bool App::isClosed()
 {
-	return keyBoard->wasPressed(GLFW_KEY_ESCAPE) ||
-	    keyBoard->wasPressed(GLFW_KEY_Q);
+	return keyBoard->wasPressed(GLFW_KEY_ESCAPE);
 }
 
 void App::run()
