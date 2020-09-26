@@ -13,34 +13,33 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 
 
-# //////////////////////////////////////////////////////
-# include Vulkan
-# //////////////////////////////////////////////////////
-find_package(Vulkan REQUIRED)
-include_directories(${Vulkan_INCLUDE_DIR})
-set(ALL_LIBS ${Vulkan_LIBRARY} )
-
 message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+
+
 # //////////////////////////////////////////////////////
-#
+# external_libs
 # //////////////////////////////////////////////////////
+
+# including Vulkan
+find_package(Vulkan REQUIRED)
+set(ALL_LIBS ${Vulkan_LIBRARY})
 
 # compiling glfw
-	set(GLFW_BUILD_DOCS OFF
-		GLFW_BUILD_TESTS OFF
-		GLFW_BUILD_EXAMPLES OFF
-	)
-	add_subdirectory(external/glfw)
-	set(ALL_LIBS  ${ALL_LIBS} glfw)
+set(GLFW_BUILD_DOCS OFF
+	GLFW_BUILD_TESTS OFF
+	GLFW_BUILD_EXAMPLES OFF
+)
+add_subdirectory(external/glfw)
+set(ALL_LIBS  ${ALL_LIBS} glfw)
 
 # compiling assimp
-    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF
-		ASSIMP_BUILD_TESTS OFF
-		ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF
-		ASSIMP_BUILD_OBJ_IMPORTER ON
-	)
-	add_subdirectory(external/assimp)
-	set(ALL_LIBS ${ALL_LIBS} assimp)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF
+	ASSIMP_BUILD_TESTS OFF
+	ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF
+	ASSIMP_BUILD_OBJ_IMPORTER ON
+)
+add_subdirectory(external/assimp)
+set(ALL_LIBS ${ALL_LIBS} assimp)
 
 # //////////////////////////////////////////////////////
 #
@@ -120,8 +119,11 @@ add_executable(${EXE_NAME}
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
+		PUBLIC ${Vulkan_INCLUDE_DIR}
 		PUBLIC external/glm
 		PRIVATE external/stb
+		PRIVATE external/glfw/include
+		PRIVATE external/assimp/include
 )
 target_link_libraries(${EXE_NAME} ${ALL_LIBS})
 
