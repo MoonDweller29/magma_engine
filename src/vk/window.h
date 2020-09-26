@@ -10,7 +10,7 @@ VkSurfaceKHR createSurface(const VkInstance &instance, GLFWwindow* window);
 
 class Window
 {
-    uint32_t width, height;
+    uint32_t width, height; 
     GLFWwindow* window;
     std::unique_ptr<Keyboard> keyboard;
     std::unique_ptr<Mouse> mouse;
@@ -27,6 +27,7 @@ public:
 
     void initSurface(const VkInstance &instance);
     void closeSurface();
+    // Meh? Is this good?
     GLFWwindow* getGLFWp() { return window; }
     VkSurfaceKHR getSurface() const { return surface; }
     bool wasResized() const { return _wasResized; }

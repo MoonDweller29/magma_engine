@@ -1,7 +1,6 @@
 #include "app/App.h"
 
 #include <iostream>
-#include <unistd.h> //for sleep
 
 
 int main() {
