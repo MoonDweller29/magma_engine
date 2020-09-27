@@ -19,7 +19,6 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 
 # including Vulkan
 find_package(Vulkan REQUIRED)
-set(ALL_LIBS ${Vulkan_LIBRARY})
 
 # compiling glfw
 set(GLFW_BUILD_DOCS OFF
@@ -27,7 +26,6 @@ set(GLFW_BUILD_DOCS OFF
 	GLFW_BUILD_EXAMPLES OFF
 )
 add_subdirectory(external/glfw)
-set(ALL_LIBS  ${ALL_LIBS} glfw)
 
 # compiling assimp
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF
@@ -36,7 +34,9 @@ set(ASSIMP_BUILD_ASSIMP_TOOLS OFF
 	ASSIMP_BUILD_OBJ_IMPORTER ON
 )
 add_subdirectory(external/assimp)
-set(ALL_LIBS ${ALL_LIBS} assimp)
+
+# including glm
+add_subdirectory(external/glm)
 
 # JSON
 set(JSON_BuildTests OFF)
@@ -116,18 +116,20 @@ add_executable(${EXE_NAME}
 		src/vk/descriptors/descriptorSetInfo.cpp
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
-)
+		include/app/config/config.h test/test_config.cpp)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
 		PUBLIC ${Vulkan_INCLUDE_DIR}
-		PUBLIC external/glm
 		PRIVATE external/stb
-		PRIVATE external/glfw/include
-		PRIVATE external/assimp/include
 )
-target_link_libraries(${EXE_NAME} ${ALL_LIBS})
-
+target_link_libraries(${EXE_NAME}
+		${Vulkan_LIBRARY}
+		glfw
+		glm
+		assimp
+		nlohmann_json
+)
 
 
 # //////////////////////////////////////////////////////

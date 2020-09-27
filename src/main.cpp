@@ -2,10 +2,12 @@
 
 #include <iostream>
 
+void test_config();
 
 int main() {
     App app;
-
+    // TODO: make infrastructure for tests
+    test_config();
     try {
         app.run();
     } catch (const std::exception& e) {
