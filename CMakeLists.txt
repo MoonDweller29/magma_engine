@@ -167,3 +167,31 @@ add_dependencies(${EXE_NAME} shaders_compilation)
 # //////////////////////////////////////////////////////
 #
 # //////////////////////////////////////////////////////
+
+
+# //////////////////////////////////////////////////////
+# loading models
+# //////////////////////////////////////////////////////
+set(MODELS_DIR ${CMAKE_SOURCE_DIR}/models)
+file(MAKE_DIRECTORY ${MODELS_DIR})
+
+# creating log file
+set(LOG_FILE ${CMAKE_CURRENT_BINARY_DIR}/models_loading.log)
+file(TOUCH ${LOG_FILE})
+
+set(MODELS_DATA
+	viking_room.obj
+	viking_room.png
+)
+
+foreach(MODEL_SRC_NAME ${MODELS_DATA})
+	file(DOWNLOAD
+		https://vulkan-tutorial.com/resources/${MODEL_SRC_NAME}
+		${MODELS_DIR}/${MODEL_SRC_NAME}
+		LOG LOADING_LOG
+	)
+	file(APPEND ${LOG_FILE} ${LOADING_LOG})
+endforeach(MODEL_SRC_NAME)
+# //////////////////////////////////////////////////////
+#
+# //////////////////////////////////////////////////////
