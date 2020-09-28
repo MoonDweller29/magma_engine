@@ -40,20 +40,29 @@ public:
 };
 
 
-#define JSON_MAPPINGS(...) \
-    void to_json(json &jsn) const {             \
-        JSONMapping mappings[] = {__VA_ARGS__}; \
-        for (JSONMapping &mapping : mappings) { \
-            mapping.store(jsn);                 \
-        }                                       \
-    }                                           \
-                                                \
-    void from_json(const json &jsn) {           \
-        JSONMapping mappings[] = {__VA_ARGS__}; \
-        for (JSONMapping &mapping : mappings) { \
-            mapping.load(jsn);                  \
-        }                                       \
-    }
+#define JSON_MAPPINGS(...)                                                  \
+    void to_json(json &jsn) const {                                         \
+        JSONMapping mappings[] = {__VA_ARGS__};                             \
+        for (JSONMapping &mapping : mappings) {                             \
+            mapping.store(jsn);                                             \
+        }                                                                   \
+    }                                                                       \
+                                                                            \
+    void from_json(const json &jsn) {                                       \
+        JSONMapping mappings[] = {__VA_ARGS__};                             \
+        for (JSONMapping &mapping : mappings) {                             \
+            mapping.load(jsn);                                              \
+        }                                                                   \
+    }                                                                       \
+                                                                            \
+    template <typename T>                                                   \
+    friend class detail::has_json_mappings;                                 \
+                                                                            \
+    template <typename T>                                                   \
+    friend detail::has_to_json_t<T> to_json(json &jsn, const T &object);    \
+                                                                            \
+    template <typename T>                                                   \
+    friend detail::has_from_json_t<T> from_json(const json &jsn, T &object);
 
 
 template <typename T>
@@ -99,15 +108,21 @@ namespace detail {
         static constexpr bool from_json = decltype(has_from_json<T>(nullptr))::value;
 
     };
+
+    template <typename T>
+    using has_to_json_t = std::enable_if_t<detail::has_json_mappings<T>::to_json>;
+
+    template <typename T>
+    using has_from_json_t = std::enable_if_t<detail::has_json_mappings<T>::from_json>;
 }
 
 
 template <typename T>
-std::enable_if_t<detail::has_json_mappings<T>::to_json> to_json(json &jsn, const T &object) {
+detail::has_to_json_t<T> to_json(json &jsn, const T &object) {
     object.to_json(jsn);
 }
 
 template <typename T>
-std::enable_if_t<detail::has_json_mappings<T>::from_json> from_json(const json &jsn, T &object) {
+detail::has_from_json_t<T> from_json(const json &jsn, T &object) {
     object.from_json(jsn);
 }
