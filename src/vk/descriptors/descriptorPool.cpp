@@ -1,6 +1,7 @@
 #include "vk/descriptors/descriptorPool.h"
 #include "vk/vulkan_common.h"
 #include <vector>
+#include <algorithm>
 
 uint32_t DescriptorPool::DEFAULT_SET_COUNT = 10;
 

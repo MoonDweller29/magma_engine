@@ -3,6 +3,8 @@
 #include "vk/shaderModule.h"
 #include "vk/vulkan_common.h"
 
+#include <array>
+
 DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout):
     device(device), depthTex(depthTex), extent(extent), depthFinalLayout(depthFinalLayout)
 {
