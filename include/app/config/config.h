@@ -1,8 +1,11 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
+#include <fstream>
+#include <iomanip>
 #include <string>
 #include <type_traits>
+
+#include <nlohmann/json.hpp>
 
 
 using json = nlohmann::json;
@@ -53,6 +56,25 @@ public:
     }
 
 
+template <typename T>
+void save_as_json(const std::string &filename, const T &object) {
+    json jsn;
+    to_json(jsn, object);
+    std::ofstream file(filename);
+    file << std::setw(4) << jsn;
+    file.close();
+}
+
+template <typename T>
+void load_from_json(const std::string &filename, T &object) {
+    json jsn;
+    std::ifstream file(filename);
+    file >> jsn;
+    file.close();
+    from_json(jsn, object);
+}
+
+
 namespace detail {
     template <typename T>
     class has_json_mappings {
@@ -63,13 +85,13 @@ namespace detail {
         template <typename C>
         static std::true_type has_to_json(has<void (C:: *)(json &) const, &C::to_json> *);
 
-        template <typename >
+        template <typename ...>
         static std::false_type has_to_json(...);
 
         template <typename C>
         static std::true_type has_from_json(has<void (C:: *)(const json &), &C::from_json> *);
 
-        template <typename >
+        template <typename ...>
         static std::false_type has_from_json(...);
 
     public:

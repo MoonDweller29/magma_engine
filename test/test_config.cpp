@@ -47,7 +47,8 @@ void test_config() {
     json dump = team_a;
     std::cout << dump.dump(4) << std::endl;
 
-    Team team_b = dump.get<Team>();
+    Team team_b;
+    team_b = dump.get<Team>();
     json dump_2 = team_b;
     std::cout << dump_2.dump(4) << std::endl;
 }
