@@ -21,18 +21,17 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 find_package(Vulkan REQUIRED)
 
 # compiling glfw
-set(GLFW_BUILD_DOCS OFF
-	GLFW_BUILD_TESTS OFF
-	GLFW_BUILD_EXAMPLES OFF
-)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/glfw)
 
 # compiling assimp
-set(ASSIMP_BUILD_ASSIMP_TOOLS OFF
-	ASSIMP_BUILD_TESTS OFF
-	ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF
-	ASSIMP_BUILD_OBJ_IMPORTER ON
-)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE BOOL "" FORCE)
 add_subdirectory(external/assimp)
 
 # including glm
@@ -116,7 +115,8 @@ add_executable(${EXE_NAME}
 		src/vk/descriptors/descriptorSetInfo.cpp
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
-		include/app/config/config.h test/test_config.cpp)
+		include/app/config/config.h
+		test/test_config.cpp)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include

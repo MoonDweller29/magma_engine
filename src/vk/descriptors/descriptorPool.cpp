@@ -1,25 +1,24 @@
 #include "vk/descriptors/descriptorPool.h"
 #include "vk/vulkan_common.h"
 #include <vector>
+#include <algorithm>
 
 uint32_t DescriptorPool::DEFAULT_SET_COUNT = 10;
 
 DescriptorPool::DescriptorPool(
         VkDevice device,
-        const std::array<VkDescriptorPoolSize, VK_DESCRIPTOR_TYPE_RANGE_SIZE> &pool_sizes,
+        const std::unordered_map<VkDescriptorType, uint32_t> &pool_sizes,
         uint32_t max_set_count
 ):
     maxSetCount(max_set_count), device(device), setCount(0)
 {
     std::vector<VkDescriptorPoolSize> nonzeroPoolSizes;
-    for (auto poolSize : pool_sizes)
+    for (auto [descType, descCount] : pool_sizes)
     {
-        if (poolSize.descriptorCount > 0)
-        {
-            auto actualPoolSize = poolSize;
-            actualPoolSize.descriptorCount *= max_set_count;
-            nonzeroPoolSizes.push_back(actualPoolSize);
-        }
+        VkDescriptorPoolSize actualPoolSize{};
+        actualPoolSize.type = descType;
+        actualPoolSize.descriptorCount = descCount*max_set_count;
+        nonzeroPoolSizes.push_back(actualPoolSize);
     }
 
     VkDescriptorPoolCreateInfo poolInfo{};
