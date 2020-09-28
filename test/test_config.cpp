@@ -4,8 +4,8 @@
 #include <iostream>
 
 struct Person {
-    std::string name;
-    int age;
+    std::string name = "Unknown";
+    int age = 18;
 
     JSON_MAPPINGS(
             {age, "age"},
@@ -14,7 +14,7 @@ struct Person {
 };
 
 struct Team {
-    std::string name;
+    std::string name = "Unnamed";
     std::vector<Person> members;
     float score;
     Person captain;
