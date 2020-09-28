@@ -1,6 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include <array>
+#include <unordered_map>
 #include <vector>
 
 class DescriptorPool
@@ -13,7 +13,7 @@ class DescriptorPool
 public:
     DescriptorPool(
             VkDevice device,
-            const std::array<VkDescriptorPoolSize, VK_DESCRIPTOR_TYPE_RANGE_SIZE> &pool_sizes,
+            const std::unordered_map<VkDescriptorType, uint32_t> &pool_sizes,
             uint32_t max_set_count);
     DescriptorPool(const DescriptorPool &other_pool) = delete;
     DescriptorPool(DescriptorPool &&other_pool);

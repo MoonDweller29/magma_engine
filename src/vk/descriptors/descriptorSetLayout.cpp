@@ -4,20 +4,13 @@
 
 void DescriptorSetLayout::clearPoolSizes()
 {
-    for (int i = 0; i < poolSizes.size(); ++i)
-    {
-        poolSizes[i].descriptorCount = 0;
-    }
+    poolSizes.clear();
 }
 
 DescriptorSetLayout::DescriptorSetLayout():
         layout(VK_NULL_HANDLE), device(VK_NULL_HANDLE), setInd(0)
 {
     clearPoolSizes();
-    for (uint32_t i = VK_DESCRIPTOR_TYPE_BEGIN_RANGE; i <= VK_DESCRIPTOR_TYPE_END_RANGE; ++i)
-    {
-        poolSizes[i].type = static_cast<VkDescriptorType>(i);
-    }
 }
 
 
@@ -38,6 +31,15 @@ const VkDescriptorSetLayout &DescriptorSetLayout::createLayout(VkDevice device)
     return layout;
 }
 
+void DescriptorSetLayout::increaseDescriptorsCount(VkDescriptorType desc_type, int desc_count)
+{
+    if (poolSizes.find(desc_type) != poolSizes.end()) {
+        poolSizes[desc_type] += desc_count;
+    } else {
+        poolSizes[desc_type] = desc_count;
+    }
+}
+
 void DescriptorSetLayout::addUniformBuffer(uint32_t buf_size, VkShaderStageFlags stage_flags)
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -48,7 +50,7 @@ void DescriptorSetLayout::addUniformBuffer(uint32_t buf_size, VkShaderStageFlags
     uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
     bindings.push_back(uboLayoutBinding);
-    poolSizes[VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER].descriptorCount += buf_size;
+    increaseDescriptorsCount(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buf_size);
 }
 
 void DescriptorSetLayout::addCombinedImageSampler(VkShaderStageFlags stage_flags)
@@ -61,7 +63,7 @@ void DescriptorSetLayout::addCombinedImageSampler(VkShaderStageFlags stage_flags
     samplerLayoutBinding.stageFlags = stage_flags;
 
     bindings.push_back(samplerLayoutBinding);
-    poolSizes[VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER].descriptorCount += 1;
+    increaseDescriptorsCount(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
 }
 
 void DescriptorSetLayout::freePool()

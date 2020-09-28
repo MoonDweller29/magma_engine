@@ -3,17 +3,18 @@
 #include "descriptorSetInfo.h"
 #include <vulkan/vulkan.h>
 #include <vector>
-#include <array>
+#include <unordered_map>
 
 class DescriptorSetLayout
 {
     VkDescriptorSetLayout layout;
     VkDevice device;
     std::vector<VkDescriptorSetLayoutBinding> bindings;
-    std::array<VkDescriptorPoolSize, VK_DESCRIPTOR_TYPE_RANGE_SIZE> poolSizes;
+    std::unordered_map<VkDescriptorType, uint32_t> poolSizes;
     std::vector<DescriptorPool> pools;
 
     void clearPoolSizes();
+    void increaseDescriptorsCount(VkDescriptorType desc_type, int desc_count);
 
     std::vector<VkDescriptorSet> descriptorSets;
     DescriptorSetInfo descriptorSetInfo;
