@@ -2,153 +2,90 @@
 
 #include <nlohmann/json.hpp>
 #include <string>
-#include <string_view>
-#include <tuple>
 #include <type_traits>
-#include <utility>
 
 
 using json = nlohmann::json;
 
 
-template <typename T, typename V>
-class JSONMapping;
-
-template <typename T, typename ... V>
-class JSONMappings : public std::tuple<JSONMapping<T, V>...> {
+class JSONMapping {
 public:
-    static constexpr std::size_t mappings_count = sizeof...(V);
-
-    explicit JSONMappings(JSONMapping<T, V> &&... mappings)
-        : std::tuple<JSONMapping<T, V>...>(std::move(mappings)...) {
+    template <typename T>
+    JSONMapping(T &value, const std::string &field)
+        : store()
+        , load([&value, field](const json &jsn) {
+            json::const_iterator property = jsn.find(field);
+            if (property != jsn.end()) {
+                value = property->get<T>();
+            }
+        }) {
 
     }
 
+    template <typename T>
+    JSONMapping(const T &value, const std::string &field)
+            : store([&value, field](json &jsn) {
+                jsn[field] = value;
+            })
+            , load() {
+
+    }
+
+    std::function<void(json &)>       store;
+    std::function<void(const json &)> load;
+
 };
 
-template <>
-class JSONMappings<void> {
-public:
-    static constexpr std::size_t mappings_count = 0;
 
-};
-
-
-template <typename ... T, typename ... V>
-auto define_mappings(JSONMapping<T, V> &&... mappings) {
-    return JSONMappings(std::move(mappings)...);
-}
-
-
-template <typename T>
-const auto json_mappings = JSONMappings<void>();
+#define JSON_MAPPINGS(...) \
+    void to_json(json &jsn) const {             \
+        JSONMapping mappings[] = {__VA_ARGS__}; \
+        for (JSONMapping &mapping : mappings) { \
+            mapping.store(jsn);                 \
+        }                                       \
+    }                                           \
+                                                \
+    void from_json(const json &jsn) {           \
+        JSONMapping mappings[] = {__VA_ARGS__}; \
+        for (JSONMapping &mapping : mappings) { \
+            mapping.load(jsn);                  \
+        }                                       \
+    }
 
 
 namespace detail {
     template <typename T>
-    using MappingsType = decltype(json_mappings<std::decay_t<T>>);
+    class has_json_mappings {
+    private:
+        template <typename U, U>
+        struct has;
 
-    template <typename T>
-    constexpr auto &get_mappings() {
-        static_assert(
-                MappingsType<T>::mappings_count != 0,
-                "JSON mappings are not defined for the given type!"
-        );
-        return json_mappings<std::decay_t<T>>;
-    }
+        template <typename C>
+        static std::true_type has_to_json(has<void (C:: *)(json &) const, &C::to_json> *);
 
-    template <typename T>
-    constexpr bool has_mappings() {
-        return MappingsType<T>::mappings_count != 0;
-    }
+        template <typename >
+        static std::false_type has_to_json(...);
 
-    template <typename T>
-    constexpr std::size_t get_mappings_count() {
-        return MappingsType<T>::mappings_count;
-    }
+        template <typename C>
+        static std::true_type has_from_json(has<void (C:: *)(const json &), &C::from_json> *);
 
-    template <typename T, std::size_t... I>
-    void to_json_impl(json &jsn, const T &object, std::index_sequence<I...> /* indices */) {
-        (std::get<I>(get_mappings<T>()).to_json(jsn, object), ...);
-    }
+        template <typename >
+        static std::false_type has_from_json(...);
 
-    template <typename T, std::size_t... I>
-    void from_json_impl(const json &jsn, T &object, std::index_sequence<I...> /* indices */) {
-        (std::get<I>(get_mappings<T>()).from_json(jsn, object), ...);
-    }
+    public:
+        static constexpr bool to_json   = decltype(has_to_json<T>(nullptr))::value;
+        static constexpr bool from_json = decltype(has_from_json<T>(nullptr))::value;
 
+    };
 }
 
 
 template <typename T>
-std::enable_if_t<detail::has_mappings<T>()> to_json(json &jsn, const T &object) {
-    detail::to_json_impl(
-            jsn,
-            object,
-            std::make_index_sequence<detail::get_mappings_count<T>()>()
-    );
+std::enable_if_t<detail::has_json_mappings<T>::to_json> to_json(json &jsn, const T &object) {
+    object.to_json(jsn);
 }
 
 template <typename T>
-std::enable_if_t<detail::has_mappings<T>()> from_json(const json &jsn, T &object) {
-    detail::from_json_impl(
-            jsn,
-            object,
-            std::make_index_sequence<detail::get_mappings_count<T>()>()
-    );
+std::enable_if_t<detail::has_json_mappings<T>::from_json> from_json(const json &jsn, T &object) {
+    object.from_json(jsn);
 }
-
-
-enum JSONSkipIfNotChanged {
-    SKIP_IF_NOT_CHANGED
-};
-
-
-template <typename T, typename V>
-class JSONMapping {
-public:
-    template <typename D = const V &>
-    JSONMapping(
-        V T::*                                  object_property,
-        std::string_view                        json_field,
-        D                                       default_value,
-        [[maybe_unused]] JSONSkipIfNotChanged   skip_if_not_changed)
-            : m_property(object_property)
-            , m_field(json_field)
-            , m_default_value(std::forward<D>(default_value))
-            , m_comparator(+[](const V &a, const V &b) -> bool { return a == b; }) {
-
-    }
-
-    template <typename D = const V &>
-    JSONMapping(
-            V T::*              object_property,
-            std::string_view    json_field,
-            D                   default_value = V())
-            : m_property(object_property)
-            , m_field(json_field)
-            , m_default_value(std::forward<D>(default_value))
-            , m_comparator(nullptr) {
-
-    }
-
-    void to_json(json &jsn, const T &object) const {
-        const V &value = object.*m_property;
-        if ((m_comparator == nullptr) || !m_comparator(value, m_default_value)) {
-            jsn[m_field] = value;
-        }
-    }
-
-    void from_json(const json &jsn, T &object) const {
-        V &value = object.*m_property;
-        json::const_iterator field = jsn.find(m_field);
-        value = (field != jsn.end()) ? field->get<V>() : m_default_value;
-    }
-
-private:
-    V T::*      m_property;
-    std::string m_field;
-    V m_default_value;
-    bool (*m_comparator)(const V &, const V &);
-
-};
