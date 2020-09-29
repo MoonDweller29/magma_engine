@@ -2,64 +2,56 @@
 
 #include <fstream>
 #include <iomanip>
-#include <string>
-#include <type_traits>
 
 #include <nlohmann/json.hpp>
 
 
-using json = nlohmann::json;
-
-
-#define JSON_MAPPINGS(...)                                                  \
-    void to_json(json &jsn) const {                                         \
-        JSONMapping mappings[] = {__VA_ARGS__};                             \
-        for (JSONMapping &mapping : mappings) {                             \
-            mapping.store(jsn);                                             \
-        }                                                                   \
-    }                                                                       \
-                                                                            \
-    void from_json(const json &jsn) {                                       \
-        JSONMapping mappings[] = {__VA_ARGS__};                             \
-        for (JSONMapping &mapping : mappings) {                             \
-            mapping.load(jsn);                                              \
-        }                                                                   \
-    }                                                                       \
-                                                                            \
-    template <typename T>                                                   \
-    friend class detail::has_json_mappings;                                 \
-                                                                            \
-    template <typename T>                                                   \
-    friend detail::has_to_json_t<T> to_json(json &jsn, const T &object);    \
-                                                                            \
-    template <typename T>                                                   \
-    friend detail::has_from_json_t<T> from_json(const json &jsn, T &object);
-
-
-template <typename T>
-void save_as_json(const std::string &filename, const T &object) {
-    json jsn;
-    to_json(jsn, object);
-    std::ofstream file(filename);
-    file << std::setw(4) << jsn;
-    file.close();
+namespace detail {
+    template <typename T, typename SFINAE>
+    class JSONSerializer;
 }
 
-template <typename T>
-void load_from_json(const std::string &filename, T &object) {
-    json jsn;
-    std::ifstream file(filename);
-    file >> jsn;
-    file.close();
-    from_json(jsn, object);
-}
+using json = nlohmann::basic_json<
+        /* ObjectType */            std::map,
+        /* ArrayType */             std::vector,
+        /* StringType */            std::string,
+        /* BooleanType */           bool,
+        /* NumberIntegerType */     std::int64_t,
+        /* NumberUnsignedType */    std::uint64_t,
+        /* NumberFloatType */       double,
+        /* AllocatorType */         std::allocator,
+        /* JSONSerializer */        detail::JSONSerializer,
+        /* BinaryType */            std::vector<std::uint8_t>
+>;
+
+
+#define JSON_MAPPINGS(...)                                  \
+    void to_json(json &jsn) const {                         \
+        detail::JSONValueWriter mappings[] = {__VA_ARGS__}; \
+        for (const auto &mapping : mappings) {              \
+            mapping.apply(jsn);                             \
+        }                                                   \
+    }                                                       \
+                                                            \
+    void from_json(const json &jsn) {                       \
+        detail::JSONValueReader mappings[] = {__VA_ARGS__}; \
+        for (const auto &mapping : mappings) {              \
+            mapping.apply(jsn);                             \
+        }                                                   \
+    }                                                       \
+                                                            \
+    template <typename T>                                   \
+    friend class ::detail::has_json_mappings;               \
+                                                            \
+    template <typename T, typename SFINAE>                  \
+    friend class ::detail::JSONSerializer;
 
 
 namespace detail {
     template <typename T>
     class has_json_mappings {
     private:
-        template <typename U, U>
+        template <typename F, F>
         struct has;
 
         template <typename C>
@@ -80,53 +72,82 @@ namespace detail {
 
     };
 
-    template <typename T>
-    using has_to_json_t = std::enable_if_t<detail::has_json_mappings<T>::to_json>;
-
-    template <typename T>
-    using has_from_json_t = std::enable_if_t<detail::has_json_mappings<T>::from_json>;
-}
-
-
-template <typename T>
-detail::has_to_json_t<T> to_json(json &jsn, const T &object) {
-    object.to_json(jsn);
-}
-
-template <typename T>
-detail::has_from_json_t<T> from_json(const json &jsn, T &object) {
-    object.from_json(jsn);
-}
-
-
-class JSONMapping {
-public:
-    template <typename T>
-    JSONMapping(T &value, const std::string &field)
-        : store(nullptr)
-        , load([&value, field](const json &jsn) {
-            json::const_iterator property = jsn.find(field);
-            if (property != jsn.end()) {
-                if constexpr (detail::has_json_mappings<T>::from_json) {
-                    from_json(*property, value);
-                } else {
-                    value = property->get<T>();
-                }
+    template<typename T, typename = void>
+    struct JSONSerializer {
+        static void to_json(json &jsn, const T &object) {
+            if constexpr (detail::has_json_mappings<T>::to_json) {
+                object.to_json(jsn);
+            } else {
+                nlohmann::to_json(jsn, object);
             }
-        }) {
+        }
 
-    }
+        static void from_json(const json &jsn, T &object) {
+            if constexpr (detail::has_json_mappings<T>::from_json) {
+                object.from_json(jsn);
+            } else {
+                nlohmann::from_json(jsn, object);
+            }
+        }
 
-    template <typename T>
-    JSONMapping(const T &value, const std::string &field)
-        : store([&value, field](json &jsn) {
-            jsn[field] = value;
-        })
-        , load(nullptr) {
+    };
 
-    }
+    class JSONValueWriter {
+    public:
+        template <typename T>
+        JSONValueWriter (const T &value, const std::string &field)
+            : apply([&value, field](json &jsn) {
+                JSONSerializer<T>::to_json(jsn[field], value);
+            }) {
 
-    std::function<void(json &)>       store;
-    std::function<void(const json &)> load;
+        }
 
-};
+        std::function<void(json &)> apply;
+
+    };
+
+    class JSONValueReader {
+    public:
+        template <typename T>
+        JSONValueReader(T &value, const std::string &field)
+            : apply([&value, field](const json &jsn) {
+                json::const_iterator property = jsn.find(field);
+                if (property != jsn.end()) {
+                    JSONSerializer<T>::from_json(*property, value);
+                }
+            }) {
+
+        }
+
+        std::function<void(const json &)> apply;
+
+    };
+
+} // namespace detail
+
+
+template <typename T>
+void save_as_json(const std::string &filename, const T &object) {
+    json jsn;
+    detail::JSONSerializer<T>::to_json(jsn, object);
+    std::ofstream file(filename);
+    file << std::setw(4) << jsn;
+}
+
+template <typename T>
+void load_from_json(const std::string &filename, T &object) {
+    json jsn;
+    std::ifstream file(filename);
+    file >> jsn;
+    detail::JSONSerializer<T>::from_json(jsn, object);
+}
+
+template <typename T>
+T load_from_json(const std::string &filename) {
+    json jsn;
+    T object;
+    std::ifstream file(filename);
+    file >> jsn;
+    detail::JSONSerializer<T>::from_json(jsn, object);
+    return object;
+}
