@@ -29,18 +29,20 @@ private:
 
 };
 
-struct Sneaky {
-    int get_x() const {
-        return x;
-    }
+namespace hidden {
+    struct Sneaky {
+        int get_x() const {
+            return x;
+        }
 
-private:
-    int x = 42;
+    private:
+        int x = 42;
 
-    JSON_MAPPINGS(
-            {x, "x"}
-    )
-};
+        JSON_MAPPINGS(
+                { x, "x" }
+        )
+    };
+}
 
 void test_config() {
     Person dude = {"Dude", 25};
@@ -66,11 +68,11 @@ void test_config() {
     json dump_2 = team_b;
     std::cout << dump_2.dump(4) << std::endl;
 
-    Sneaky sneaky;
+    hidden::Sneaky sneaky;
     json sneaky_json = sneaky;
     std::cout << sneaky_json.dump(4) << std::endl;
     sneaky_json["x"] = 12;
-    Sneaky another_sneaky = sneaky_json.get<Sneaky>();
+    hidden::Sneaky another_sneaky = sneaky_json.get<hidden::Sneaky>();
     std::cout << another_sneaky.get_x() << std::endl;
 
 }

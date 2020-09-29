@@ -115,8 +115,7 @@ add_executable(${EXE_NAME}
 		src/vk/descriptors/descriptorSetInfo.cpp
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
-		include/app/config/config.h
-		test/test_config.cpp)
+		include/app/config/config.h)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
@@ -169,5 +168,18 @@ add_custom_target(shaders_compilation ALL DEPENDS ${COMPILED_SHADERS})
 add_dependencies(${EXE_NAME} shaders_compilation)
 
 # //////////////////////////////////////////////////////
-#
+# tests
 # //////////////////////////////////////////////////////
+
+set(TEST_EXE_NAME ${EXE_NAME}_TESTS)
+add_executable(${TEST_EXE_NAME}
+		test/test_config.cpp
+		test/test_main.cpp
+)
+# TODO: prorer setup
+target_include_directories(${TEST_EXE_NAME}
+		PUBLIC include
+)
+target_link_libraries(${TEST_EXE_NAME}
+		nlohmann_json
+)
