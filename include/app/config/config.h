@@ -11,35 +11,6 @@
 using json = nlohmann::json;
 
 
-class JSONMapping {
-public:
-    template <typename T>
-    JSONMapping(T &value, const std::string &field)
-        : store()
-        , load([&value, field](const json &jsn) {
-            json::const_iterator property = jsn.find(field);
-            if (property != jsn.end()) {
-                value = property->get<T>();
-            }
-        }) {
-
-    }
-
-    template <typename T>
-    JSONMapping(const T &value, const std::string &field)
-            : store([&value, field](json &jsn) {
-                jsn[field] = value;
-            })
-            , load() {
-
-    }
-
-    std::function<void(json &)>       store;
-    std::function<void(const json &)> load;
-
-};
-
-
 #define JSON_MAPPINGS(...)                                                  \
     void to_json(json &jsn) const {                                         \
         JSONMapping mappings[] = {__VA_ARGS__};                             \
@@ -126,3 +97,36 @@ template <typename T>
 detail::has_from_json_t<T> from_json(const json &jsn, T &object) {
     object.from_json(jsn);
 }
+
+
+class JSONMapping {
+public:
+    template <typename T>
+    JSONMapping(T &value, const std::string &field)
+        : store(nullptr)
+        , load([&value, field](const json &jsn) {
+            json::const_iterator property = jsn.find(field);
+            if (property != jsn.end()) {
+                if constexpr (detail::has_json_mappings<T>::from_json) {
+                    from_json(*property, value);
+                } else {
+                    value = property->get<T>();
+                }
+            }
+        }) {
+
+    }
+
+    template <typename T>
+    JSONMapping(const T &value, const std::string &field)
+        : store([&value, field](json &jsn) {
+            jsn[field] = value;
+        })
+        , load(nullptr) {
+
+    }
+
+    std::function<void(json &)>       store;
+    std::function<void(const json &)> load;
+
+};
