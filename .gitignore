@@ -5,3 +5,5 @@ models/*
 .idea/*
 .vs/*
 out/*
+external/*
+external_libs/*
