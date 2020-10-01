@@ -13,23 +13,18 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 
 
-message("+++ THIS is CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-
-
 # //////////////////////////////////////////////////////
 # external_libs
 # //////////////////////////////////////////////////////
 
 # including Vulkan
 find_package(Vulkan REQUIRED)
-set(ALL_LIBS ${Vulkan_LIBRARY})
 
 # compiling glfw
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/glfw)
-set(ALL_LIBS ${ALL_LIBS} glfw)
 
 # compiling assimp
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
@@ -39,7 +34,13 @@ set(ASSIMP_BUILD_OBJ_EXPORTER ON CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE BOOL "" FORCE)
 add_subdirectory(external/assimp)
-set(ALL_LIBS ${ALL_LIBS} assimp)
+
+# including glm
+add_subdirectory(external/glm)
+
+# JSON
+set(JSON_BuildTests OFF)
+add_subdirectory(external/json)
 
 # //////////////////////////////////////////////////////
 #
@@ -115,18 +116,20 @@ add_executable(${EXE_NAME}
 		src/vk/descriptors/descriptorSetInfo.cpp
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
-)
+		include/app/config/json.h)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
 		PUBLIC ${Vulkan_INCLUDE_DIR}
-		PUBLIC external/glm
 		PRIVATE external/stb
-		PRIVATE external/glfw/include
-		PRIVATE external/assimp/include
 )
-target_link_libraries(${EXE_NAME} ${ALL_LIBS})
-
+target_link_libraries(${EXE_NAME}
+		${Vulkan_LIBRARY}
+		glfw
+		glm
+		assimp
+		nlohmann_json
+)
 
 
 # //////////////////////////////////////////////////////
@@ -166,5 +169,18 @@ add_custom_target(shaders_compilation ALL DEPENDS ${COMPILED_SHADERS})
 add_dependencies(${EXE_NAME} shaders_compilation)
 
 # //////////////////////////////////////////////////////
-#
+# tests
 # //////////////////////////////////////////////////////
+
+set(TEST_EXE_NAME ${EXE_NAME}_TESTS)
+add_executable(${TEST_EXE_NAME}
+		test/test_config.cpp
+		test/test_main.cpp
+)
+# TODO: prorer setup
+target_include_directories(${TEST_EXE_NAME}
+		PUBLIC include
+)
+target_link_libraries(${TEST_EXE_NAME}
+		nlohmann_json
+)
