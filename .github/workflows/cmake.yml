@@ -28,7 +28,9 @@ jobs:
         sudo apt install vulkan-sdk
 
     - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: |
+        cmake -E make_directory ${{runner.workspace}}/build
+        sudo apt-get install xorg-dev libglu1-mesa-dev
 
     - name: Configure CMake
       shell: bash
