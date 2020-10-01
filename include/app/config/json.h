@@ -1,7 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 
@@ -25,25 +30,25 @@ using json = nlohmann::basic_json<
 >;
 
 
-#define JSON_MAPPINGS(...)                                  \
-    void to_json(json &jsn) const {                         \
-        detail::JSONValueWriter mappings[] = {__VA_ARGS__}; \
-        for (const auto &mapping : mappings) {              \
-            mapping.apply(jsn);                             \
-        }                                                   \
-    }                                                       \
-                                                            \
-    void from_json(const json &jsn) {                       \
-        detail::JSONValueReader mappings[] = {__VA_ARGS__}; \
-        for (const auto &mapping : mappings) {              \
-            mapping.apply(jsn);                             \
-        }                                                   \
-    }                                                       \
-                                                            \
-    template <typename T>                                   \
-    friend class ::detail::has_json_mappings;               \
-                                                            \
-    template <typename T, typename SFINAE>                  \
+#define JSON_MAPPINGS(...)                                      \
+    void to_json(json &jsn) const {                             \
+        ::detail::JSONValueWriter mappings[] = {__VA_ARGS__};   \
+        for (const auto &mapping : mappings) {                  \
+            mapping.apply(jsn);                                 \
+        }                                                       \
+    }                                                           \
+                                                                \
+    void from_json(const json &jsn) {                           \
+        ::detail::JSONValueReader mappings[] = {__VA_ARGS__};   \
+        for (const auto &mapping : mappings) {                  \
+            mapping.apply(jsn);                                 \
+        }                                                       \
+    }                                                           \
+                                                                \
+    template <typename T>                                       \
+    friend class ::detail::has_json_mappings;                   \
+                                                                \
+    template <typename T, typename SFINAE>                      \
     friend class ::detail::JSONSerializer;
 
 

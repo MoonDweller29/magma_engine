@@ -2,8 +2,10 @@
 
 #include <iostream>
 
+
 int main() {
     App app;
+
     try {
         app.run();
     } catch (const std::exception& e) {

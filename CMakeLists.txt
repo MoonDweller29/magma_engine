@@ -115,7 +115,7 @@ add_executable(${EXE_NAME}
 		src/vk/descriptors/descriptorSetInfo.cpp
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
-		include/app/config/config.h)
+		include/app/config/json.h)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
