@@ -8,16 +8,20 @@ env:
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
     
+    - name: Cache submodules
+      uses: actions/cache@v1
+      id: submodules-cache
+      with:
+        path: external
+        key: ${{ runner.os }}-submodiles
+    
     - name: Install submodules
+      if: steps.submodules-cache.outputs.cache-hit != 'true'
       run: git submodule update --init
     
     - name: Install Vulkan
