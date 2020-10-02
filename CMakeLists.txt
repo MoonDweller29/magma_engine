@@ -116,7 +116,8 @@ add_executable(${EXE_NAME}
 		src/vk/descriptors/descriptorSetInfo.cpp
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
-		include/app/config/json.h)
+		include/app/config/json.h
+		include/app/logger.hpp)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
@@ -175,6 +176,7 @@ add_dependencies(${EXE_NAME} shaders_compilation)
 set(TEST_EXE_NAME ${EXE_NAME}_TESTS)
 add_executable(${TEST_EXE_NAME}
 		test/test_config.cpp
+		test/test_logger.cpp
 		test/test_main.cpp
 )
 # TODO: prorer setup
