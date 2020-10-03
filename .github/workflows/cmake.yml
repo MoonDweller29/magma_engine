@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ $default-branch ]
   push:
-    
+    branches: [ $default-branch ]
 env:
   BUILD_TYPE: Release
 
@@ -16,19 +16,7 @@ jobs:
     - name: Checkout github
       uses: actions/checkout@v2
       with:
-        clean: 'false'
         submodules: 'recursive'
-    
-    #- name: Cache submodules
-    #  uses: actions/cache@v1
-    #  id: submodules-cache
-    #  with:
-    #    path: external
-    #    key: ${{ runner.os }}-submodiles
-    
-    #- name: Install submodules
-    #  if: steps.submodules-cache.outputs.cache-hit != 'true'
-    #  run: git submodule update --init
     
     - name: Install Vulkan
       run: |
