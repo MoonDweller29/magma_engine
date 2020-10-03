@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ $default-branch ]
   push:
-    branches: [ '*' ]
+    branches: [ $all-branch ]
     
 env:
   BUILD_TYPE: Release
