@@ -88,7 +88,7 @@ void App::createUniformBuffers()
 
 void App::loadScene()
 {
-    scene = meshReader.load_scene("../models/viking_room.obj");
+    scene = meshReader.load_scene("data/models/viking_room.obj");
     vertices = scene[0].getVertices();
     indices = scene[0].getIndices();
 

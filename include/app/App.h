@@ -23,7 +23,7 @@
 class App {
     uint32_t WIN_WIDTH = 960, WIN_HEIGHT = 540;
     const int MAX_FRAMES_IN_FLIGHT = 2;
-    const std::string TEXTURE_PATH = "../models/viking_room.png";
+    const std::string TEXTURE_PATH = "data/textures/viking_room.png";
     MeshReader meshReader;
     std::vector<Mesh> scene;
     std::vector<Vertex> vertices;

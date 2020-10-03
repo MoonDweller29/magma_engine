@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.14)
 set(PROJECT_NAME vulkan_3d)
 set(EXE_NAME vk_3D)
 project (${PROJECT_NAME})
@@ -184,3 +184,56 @@ target_include_directories(${TEST_EXE_NAME}
 target_link_libraries(${TEST_EXE_NAME}
 		nlohmann_json
 )
+
+# //////////////////////////////////////////////////////
+# creating data directory
+# //////////////////////////////////////////////////////
+
+set(DATA_DIR ${CMAKE_SOURCE_DIR}/data)
+file(MAKE_DIRECTORY ${DATA_DIR})
+
+# creating log file
+set(DATA_LOADING_LOG ${CMAKE_CURRENT_BINARY_DIR}/data_loading.log)
+file(TOUCH ${DATA_LOADING_LOG})
+
+# creating symlink
+file(CREATE_LINK ${DATA_DIR} ${CMAKE_CURRENT_BINARY_DIR}/data SYMBOLIC)
+
+# //////////////////////////////////////////////////////
+# loading models and textures
+# //////////////////////////////////////////////////////
+set(MODELS_DIR ${DATA_DIR}/models)
+file(MAKE_DIRECTORY ${MODELS_DIR})
+set(TEX_DIR ${DATA_DIR}/textures)
+file(MAKE_DIRECTORY ${TEX_DIR})
+
+set(MODELS
+	viking_room.obj
+)
+
+set(TEXTURES
+	viking_room.png
+)
+
+# loading models
+foreach(MODEL_NAME ${MODELS})
+	file(DOWNLOAD
+		https://vulkan-tutorial.com/resources/${MODEL_NAME}
+		${MODELS_DIR}/${MODEL_NAME}
+		LOG LOADING_LOG
+	)
+	file(APPEND ${DATA_LOADING_LOG} ${LOADING_LOG})
+endforeach(MODEL_NAME)
+
+# loading textures
+foreach(TEX_NAME ${TEXTURES})
+	file(DOWNLOAD
+		https://vulkan-tutorial.com/resources/${TEX_NAME}
+		${TEX_DIR}/${TEX_NAME}
+		LOG LOADING_LOG
+	)
+	file(APPEND ${DATA_LOADING_LOG} ${LOADING_LOG})
+endforeach(TEX_NAME)
+# //////////////////////////////////////////////////////
+#
+# //////////////////////////////////////////////////////
