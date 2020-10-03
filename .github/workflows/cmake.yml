@@ -13,18 +13,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    
-    - name: Cache submodules
-      uses: actions/cache@v1
-      id: submodules-cache
+    - uses: actions/checkout@v2
       with:
-        path: external
-        key: ${{ runner.os }}-submodiles
+        clen: 'true'
+        submodule: 'recursive'
     
-    - name: Install submodules
-      if: steps.submodules-cache.outputs.cache-hit != 'true'
-      run: git submodule update --init
+    #- name: Cache submodules
+    #  uses: actions/cache@v1
+    #  id: submodules-cache
+    #  with:
+    #    path: external
+    #    key: ${{ runner.os }}-submodiles
+    
+    #- name: Install submodules
+    #  if: steps.submodules-cache.outputs.cache-hit != 'true'
+    #  run: git submodule update --init
     
     - name: Install Vulkan
       run: |
