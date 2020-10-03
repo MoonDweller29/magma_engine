@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout github
+      uses: actions/checkout@v2
       with:
-        clean: 'true'
+        clean: 'false'
         submodules: 'recursive'
     
     #- name: Cache submodules
