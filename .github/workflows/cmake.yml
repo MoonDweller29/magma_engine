@@ -15,8 +15,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        clen: 'true'
-        submodule: 'recursive'
+        clean: 'true'
+        submodules: 'recursive'
     
     #- name: Cache submodules
     #  uses: actions/cache@v1
