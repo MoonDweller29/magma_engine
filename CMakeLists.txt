@@ -193,8 +193,8 @@ set(DATA_DIR ${CMAKE_SOURCE_DIR}/data)
 file(MAKE_DIRECTORY ${DATA_DIR})
 
 # creating log file
-set(DATA_LOADING_LOG ${CMAKE_CURRENT_BINARY_DIR}/data_loading.log)
-file(TOUCH ${DATA_LOADING_LOG})
+set(DATA_DOWNLOADING_LOG ${CMAKE_CURRENT_BINARY_DIR}/data_downloading.log)
+file(TOUCH ${DATA_DOWNLOADING_LOG})
 
 # creating symlink
 file(CREATE_LINK ${DATA_DIR} ${CMAKE_CURRENT_BINARY_DIR}/data SYMBOLIC)
@@ -220,9 +220,9 @@ foreach(MODEL_NAME ${MODELS})
 	file(DOWNLOAD
 		https://vulkan-tutorial.com/resources/${MODEL_NAME}
 		${MODELS_DIR}/${MODEL_NAME}
-		LOG LOADING_LOG
+		LOG DOWNLOADING_LOG
 	)
-	file(APPEND ${DATA_LOADING_LOG} ${LOADING_LOG})
+	file(APPEND ${DATA_DOWNLOADING_LOG} ${DOWNLOADING_LOG})
 endforeach(MODEL_NAME)
 
 # loading textures
@@ -230,9 +230,9 @@ foreach(TEX_NAME ${TEXTURES})
 	file(DOWNLOAD
 		https://vulkan-tutorial.com/resources/${TEX_NAME}
 		${TEX_DIR}/${TEX_NAME}
-		LOG LOADING_LOG
+		LOG DOWNLOADING_LOG
 	)
-	file(APPEND ${DATA_LOADING_LOG} ${LOADING_LOG})
+	file(APPEND ${DATA_DOWNLOADING_LOG} ${DOWNLOADING_LOG})
 endforeach(TEX_NAME)
 # //////////////////////////////////////////////////////
 #

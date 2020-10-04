@@ -6,6 +6,5 @@ models/*
 .vs/*
 out/*
 external/*
-external_libs/*
 data/models/*
 data/textures/*
