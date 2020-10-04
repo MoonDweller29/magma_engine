@@ -1,6 +1,5 @@
 cmake_minimum_required (VERSION 3.14)
 set(PROJECT_NAME vulkan_3d)
-set(EXE_NAME vk_3D)
 project (${PROJECT_NAME})
 
 # get rid of annoying MSVC warnings.
@@ -8,9 +7,9 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 # set cpp std=c++17
-	set(CMAKE_CXX_STANDARD 17)
-	set(CMAKE_CXX_STANDARD_REQUIRED ON)
-	set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 # //////////////////////////////////////////////////////
@@ -47,15 +46,13 @@ set(JSON_BuildTests OFF)
 add_subdirectory(external/json)
 
 # //////////////////////////////////////////////////////
-#
+# main library
 # //////////////////////////////////////////////////////
 
+set(LIBRARY_NAME vk_3D)
 
-add_executable(${EXE_NAME}
-		src/main.cpp
+add_library(${LIBRARY_NAME} STATIC
 		include/glm_inc.h
-		include/app/App.h
-		src/app/App.cpp
 		include/app/keyboard.h
 		src/app/keyboard.cpp
 		include/app/camera.h
@@ -123,12 +120,12 @@ add_executable(${EXE_NAME}
 		include/app/config/json.h
 		include/app/log.hpp)
 
-target_include_directories(${EXE_NAME}
+target_include_directories(${LIBRARY_NAME}
 		PUBLIC include
 		PUBLIC ${Vulkan_INCLUDE_DIR}
-		PRIVATE external/stb
+		PUBLIC external/stb
 )
-target_link_libraries(${EXE_NAME}
+target_link_libraries(${LIBRARY_NAME}
 		${Vulkan_LIBRARY}
 		glfw
 		glm
@@ -138,6 +135,21 @@ target_link_libraries(${EXE_NAME}
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_DIR_PATH_LENGTH)
 target_compile_definitions(${EXE_NAME}
 		PUBLIC __FILENAME__=&__FILE__[${SOURCE_DIR_PATH_LENGTH}]
+)
+
+# //////////////////////////////////////////////////////
+# editor
+# //////////////////////////////////////////////////////
+
+set(EDITOR_EXE_NAME ${LIBRARY_NAME}_editor)
+
+add_executable(${EDITOR_EXE_NAME}
+		src/main.cpp
+		include/app/App.h
+		src/app/App.cpp
+)
+target_link_libraries(${EDITOR_EXE_NAME}
+        ${LIBRARY_NAME}
 )
 
 
@@ -152,14 +164,14 @@ file(MAKE_DIRECTORY ${SHADER_EXE_DIR})
 # shaders_compilation for linux
 set(SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/shaders)
 set(SHADERS
-	shader.vert
-	shader.frag
-	depth.vert
+		shader.vert
+		shader.frag
+		depth.vert
 )
 
 set(COMPILED_SHADERS)
 foreach(SHADER_NAME ${SHADERS})
-	set(COMPILED_SHADERS ${COMPILED_SHADERS} ${SHADER_EXE_DIR}/${SHADER_NAME}.spv)	
+	set(COMPILED_SHADERS ${COMPILED_SHADERS} ${SHADER_EXE_DIR}/${SHADER_NAME}.spv)
 endforeach(SHADER_NAME)
 
 foreach(SHADER_NAME ${SHADERS})
@@ -175,24 +187,21 @@ foreach(SHADER_NAME ${SHADERS})
 endforeach()
 
 add_custom_target(shaders_compilation ALL DEPENDS ${COMPILED_SHADERS})
-add_dependencies(${EXE_NAME} shaders_compilation)
+add_dependencies(${LIBRARY_NAME} shaders_compilation)
 
 # //////////////////////////////////////////////////////
 # tests
 # //////////////////////////////////////////////////////
 
-set(TEST_EXE_NAME ${EXE_NAME}_TESTS)
+set(TEST_EXE_NAME ${LIBRARY_NAME}_tests)
 add_executable(${TEST_EXE_NAME}
 		test/test_config.cpp
 		test/test_logger.cpp
 		test/test_main.cpp
 )
 # TODO: prorer setup
-target_include_directories(${TEST_EXE_NAME}
-		PUBLIC include
-)
 target_link_libraries(${TEST_EXE_NAME}
-		nlohmann_json
+		${LIBRARY_NAME}
 )
 target_compile_definitions(${TEST_EXE_NAME}
 		PUBLIC __FILENAME__=&__FILE__[${SOURCE_DIR_PATH_LENGTH}]
