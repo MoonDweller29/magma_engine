@@ -1,0 +1,41 @@
+name: CMake
+
+on: 
+  pull_request:
+    branches: [ $default-branch ]
+  push:
+    branches: [ $default-branch ]
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout github
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    
+    - name: Install Vulkan
+      run: |
+        wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
+        sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.148-bionic.list https://packages.lunarg.com/vulkan/1.2.148/lunarg-vulkan-1.2.148-bionic.list
+        sudo apt update
+        sudo apt install vulkan-sdk
+
+    - name: Create Build Environment
+      run: |
+        cmake -E make_directory ${{runner.workspace}}/build
+        sudo apt-get install xorg-dev libglu1-mesa-dev
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE
