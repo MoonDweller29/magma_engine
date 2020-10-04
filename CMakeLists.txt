@@ -117,7 +117,7 @@ add_executable(${EXE_NAME}
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
 		include/app/config/json.h
-		include/app/logger.hpp)
+		include/app/log.hpp)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
