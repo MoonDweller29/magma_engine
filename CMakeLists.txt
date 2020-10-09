@@ -196,8 +196,16 @@ file(MAKE_DIRECTORY ${DATA_DIR})
 set(DATA_DOWNLOADING_LOG ${CMAKE_CURRENT_BINARY_DIR}/data_downloading.log)
 file(TOUCH ${DATA_DOWNLOADING_LOG})
 
-# creating symlink
-file(CREATE_LINK ${DATA_DIR} ${CMAKE_CURRENT_BINARY_DIR}/data SYMBOLIC)
+# create build_info.config
+set(BUILD_INFO_CONF_FILENAME ${CMAKE_CURRENT_BINARY_DIR}/build_info.config)
+file(TOUCH ${BUILD_INFO_CONF_FILENAME})
+file(WRITE ${BUILD_INFO_CONF_FILENAME}
+"{
+    \"build_info\" : {
+        \"src_dir\" : \"${CMAKE_SOURCE_DIR}\"
+    }
+}\n"
+)
 
 # //////////////////////////////////////////////////////
 # loading models and textures
