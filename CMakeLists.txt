@@ -43,6 +43,7 @@ add_subdirectory(external/assimp)
 add_subdirectory(external/glm)
 
 #includind imgui
+include_directories(external/imgui)
 add_subdirectory(external/imgui)
 
 # JSON
@@ -126,6 +127,8 @@ add_executable(${EXE_NAME}
 		include/app/config/JSON.h
 		include/app/log.hpp
 		src/app/log.cpp
+		include/app/UI.h
+		src/app/UI.cpp)
 )
 
 target_include_directories(${EXE_NAME}
