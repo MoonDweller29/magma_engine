@@ -23,7 +23,10 @@
 class App {
     uint32_t WIN_WIDTH = 960, WIN_HEIGHT = 540;
     const int MAX_FRAMES_IN_FLIGHT = 2;
-    const std::string TEXTURE_PATH = "../models/viking_room.png";
+    const std::string buildInfoFilename = "build_info.config";
+    std::string dataPath;
+    std::string texturePath;
+    std::string modelPath;
     MeshReader meshReader;
     std::vector<Mesh> scene;
     std::vector<Vertex> vertices;
@@ -59,6 +62,7 @@ class App {
     Clock global_clock;
 
 	void initWindow();
+	void initFromConfig();
     void cleanupSwapChain();
 	void recreateSwapChain();
 	void loadScene();
