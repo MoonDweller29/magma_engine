@@ -42,6 +42,9 @@ add_subdirectory(external/assimp)
 # including glm
 add_subdirectory(external/glm)
 
+#includind imgui
+include_directories(external/imgui/imgui)
+
 # JSON
 set(JSON_BuildTests OFF)
 add_subdirectory(external/json)
