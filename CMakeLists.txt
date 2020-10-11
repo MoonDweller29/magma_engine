@@ -43,6 +43,7 @@ add_subdirectory(external/assimp)
 add_subdirectory(external/glm)
 
 #includind imgui
+include_directories(external/imgui)
 add_subdirectory(external/imgui)
 
 # JSON
@@ -124,7 +125,9 @@ add_executable(${EXE_NAME}
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
 		include/app/config/json.h
-		include/app/log.hpp)
+		include/app/log.hpp 
+		include/app/UI.h
+		src/app/UI.cpp)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
