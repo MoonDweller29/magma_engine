@@ -81,3 +81,14 @@ private:
     }
 
 };
+
+// TODO: move to common include file maybe
+#ifndef __FILENAME__
+#define __FILENAME__ __FILE__
+#endif
+
+#define LOG_DEBUG(...)    Log::debug    ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
+#define LOG_INFO(...)     Log::info     ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
+#define LOG_WARNING(...)  Log::warning  ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
+#define LOG_ERROR(...)    Log::error    ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
+#define LOG_CRITICAL(...) Log::critical ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)

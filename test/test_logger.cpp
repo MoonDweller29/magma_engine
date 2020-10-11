@@ -5,9 +5,9 @@ struct NonPrintable {};
 void test_logger() {
     NonPrintable test_object {};
     // TODO: testing infrastructure
-    Log::debug("This is debug logging message, ", 2);
-    Log::info("Important information about non-printable struct: ", test_object);
-    Log::warning("A warning");
-    Log::error("An error!");
-    Log::critical("A critical error!!!");
+    LOG_DEBUG("This is debug logging message, ", 2);
+    LOG_INFO("Important information about non-printable struct: ", test_object);
+    LOG_WARNING("A warning");
+    LOG_ERROR("An error!");
+    LOG_CRITICAL("A critical error!!!");
 }

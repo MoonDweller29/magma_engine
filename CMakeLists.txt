@@ -131,6 +131,10 @@ target_link_libraries(${EXE_NAME}
 		assimp
 		nlohmann_json
 )
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_DIR_PATH_LENGTH)
+target_compile_definitions(${EXE_NAME}
+		PUBLIC __FILENAME__=&__FILE__[${SOURCE_DIR_PATH_LENGTH}]
+)
 
 
 # //////////////////////////////////////////////////////
@@ -185,4 +189,7 @@ target_include_directories(${TEST_EXE_NAME}
 )
 target_link_libraries(${TEST_EXE_NAME}
 		nlohmann_json
+)
+target_compile_definitions(${TEST_EXE_NAME}
+		PUBLIC __FILENAME__=&__FILE__[${SOURCE_DIR_PATH_LENGTH}]
 )
