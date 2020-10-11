@@ -133,7 +133,7 @@ target_link_libraries(${LIBRARY_NAME}
 		nlohmann_json
 )
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_DIR_PATH_LENGTH)
-target_compile_definitions(${EXE_NAME}
+target_compile_definitions(${LIBRARY_NAME}
 		PUBLIC __FILENAME__=&__FILE__[${SOURCE_DIR_PATH_LENGTH}]
 )
 
@@ -202,9 +202,6 @@ add_executable(${TEST_EXE_NAME}
 # TODO: prorer setup
 target_link_libraries(${TEST_EXE_NAME}
 		${LIBRARY_NAME}
-)
-target_compile_definitions(${TEST_EXE_NAME}
-		PUBLIC __FILENAME__=&__FILE__[${SOURCE_DIR_PATH_LENGTH}]
 )
 
 # //////////////////////////////////////////////////////
