@@ -7,6 +7,8 @@
 #include "vk/window.h"
 #include "glm_inc.h"
 #include "app/image.h"
+#include "app/config/json.h"
+
 
 //const std::vector<Vertex> vertices = {
 //        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
@@ -48,11 +50,36 @@ bool App::isClosed()
 
 void App::run()
 {
+    initFromConfig();
     initWindow();
     initVulkan();
     mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
     mainLoop();
     cleanUp();
+}
+
+static std::string joinPath(const std::string &s1, const std::string &s2)
+{
+    if (s1[s1.size() - 1] == '/') {
+        return s1 + s2;
+    } else {
+        return s1 + "/" + s2;
+    }
+}
+
+void App::initFromConfig()
+{
+    std::ifstream file(buildInfoFilename);
+    if (!file) {
+        std::stringstream err_msg;
+        err_msg << "can't open file " << buildInfoFilename;
+        throw std::runtime_error(err_msg.str());
+    }
+    json buildInfo;
+    file >> buildInfo;
+    dataPath = joinPath(buildInfo["build_info"]["src_dir"], "data");
+    texturePath = joinPath(dataPath, "textures/viking_room.png");
+    modelPath = joinPath(dataPath, "models/viking_room.obj");
 }
 
 void App::initWindow()
@@ -88,7 +115,7 @@ void App::createUniformBuffers()
 
 void App::loadScene()
 {
-    scene = meshReader.load_scene("../models/viking_room.obj");
+    scene = meshReader.load_scene(modelPath);
     vertices = scene[0].getVertices();
     indices = scene[0].getIndices();
 
@@ -100,7 +127,7 @@ void App::loadScene()
 
 void App::createTexture()
 {
-    Image img(TEXTURE_PATH.c_str(), 4);
+    Image img(texturePath.c_str(), 4);
 
     int imageSize = img.size();
 
