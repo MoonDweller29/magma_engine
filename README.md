@@ -39,15 +39,40 @@ make
 ./vk_3D
 ```
 
-### Win32 minGW build
+### Windows build
+#### Vulkan SDK
 * install [Vulkan LunarG SDK](https://vulkan.lunarg.com/).
+* Check that installer have set all the env variables:
+	* VK\_SDK\_PATH
+	* VULKAN\_SDK
+	* also check that vulkan sdk path is added to PATH
 
-TODO:
+#### Win32 minGW build
+* create build directory
+```
+mkdir build
+cd build
+```
+* Init cmake \
+(it will automatically load minimal required data):
+```
+cmake .. -G "MinGW Makefiles"
+```
+* build vk_3D:
+```
+mingw32-make
+```
+* run vk_3D:
+```
+.\vk_3D.exe
+```
 
-### Win32 VS build
-* install [Vulkan LunarG SDK](https://vulkan.lunarg.com/).
-
-TODO:
+#### Windows VS build
+* Choose **Open a local folder**
+* Choose vulkan_3d root folder
+* Wait for cmake loading
+* Choose target **vk_3D**
+* run
 
 ## Controls
 * WASD - basic camera movement
