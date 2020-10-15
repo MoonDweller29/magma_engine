@@ -1,12 +1,12 @@
 # VULKAN_3D
 
-##Getting started from git
+## Getting started from git
 * Cloning the repo:
 ```
 git clone https://github.com/MoonDweller29/vulkan_3d
 cd vulkan_3d
 ```
-* Fetching git dependencies:
+* Fetching project dependencies:
 ```
 git submodule update --init --recursive
 ```
