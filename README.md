@@ -3,11 +3,12 @@
 ## Getting started from git
 * Cloning the repo:
 ```
+git clone --recurse-submodules https://github.com/MoonDweller29/vulkan_3d.gi
+```
+or
+```
 git clone https://github.com/MoonDweller29/vulkan_3d
 cd vulkan_3d
-```
-* Fetching project dependencies:
-```
 git submodule update --init --recursive
 ```
 
@@ -25,8 +26,7 @@ sudo apt install vulkan-sdk
 mkdir build
 cd build
 ```
-* Init cmake \
-(it will automatically load minimal required data):
+* Init cmake
 ```
 cmake ..
 ```
@@ -53,8 +53,7 @@ make
 mkdir build
 cd build
 ```
-* Init cmake \
-(it will automatically load minimal required data):
+* Init cmake
 ```
 cmake .. -G "MinGW Makefiles"
 ```
@@ -75,7 +74,7 @@ mingw32-make
 * run
 
 ## Controls
-* WASD - basic camera movement
+* WASD - basic camera movement (like in a shooter :D)
 * Hold down **Right** mouse button to rotate camera by mouse
 * E - move up
 * Q - move down
