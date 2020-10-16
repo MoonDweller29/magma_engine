@@ -43,7 +43,10 @@ add_subdirectory(external/assimp)
 add_subdirectory(external/glm)
 
 #includind imgui
-include_directories(external/imgui)
+include_directories(
+	external/imgui
+	external/imgui/examples
+)
 add_subdirectory(external/imgui)
 
 # JSON
