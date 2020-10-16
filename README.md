@@ -3,7 +3,7 @@
 ## Getting started from git
 * Cloning the repo:
 ```
-git clone --recurse-submodules https://github.com/MoonDweller29/vulkan_3d.gi
+git clone --recurse-submodules https://github.com/MoonDweller29/vulkan_3d.git
 ```
 or
 ```
