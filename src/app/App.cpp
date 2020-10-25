@@ -7,7 +7,7 @@
 #include "vk/window.h"
 #include "glm_inc.h"
 #include "app/image.h"
-#include "app/config/json.h"
+#include "app/config/JSON.h"
 
 
 //const std::vector<Vertex> vertices = {
@@ -75,7 +75,7 @@ void App::initFromConfig()
         err_msg << "can't open file " << buildInfoFilename;
         throw std::runtime_error(err_msg.str());
     }
-    json buildInfo;
+    JSON buildInfo;
     file >> buildInfo;
     dataPath = joinPath(buildInfo["build_info"]["src_dir"], "data");
     texturePath = joinPath(dataPath, "textures/viking_room.png");
@@ -479,7 +479,7 @@ void App::mainLoop()
         bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
         bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
 
-        // @TODO Add window focus handling 
+        // @TODO Add window focus handling
         if (mouse->isLocked()) {
           if (isLeftMouseButtonReleased)
           {
