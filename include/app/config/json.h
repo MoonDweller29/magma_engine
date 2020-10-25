@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
@@ -56,6 +57,35 @@ using JSON = nlohmann::basic_json<
                                                                 \
     template <typename T, typename SFINAE>                      \
     friend class ::detail::json::Serializer;
+
+
+// @TODO: use map instead of linear search
+#define JSON_ENUM_MAPPING(type, ...)                                            \
+    void to_json(JSON &json, const type &value) {                               \
+        static const std::pair<type, std::string> mappings[] = {__VA_ARGS__};   \
+        auto mapping = std::find_if(                                            \
+            std::begin(mappings),                                               \
+            std::end(mappings),                                                 \
+            [value](auto pair) { return pair.first == value; }                  \
+        );                                                                      \
+        if (mapping != std::end(mappings)) {                                    \
+            json = mapping->second;                                             \
+        } else {                                                                \
+            json = nullptr;                                                     \
+        }                                                                       \
+    }                                                                           \
+                                                                                \
+    void from_json(const JSON &json, type &value) {                             \
+        static const std::pair<type, std::string> mappings[] = {__VA_ARGS__};   \
+        auto mapping = std::find_if(                                            \
+            std::begin(mappings),                                               \
+            std::end(mappings),                                                 \
+            [&json](auto pair) { return json == pair.second; }                  \
+        );                                                                      \
+        if (mapping != std::end(mappings)) {                                    \
+            value = mapping->first;                                             \
+        }                                                                       \
+    }
 
 
 namespace detail {

@@ -3,13 +3,27 @@
 #include <string>
 #include <iostream>
 
+enum class Gender {
+    UNSPECIFIED,
+    MALE,
+    FEMALE
+};
+
+JSON_ENUM_MAPPING(Gender,
+    {Gender::MALE, "male"},
+    {Gender::FEMALE, "w*man"}
+)
+
+
 struct Person {
     std::string name = "Unknown";
     int age = 18;
+    Gender gender = Gender::UNSPECIFIED;
 
     JSON_MAPPINGS(
             {age, "age"},
-            {name, "name"}
+            {name, "name"},
+            {gender, "gender"}
     )
 };
 
@@ -45,19 +59,15 @@ namespace hidden {
 }
 
 void test_config() {
-    Person dude = {"Dude", 25};
-    Person boi = {"Boi"};
-    Person mysterious;
-
     Team team_a {
         "Team A",
         {
-            {"Dude", 25},
+            {"Dude", 25, Gender::FEMALE},
             {"Boi"},
             {}
         },
         22.8,
-        {"Captain", 99}
+        {"Captain", 99, Gender::MALE}
     };
 
     JSON dump = team_a;
