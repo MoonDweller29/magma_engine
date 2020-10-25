@@ -75,7 +75,7 @@ void App::initFromConfig()
         err_msg << "can't open file " << buildInfoFilename;
         throw std::runtime_error(err_msg.str());
     }
-    json buildInfo;
+    JSON buildInfo;
     file >> buildInfo;
     dataPath = joinPath(buildInfo["build_info"]["src_dir"], "data");
     texturePath = joinPath(dataPath, "textures/viking_room.png");
