@@ -120,7 +120,7 @@ add_executable(${EXE_NAME}
 		src/vk/descriptors/descriptorSetInfo.cpp
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
-		include/app/config/json.h
+		include/app/config/JSON.h
 		include/app/log.hpp)
 
 target_include_directories(${EXE_NAME}
@@ -159,7 +159,7 @@ set(SHADERS
 
 set(COMPILED_SHADERS)
 foreach(SHADER_NAME ${SHADERS})
-	set(COMPILED_SHADERS ${COMPILED_SHADERS} ${SHADER_EXE_DIR}/${SHADER_NAME}.spv)	
+	set(COMPILED_SHADERS ${COMPILED_SHADERS} ${SHADER_EXE_DIR}/${SHADER_NAME}.spv)
 endforeach(SHADER_NAME)
 
 foreach(SHADER_NAME ${SHADERS})

@@ -7,7 +7,7 @@
 #include "vk/window.h"
 #include "glm_inc.h"
 #include "app/image.h"
-#include "app/config/json.h"
+#include "app/config/JSON.h"
 
 
 //const std::vector<Vertex> vertices = {
@@ -479,7 +479,7 @@ void App::mainLoop()
         bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
         bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
 
-        // @TODO Add window focus handling 
+        // @TODO Add window focus handling
         if (mouse->isLocked()) {
           if (isLeftMouseButtonReleased)
           {
