@@ -17,11 +17,11 @@ public:
         ERROR,
         CRITICAL
     };
-private:
-    struct Params {
-        std::string log_filename = "default_log.log";
-        bool write_to_console = true;
-        int minimal_level =  0;
+
+    struct Config {
+        std::string   log_filename       =  "default_log.log";
+        bool          write_to_console   =  true;
+        int           minimal_level      =  0;
     private:
         JSON_MAPPINGS(
             {log_filename, "filename"},
@@ -29,80 +29,36 @@ private:
             {minimal_level, "minimal_level"},
         )
     };
-    static Params params;
-    static std::ofstream log_out_fs;
-public:
 
-    static void initFromConfig(const std::string &filename) {
-        json::load<Params>(filename, params);
-        log_out_fs.open(params.log_filename, std::ios_base::app);
-    }
+    static void initFromConfig(const Log::Config &init_config);
+    static void initFromConfig(const std::string &filename);
 
-    friend std::ostream &operator<<(std::ostream &stream, Log::Level level) {
-        switch (level) {
-            case Log::Level::DEBUG:    return stream << "[DEBUG]";
-            case Log::Level::INFO:     return stream << "[INFO]";
-            case Log::Level::WARNING:  return stream << "[WARNING]";
-            case Log::Level::ERROR:    return stream << "[ERROR]";
-            case Log::Level::CRITICAL: return stream << "[CRITICAL]";
-            default:                   return stream;
-        }
-    }
+    friend std::ostream &operator<<(std::ostream &stream, Log::Level level);
 
     template <typename ... Args>
-    static void message(Level level, const Args &... args) {
-        // TODO: output to log file
-        // TODO: log timestamp
-        // TODO: choose message format
-        // TODO: add filtering by level
-        if (params.write_to_console) {
-            std::cerr << level << ' ';
-            (print<Args>(std::cerr, args), ...);
-            std::cerr << std::endl;
-            if (log_out_fs.is_open()) {
-                log_out_fs << level << ' ';
-                (print<Args>(log_out_fs, args), ...);
-                log_out_fs << std::endl;
-            }
-        }
-    }
+    static void message(Level level, const Args &... args);
 
     template <typename ... Args>
-    static void debug(const Args &... args) {
-        if (static_cast<int>(params.minimal_level) <= static_cast<int>(Level::DEBUG)) {
-            message(Level::DEBUG, args...);
-        }
-    }
+    static void debug(const Args &... args);
 
     template <typename ... Args>
-    static void info(const Args &... args) {
-        if (static_cast<int>(params.minimal_level) <= static_cast<int>(Level::INFO)) {
-            message(Level::INFO, args...);
-        }
-    }
+    static void info(const Args &... args);
 
     template <typename ... Args>
-    static void warning(const Args &... args) {
-        if (static_cast<int>(params.minimal_level) <= static_cast<int>(Level::WARNING)) {
-            message(Level::WARNING, args...);
-        }
-    }
+    static void warning(const Args &... args);
 
     template <typename ... Args>
-    static void error(const Args &... args) {
-        if (static_cast<int>(params.minimal_level) <= static_cast<int>(Level::ERROR)) {
-            message(Level::ERROR, args...);
-        }
-    }
+    static void error(const Args &... args);
 
     template <typename ... Args>
-    static void critical(const Args &... args) {
-        if (static_cast<int>(params.minimal_level) <= static_cast<int>(Level::CRITICAL)) {
-            message(Level::CRITICAL, args...);
-        }
-    }
+    static void critical(const Args &... args);
 
 private:
+    static Config _config;
+    static std::ofstream log_out_fs;
+
+    static void init();
+
     template <typename T>
     static auto has_output_operator(std::ostream &stream, const T &object)
         -> decltype(stream << object, std::true_type());
@@ -112,14 +68,7 @@ private:
         -> std::false_type;
 
     template <typename T>
-    static void print(std::ostream &stream, const T &object) {
-        if constexpr (decltype(has_output_operator(stream, object))::value) {
-            stream << object;
-        } else {
-            stream << &object;
-        }
-    }
-
+    static void print(std::ostream &stream, const T &object);
 };
 
 // TODO: move to common include file maybe
@@ -133,5 +82,64 @@ private:
 #define LOG_ERROR(...)    Log::error    ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
 #define LOG_CRITICAL(...) Log::critical ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
 
-Log::Params Log::params;
-std::ofstream Log::log_out_fs;
+template <typename ... Args>
+void Log::message(Level level, const Args &... args) {
+    // TODO: output to log file
+    // TODO: log timestamp
+    // TODO: choose message format
+    // TODO: add filtering by level
+    if (_config.write_to_console) {
+        std::cerr << level << ' ';
+        (print<Args>(std::cerr, args), ...);
+        std::cerr << std::endl;
+        if (log_out_fs.is_open()) {
+            log_out_fs << level << ' ';
+            (print<Args>(log_out_fs, args), ...);
+            log_out_fs << std::endl;
+        }
+    }
+}
+
+template <typename ... Args>
+void Log::debug(const Args &... args) {
+    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::DEBUG)) {
+        message(Level::DEBUG, args...);
+    }
+}
+
+template <typename ... Args>
+void Log::info(const Args &... args) {
+    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::INFO)) {
+        message(Level::INFO, args...);
+    }
+}
+
+template <typename ... Args>
+void Log::warning(const Args &... args) {
+    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::WARNING)) {
+        message(Level::WARNING, args...);
+    }
+}
+
+template <typename ... Args>
+void Log::error(const Args &... args) {
+    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::ERROR)) {
+        message(Level::ERROR, args...);
+    }
+}
+
+template <typename ... Args>
+void Log::critical(const Args &... args) {
+    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::CRITICAL)) {
+        message(Level::CRITICAL, args...);
+    }
+}
+
+template <typename T>
+void Log::print(std::ostream &stream, const T &object) {
+    if constexpr (decltype(has_output_operator(stream, object))::value) {
+        stream << object;
+    } else {
+        stream << &object;
+    }
+}

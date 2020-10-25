@@ -121,7 +121,9 @@ add_executable(${EXE_NAME}
 		include/vk/cmdSync.h
 		src/vk/cmdSync.cpp
 		include/app/config/JSON.h
-		include/app/log.hpp)
+		include/app/log.hpp
+		src/app/log.cpp
+)
 
 target_include_directories(${EXE_NAME}
 		PUBLIC include
@@ -186,6 +188,7 @@ add_executable(${TEST_EXE_NAME}
 		test/test_config.cpp
 		test/test_logger.cpp
 		test/test_main.cpp
+		src/app/log.cpp
 )
 # TODO: prorer setup
 target_include_directories(${TEST_EXE_NAME}
