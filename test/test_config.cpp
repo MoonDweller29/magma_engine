@@ -60,16 +60,16 @@ void test_config() {
         {"Captain", 99}
     };
 
-    json dump = team_a;
+    JSON dump = team_a;
     std::cout << dump.dump(4) << std::endl;
 
     Team team_b;
     team_b = dump.get<Team>();
-    json dump_2 = team_b;
+    JSON dump_2 = team_b;
     std::cout << dump_2.dump(4) << std::endl;
 
     hidden::Sneaky sneaky;
-    json sneaky_json = sneaky;
+    JSON sneaky_json = sneaky;
     std::cout << sneaky_json.dump(4) << std::endl;
     sneaky_json["x"] = 12;
     hidden::Sneaky another_sneaky = sneaky_json.get<hidden::Sneaky>();
