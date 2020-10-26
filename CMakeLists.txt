@@ -189,6 +189,7 @@ add_executable(${TEST_EXE_NAME}
 		test/test_logger.cpp
 		test/test_main.cpp
 		src/app/log.cpp
+		src/app/clock.cpp
 )
 # TODO: prorer setup
 target_include_directories(${TEST_EXE_NAME}

@@ -3,7 +3,8 @@
 #include <iostream>
 #include <type_traits>
 #include <string>
-#include <array>
+#include <sstream>
+#include <app/clock.h>
 #include "app/config/JSON.h"
 
 class Log {
@@ -85,18 +86,17 @@ private:
 template <typename ... Args>
 void Log::message(Level level, const Args &... args) {
     // TODO: output to log file
-    // TODO: log timestamp
     // TODO: choose message format
     // TODO: add filtering by level
+    std::stringstream ss;
+    ss << "[" << SystemClock::getTime() << "] " << level << ' ';
+    (print<Args>(ss, args), ...);
+    ss << std::endl;
     if (_config.write_to_console) {
-        std::cerr << level << ' ';
-        (print<Args>(std::cerr, args), ...);
-        std::cerr << std::endl;
-        if (log_out_fs.is_open()) {
-            log_out_fs << level << ' ';
-            (print<Args>(log_out_fs, args), ...);
-            log_out_fs << std::endl;
-        }
+        std::cerr << ss.str();
+    }
+    if (log_out_fs.is_open()) {
+        log_out_fs << ss.str();
     }
 }
 
