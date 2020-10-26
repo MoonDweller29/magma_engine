@@ -6,9 +6,10 @@ void test_logger() {
     Log::Config config {
         "default.log",
         true,
-        0
+        Log::Level::DEBUG
     };
     Log::initFromConfig(config);
+//    Log::initFromConfig("log.config");
 
     NonPrintable test_object {};
     // TODO: testing infrastructure

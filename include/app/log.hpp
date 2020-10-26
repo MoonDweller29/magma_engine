@@ -22,7 +22,7 @@ public:
     struct Config {
         std::string   log_filename       =  "default_log.log";
         bool          write_to_console   =  true;
-        int           minimal_level      =  0;
+        Level         minimal_level      =  Level::DEBUG;
     private:
         JSON_MAPPINGS(
             {log_filename, "filename"},
@@ -71,6 +71,14 @@ private:
     template <typename T>
     static void print(std::ostream &stream, const T &object);
 };
+
+JSON_ENUM_MAPPING(Log::Level,
+    { Log::Level::DEBUG,    "DEBUG"    },
+    { Log::Level::INFO,     "INFO"     },
+    { Log::Level::WARNING,  "WARNING"  },
+    { Log::Level::ERROR,    "ERROR"    },
+    { Log::Level::CRITICAL, "CRITICAL" }
+)
 
 // TODO: move to common include file maybe
 #ifndef __FILENAME__
