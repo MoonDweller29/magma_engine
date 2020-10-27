@@ -2,6 +2,10 @@
 
 #include <iostream>
 #include <type_traits>
+#include <string>
+#include <sstream>
+#include <app/clock.h>
+#include "app/config/JSON.h"
 
 class Log {
 public:
@@ -15,54 +19,47 @@ public:
         CRITICAL
     };
 
-    friend std::ostream &operator<<(std::ostream &stream, Log::Level level) {
-        switch (level) {
-            case Log::Level::DEBUG:    return stream << "[DEBUG]";
-            case Log::Level::INFO:     return stream << "[INFO]";
-            case Log::Level::WARNING:  return stream << "[WARNING]";
-            case Log::Level::ERROR:    return stream << "[ERROR]";
-            case Log::Level::CRITICAL: return stream << "[CRITICAL]";
-            default:                   return stream;
-        }
-    }
+    struct Config {
+        std::string   log_filename       =  "default_log.log";
+        bool          write_to_console   =  true;
+        Level         minimal_level      =  Level::DEBUG;
+    private:
+        JSON_MAPPINGS(
+            {log_filename, "filename"},
+            {write_to_console, "write_to_console"},
+            {minimal_level, "minimal_level"},
+        )
+    };
+
+    static void initFromConfig(const Log::Config &init_config);
+
+    friend std::ostream &operator<<(std::ostream &stream, Log::Level level);
 
     template <typename ... Args>
-    static void message(Level level, const Args &... args) {
-        // TODO: output to log file
-        // TODO: log timestamp
-        // TODO: choose message format
-        // TODO: add filtering by level
-        std::cerr << level << ' ';
-        (print<Args>(std::cerr, args), ...);
-        std::cerr << std::endl;
-    }
+    static void message(Level level, const Args &... args);
 
     template <typename ... Args>
-    static void debug(const Args &... args) {
-        message(Level::DEBUG, args...);
-    }
+    static void debug(const Args &... args);
 
     template <typename ... Args>
-    static void info(const Args &... args) {
-        message(Level::INFO, args...);
-    }
+    static void info(const Args &... args);
 
     template <typename ... Args>
-    static void warning(const Args &... args) {
-        message(Level::WARNING, args...);
-    }
+    static void warning(const Args &... args);
 
     template <typename ... Args>
-    static void error(const Args &... args) {
-        message(Level::ERROR, args...);
-    }
+    static void error(const Args &... args);
 
     template <typename ... Args>
-    static void critical(const Args &... args) {
-        message(Level::CRITICAL, args...);
-    }
+    static void critical(const Args &... args);
 
 private:
+    static Config _config;
+    static std::ofstream log_out_fs;
+    static std::stringstream ss;
+
+    static void init();
+
     template <typename T>
     static auto has_output_operator(std::ostream &stream, const T &object)
         -> decltype(stream << object, std::true_type());
@@ -72,15 +69,21 @@ private:
         -> std::false_type;
 
     template <typename T>
-    static void print(std::ostream &stream, const T &object) {
-        if constexpr (decltype(has_output_operator(stream, object))::value) {
-            stream << object;
-        } else {
-            stream << &object;
-        }
-    }
-
+    static void print(std::ostream &stream, const T &object);
 };
+
+bool operator<=(Log::Level l1, Log::Level l2);
+bool operator>=(Log::Level l1, Log::Level l2);
+bool operator<(Log::Level l1, Log::Level l2);
+bool operator>(Log::Level l1, Log::Level l2);
+
+JSON_ENUM_MAPPING(Log::Level,
+    { Log::Level::DEBUG,    "DEBUG"    },
+    { Log::Level::INFO,     "INFO"     },
+    { Log::Level::WARNING,  "WARNING"  },
+    { Log::Level::ERROR,    "ERROR"    },
+    { Log::Level::CRITICAL, "CRITICAL" }
+)
 
 // TODO: move to common include file maybe
 #ifndef __FILENAME__
@@ -92,3 +95,55 @@ private:
 #define LOG_WARNING(...)  Log::warning  ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
 #define LOG_ERROR(...)    Log::error    ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
 #define LOG_CRITICAL(...) Log::critical ("[", __FILENAME__, ":", __LINE__, "] ", __VA_ARGS__)
+
+template <typename ... Args>
+void Log::message(Level level, const Args &... args) {
+    // TODO: choose message format
+    if (level < _config.minimal_level) {
+        return;
+    }
+    ss.str("");
+    ss << "[" << SystemClock::getTime() << "] " << level << ' ';
+    (print<Args>(ss, args), ...);
+    ss << std::endl;
+    if (_config.write_to_console) {
+        std::cerr << ss.str();
+    }
+    if (log_out_fs.is_open()) {
+        log_out_fs << ss.str();
+    }
+}
+
+template <typename ... Args>
+void Log::debug(const Args &... args) {
+    message(Level::DEBUG, args...);
+}
+
+template <typename ... Args>
+void Log::info(const Args &... args) {
+    message(Level::INFO, args...);
+}
+
+template <typename ... Args>
+void Log::warning(const Args &... args) {
+    message(Level::WARNING, args...);
+}
+
+template <typename ... Args>
+void Log::error(const Args &... args) {
+    message(Level::ERROR, args...);
+}
+
+template <typename ... Args>
+void Log::critical(const Args &... args) {
+    message(Level::CRITICAL, args...);
+}
+
+template <typename T>
+void Log::print(std::ostream &stream, const T &object) {
+    if constexpr (decltype(has_output_operator(stream, object))::value) {
+        stream << object;
+    } else {
+        stream << &object;
+    }
+}

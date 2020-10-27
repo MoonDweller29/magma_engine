@@ -61,7 +61,7 @@ using JSON = nlohmann::basic_json<
 
 // @TODO: use map instead of linear search
 #define JSON_ENUM_MAPPING(type, ...)                                            \
-    void to_json(JSON &json, const type &value) {                               \
+    inline void to_json(JSON &json, const type &value) {                               \
         static const std::pair<type, std::string> mappings[] = {__VA_ARGS__};   \
         auto mapping = std::find_if(                                            \
             std::begin(mappings),                                               \
@@ -75,7 +75,7 @@ using JSON = nlohmann::basic_json<
         }                                                                       \
     }                                                                           \
                                                                                 \
-    void from_json(const JSON &json, type &value) {                             \
+    inline void from_json(const JSON &json, type &value) {                             \
         static const std::pair<type, std::string> mappings[] = {__VA_ARGS__};   \
         auto mapping = std::find_if(                                            \
             std::begin(mappings),                                               \
