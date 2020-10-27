@@ -32,7 +32,6 @@ public:
     };
 
     static void initFromConfig(const Log::Config &init_config);
-    static void initFromConfig(const std::string &filename);
 
     friend std::ostream &operator<<(std::ostream &stream, Log::Level level);
 
@@ -57,6 +56,7 @@ public:
 private:
     static Config _config;
     static std::ofstream log_out_fs;
+    static std::stringstream ss;
 
     static void init();
 
@@ -71,6 +71,11 @@ private:
     template <typename T>
     static void print(std::ostream &stream, const T &object);
 };
+
+bool operator<=(Log::Level l1, Log::Level l2);
+bool operator>=(Log::Level l1, Log::Level l2);
+bool operator<(Log::Level l1, Log::Level l2);
+bool operator>(Log::Level l1, Log::Level l2);
 
 JSON_ENUM_MAPPING(Log::Level,
     { Log::Level::DEBUG,    "DEBUG"    },
@@ -93,10 +98,11 @@ JSON_ENUM_MAPPING(Log::Level,
 
 template <typename ... Args>
 void Log::message(Level level, const Args &... args) {
-    // TODO: output to log file
     // TODO: choose message format
-    // TODO: add filtering by level
-    std::stringstream ss;
+    if (level < _config.minimal_level) {
+        return;
+    }
+    ss.str("");
     ss << "[" << SystemClock::getTime() << "] " << level << ' ';
     (print<Args>(ss, args), ...);
     ss << std::endl;
@@ -110,37 +116,27 @@ void Log::message(Level level, const Args &... args) {
 
 template <typename ... Args>
 void Log::debug(const Args &... args) {
-    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::DEBUG)) {
-        message(Level::DEBUG, args...);
-    }
+    message(Level::DEBUG, args...);
 }
 
 template <typename ... Args>
 void Log::info(const Args &... args) {
-    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::INFO)) {
-        message(Level::INFO, args...);
-    }
+    message(Level::INFO, args...);
 }
 
 template <typename ... Args>
 void Log::warning(const Args &... args) {
-    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::WARNING)) {
-        message(Level::WARNING, args...);
-    }
+    message(Level::WARNING, args...);
 }
 
 template <typename ... Args>
 void Log::error(const Args &... args) {
-    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::ERROR)) {
-        message(Level::ERROR, args...);
-    }
+    message(Level::ERROR, args...);
 }
 
 template <typename ... Args>
 void Log::critical(const Args &... args) {
-    if (static_cast<int>(_config.minimal_level) <= static_cast<int>(Level::CRITICAL)) {
-        message(Level::CRITICAL, args...);
-    }
+    message(Level::CRITICAL, args...);
 }
 
 template <typename T>

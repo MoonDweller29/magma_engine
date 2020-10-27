@@ -9,7 +9,7 @@ void test_logger() {
         Log::Level::DEBUG
     };
     Log::initFromConfig(config);
-//    Log::initFromConfig("log.config");
+//    Log::initFromConfig(json::load<Log::Config>("log.config"));
 
     NonPrintable test_object {};
     // TODO: testing infrastructure
