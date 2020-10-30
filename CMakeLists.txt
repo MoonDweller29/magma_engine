@@ -19,31 +19,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # including Vulkan
 find_package(Vulkan REQUIRED)
 
-# compiling glfw
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(external/glfw)
-
-# compiling assimp
-if (MINGW)
-	add_compile_definitions(_SSIZE_T_DEFINED)
-endif()
-
-set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_OBJ_EXPORTER ON CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE BOOL "" FORCE)
-add_subdirectory(external/assimp)
-
-# including glm
-add_subdirectory(external/glm)
-
-# JSON
-set(JSON_BuildTests OFF)
-add_subdirectory(external/json)
+add_subdirectory(external)
 
 # //////////////////////////////////////////////////////
 # main library
@@ -119,13 +95,12 @@ add_library(${LIBRARY_NAME} STATIC
 		src/vk3d/vk/cmdSync.cpp
 		include/vk3d/app/config/JSON.h
 		include/vk3d/app/log.hpp
-		src/app/log.cpp
+		src/vk3d/app/log.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}
 		PUBLIC include
 		PUBLIC ${Vulkan_INCLUDE_DIR}
-		PUBLIC external/stb
 )
 target_link_libraries(${LIBRARY_NAME}
 		${Vulkan_LIBRARY}
@@ -133,6 +108,7 @@ target_link_libraries(${LIBRARY_NAME}
 		glm
 		assimp
 		nlohmann_json
+		stb
 )
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_DIR_PATH_LENGTH)
 target_compile_definitions(${LIBRARY_NAME}
