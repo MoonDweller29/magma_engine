@@ -1,15 +1,29 @@
-#include "vk3d/app/config/json.h"
+#include "vk3d/app/config/JSON.h"
 #include <vector>
 #include <string>
 #include <iostream>
 
+enum class Gender {
+    UNSPECIFIED,
+    MALE,
+    FEMALE
+};
+
+JSON_ENUM_MAPPING(Gender,
+    {Gender::MALE, "male"},
+    {Gender::FEMALE, "w*man"}
+)
+
+
 struct Person {
     std::string name = "Unknown";
     int age = 18;
+    Gender gender = Gender::UNSPECIFIED;
 
     JSON_MAPPINGS(
             {age, "age"},
-            {name, "name"}
+            {name, "name"},
+            {gender, "gender"}
     )
 };
 
@@ -45,31 +59,27 @@ namespace hidden {
 }
 
 void test_config() {
-    Person dude = {"Dude", 25};
-    Person boi = {"Boi"};
-    Person mysterious;
-
     Team team_a {
         "Team A",
         {
-            {"Dude", 25},
+            {"Dude", 25, Gender::FEMALE},
             {"Boi"},
             {}
         },
         22.8,
-        {"Captain", 99}
+        {"Captain", 99, Gender::MALE}
     };
 
-    json dump = team_a;
+    JSON dump = team_a;
     std::cout << dump.dump(4) << std::endl;
 
     Team team_b;
     team_b = dump.get<Team>();
-    json dump_2 = team_b;
+    JSON dump_2 = team_b;
     std::cout << dump_2.dump(4) << std::endl;
 
     hidden::Sneaky sneaky;
-    json sneaky_json = sneaky;
+    JSON sneaky_json = sneaky;
     std::cout << sneaky_json.dump(4) << std::endl;
     sneaky_json["x"] = 12;
     hidden::Sneaky another_sneaky = sneaky_json.get<hidden::Sneaky>();

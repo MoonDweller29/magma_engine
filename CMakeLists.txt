@@ -117,8 +117,10 @@ add_library(${LIBRARY_NAME} STATIC
 		src/vk3d/vk/descriptors/descriptorSetInfo.cpp
 		include/vk3d/vk/cmdSync.h
 		src/vk3d/vk/cmdSync.cpp
-		include/vk3d/app/config/json.h
-		include/vk3d/app/log.hpp)
+		include/vk3d/app/config/JSON.h
+		include/vk3d/app/log.hpp
+		src/app/log.cpp
+)
 
 target_include_directories(${LIBRARY_NAME}
 		PUBLIC include
@@ -164,9 +166,9 @@ file(MAKE_DIRECTORY ${SHADER_EXE_DIR})
 # shaders_compilation for linux
 set(SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/shaders)
 set(SHADERS
-		shader.vert
-		shader.frag
-		depth.vert
+	shader.vert
+	shader.frag
+	depth.vert
 )
 
 set(COMPILED_SHADERS)
@@ -198,6 +200,8 @@ add_executable(${TEST_EXE_NAME}
 		test/test_config.cpp
 		test/test_logger.cpp
 		test/test_main.cpp
+		src/app/log.cpp
+		src/app/clock.cpp
 )
 # TODO: prorer setup
 target_link_libraries(${TEST_EXE_NAME}
