@@ -4,8 +4,8 @@
 #include <type_traits>
 #include <string>
 #include <sstream>
-#include <app/clock.h>
-#include "app/config/JSON.h"
+#include "vk3d/app/clock.h"
+#include "vk3d/app/config/JSON.h"
 
 class Log {
 public:

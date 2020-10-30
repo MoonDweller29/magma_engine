@@ -200,8 +200,6 @@ add_executable(${TEST_EXE_NAME}
 		test/test_config.cpp
 		test/test_logger.cpp
 		test/test_main.cpp
-		src/app/log.cpp
-		src/app/clock.cpp
 )
 # TODO: prorer setup
 target_link_libraries(${TEST_EXE_NAME}
