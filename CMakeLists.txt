@@ -1,11 +1,10 @@
 cmake_minimum_required (VERSION 3.14)
-set(PROJECT_NAME vulkan_3d)
+set(PROJECT_NAME vtb)
 project (${PROJECT_NAME})
 
 # get rid of annoying MSVC warnings.
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 # set cpp std=c++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,77 +24,77 @@ add_subdirectory(external)
 # main library
 # //////////////////////////////////////////////////////
 
-set(LIBRARY_NAME vk_3D)
+set(LIBRARY_NAME vtb)
 
 add_library(${LIBRARY_NAME} STATIC
-		include/vk3d/glm_inc.h
-		include/vk3d/app/keyboard.h
-		src/vk3d/app/keyboard.cpp
-		include/vk3d/app/camera.h
-		src/vk3d/app/camera.cpp
-		include/vk3d/app/mouse.h
-		src/vk3d/app/mouse.cpp
-		include/vk3d/app/clock.h
-		src/vk3d/app/clock.cpp
-		include/vk3d/app/image.h
-		src/vk3d/app/image.cpp
+		include/vtb/glm_inc.h
+		include/vtb/app/keyboard.h
+		src/vtb/app/keyboard.cpp
+		include/vtb/app/camera.h
+		src/vtb/app/camera.cpp
+		include/vtb/app/mouse.h
+		src/vtb/app/mouse.cpp
+		include/vtb/app/clock.h
+		src/vtb/app/clock.cpp
+		include/vtb/app/image.h
+		src/vtb/app/image.cpp
 
-		include/vk3d/app/scene/mesh.h
-		src/vk3d/app/scene/mesh.cpp
-		include/vk3d/app/scene/meshReader.h
-		src/vk3d/app/scene/meshReader.cpp
-		include/vk3d/app/scene/directLight.h
-		src/vk3d/app/scene/directLight.cpp
+		include/vtb/app/scene/mesh.h
+		src/vtb/app/scene/mesh.cpp
+		include/vtb/app/scene/meshReader.h
+		src/vtb/app/scene/meshReader.cpp
+		include/vtb/app/scene/directLight.h
+		src/vtb/app/scene/directLight.cpp
 
-		include/vk3d/app/render/colorPass.h
-		src/vk3d/app/render/colorPass.cpp
-		include/vk3d/app/render/depthPass.h
-		src/vk3d/app/render/depthPass.cpp
+		include/vtb/app/render/colorPass.h
+		src/vtb/app/render/colorPass.cpp
+		include/vtb/app/render/depthPass.h
+		src/vtb/app/render/depthPass.cpp
 
-		include/vk3d/vk/vulkan_common.h
-		src/vk3d/vk/vulkan_common.cpp
-		include/vk3d/vk/vkInstanceHolder.h
-		src/vk3d/vk/vkInstanceHolder.cpp
-		include/vk3d/vk/vk_extentions.h
-		src/vk3d/vk/vk_extentions.cpp
-		include/vk3d/vk/validationLayers.h
-		src/vk3d/vk/validationLayers.cpp
-		include/vk3d/vk/physicalDevice.h
-		src/vk3d/vk/physicalDevice.cpp
-		include/vk3d/vk/logicalDevice.h
-		src/vk3d/vk/logicalDevice.cpp
-		include/vk3d/vk/logicalDevice.hpp
-		include/vk3d/vk/window.h
-		src/vk3d/vk/window.cpp
-		include/vk3d/vk/swapChain.h
-		src/vk3d/vk/swapChain.cpp
-		include/vk3d/vk/graphicsPipeline.h
-		src/vk3d/vk/graphicsPipeline.cpp
-		include/vk3d/vk/shaderModule.h
-		src/vk3d/vk/shaderModule.cpp
-		include/vk3d/vk/renderPass.h
-		src/vk3d/vk/renderPass.cpp
-		include/vk3d/vk/frameBuffer.h
-		src/vk3d/vk/frameBuffer.cpp
-		include/vk3d/vk/commandPool.h
-		src/vk3d/vk/commandPool.cpp
-		include/vk3d/vk/commandBuffer.h
-		src/vk3d/vk/commandBuffer.cpp
-		include/vk3d/vk/buffer.h
-		src/vk3d/vk/buffer.cpp
-		include/vk3d/vk/texture.h
-		src/vk3d/vk/texture.cpp
-		include/vk3d/vk/descriptors/descriptorSetLayout.h
-		src/vk3d/vk/descriptors/descriptorSetLayout.cpp
-		include/vk3d/vk/descriptors/descriptorPool.h
-		src/vk3d/vk/descriptors/descriptorPool.cpp
-		include/vk3d/vk/descriptors/descriptorSetInfo.h
-		src/vk3d/vk/descriptors/descriptorSetInfo.cpp
-		include/vk3d/vk/cmdSync.h
-		src/vk3d/vk/cmdSync.cpp
-		include/vk3d/app/config/JSON.h
-		include/vk3d/app/log.hpp
-		src/vk3d/app/log.cpp
+		include/vtb/vk/vulkan_common.h
+		src/vtb/vk/vulkan_common.cpp
+		include/vtb/vk/vkInstanceHolder.h
+		src/vtb/vk/vkInstanceHolder.cpp
+		include/vtb/vk/vk_extensions.h
+		src/vtb/vk/vk_extensions.cpp
+		include/vtb/vk/validationLayers.h
+		src/vtb/vk/validationLayers.cpp
+		include/vtb/vk/physicalDevice.h
+		src/vtb/vk/physicalDevice.cpp
+		include/vtb/vk/logicalDevice.h
+		src/vtb/vk/logicalDevice.cpp
+		include/vtb/vk/logicalDevice.hpp
+		include/vtb/vk/window.h
+		src/vtb/vk/window.cpp
+		include/vtb/vk/swapChain.h
+		src/vtb/vk/swapChain.cpp
+		include/vtb/vk/graphicsPipeline.h
+		src/vtb/vk/graphicsPipeline.cpp
+		include/vtb/vk/shaderModule.h
+		src/vtb/vk/shaderModule.cpp
+		include/vtb/vk/renderPass.h
+		src/vtb/vk/renderPass.cpp
+		include/vtb/vk/frameBuffer.h
+		src/vtb/vk/frameBuffer.cpp
+		include/vtb/vk/commandPool.h
+		src/vtb/vk/commandPool.cpp
+		include/vtb/vk/commandBuffer.h
+		src/vtb/vk/commandBuffer.cpp
+		include/vtb/vk/buffer.h
+		src/vtb/vk/buffer.cpp
+		include/vtb/vk/texture.h
+		src/vtb/vk/texture.cpp
+		include/vtb/vk/descriptors/descriptorSetLayout.h
+		src/vtb/vk/descriptors/descriptorSetLayout.cpp
+		include/vtb/vk/descriptors/descriptorPool.h
+		src/vtb/vk/descriptors/descriptorPool.cpp
+		include/vtb/vk/descriptors/descriptorSetInfo.h
+		src/vtb/vk/descriptors/descriptorSetInfo.cpp
+		include/vtb/vk/cmdSync.h
+		src/vtb/vk/cmdSync.cpp
+		include/vtb/app/config/JSON.h
+		include/vtb/app/log.hpp
+		src/vtb/app/log.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}
@@ -123,8 +122,8 @@ set(EDITOR_EXE_NAME ${LIBRARY_NAME}_editor)
 
 add_executable(${EDITOR_EXE_NAME}
 		src/main.cpp
-		include/vk3d/app/App.h
-		src/vk3d/app/App.cpp
+		include/vtb/app/App.h
+		src/vtb/app/App.cpp
 )
 target_link_libraries(${EDITOR_EXE_NAME}
         ${LIBRARY_NAME}

@@ -1,7 +1,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "vk3d/glm_inc.h"
+#include "vtb/glm_inc.h"
 // #define GLM_FORCE_RADIANS
 // #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 // #include <glm/vec4.hpp>
