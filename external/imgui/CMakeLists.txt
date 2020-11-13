@@ -12,3 +12,8 @@ set(SOURCE_LIB
 )
 
 add_library(imgui STATIC ${SOURCE_LIB})
+
+target_include_directories(imgui
+	PUBLIC imgui
+	PUBLIC imgui/examples
+)
