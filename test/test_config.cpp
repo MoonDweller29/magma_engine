@@ -1,4 +1,4 @@
-#include "vtb/app/config/JSON.h"
+#include "magma/app/config/JSON.h"
 #include <vector>
 #include <string>
 #include <iostream>

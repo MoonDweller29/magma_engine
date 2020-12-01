@@ -1,4 +1,4 @@
-#include "vtb/app/App.h"
+#include "magma/app/App.h"
 
 #include <iostream>
 

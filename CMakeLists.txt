@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.14)
-set(PROJECT_NAME vtb)
+set(PROJECT_NAME magma-engine)
 project (${PROJECT_NAME})
 
 # get rid of annoying MSVC warnings.
@@ -24,77 +24,77 @@ add_subdirectory(external)
 # main library
 # //////////////////////////////////////////////////////
 
-set(LIBRARY_NAME vtb)
+set(LIBRARY_NAME magma)
 
 add_library(${LIBRARY_NAME} STATIC
-		include/vtb/glm_inc.h
-		include/vtb/app/keyboard.h
-		src/vtb/app/keyboard.cpp
-		include/vtb/app/camera.h
-		src/vtb/app/camera.cpp
-		include/vtb/app/mouse.h
-		src/vtb/app/mouse.cpp
-		include/vtb/app/clock.h
-		src/vtb/app/clock.cpp
-		include/vtb/app/image.h
-		src/vtb/app/image.cpp
+		include/magma/glm_inc.h
+		include/magma/app/keyboard.h
+		src/magma/app/keyboard.cpp
+		include/magma/app/camera.h
+		src/magma/app/camera.cpp
+		include/magma/app/mouse.h
+		src/magma/app/mouse.cpp
+		include/magma/app/clock.h
+		src/magma/app/clock.cpp
+		include/magma/app/image.h
+		src/magma/app/image.cpp
 
-		include/vtb/app/scene/mesh.h
-		src/vtb/app/scene/mesh.cpp
-		include/vtb/app/scene/meshReader.h
-		src/vtb/app/scene/meshReader.cpp
-		include/vtb/app/scene/directLight.h
-		src/vtb/app/scene/directLight.cpp
+		include/magma/app/scene/mesh.h
+		src/magma/app/scene/mesh.cpp
+		include/magma/app/scene/meshReader.h
+		src/magma/app/scene/meshReader.cpp
+		include/magma/app/scene/directLight.h
+		src/magma/app/scene/directLight.cpp
 
-		include/vtb/app/render/colorPass.h
-		src/vtb/app/render/colorPass.cpp
-		include/vtb/app/render/depthPass.h
-		src/vtb/app/render/depthPass.cpp
+		include/magma/app/render/colorPass.h
+		src/magma/app/render/colorPass.cpp
+		include/magma/app/render/depthPass.h
+		src/magma/app/render/depthPass.cpp
 
-		include/vtb/vk/vulkan_common.h
-		src/vtb/vk/vulkan_common.cpp
-		include/vtb/vk/vkInstanceHolder.h
-		src/vtb/vk/vkInstanceHolder.cpp
-		include/vtb/vk/vk_extensions.h
-		src/vtb/vk/vk_extensions.cpp
-		include/vtb/vk/validationLayers.h
-		src/vtb/vk/validationLayers.cpp
-		include/vtb/vk/physicalDevice.h
-		src/vtb/vk/physicalDevice.cpp
-		include/vtb/vk/logicalDevice.h
-		src/vtb/vk/logicalDevice.cpp
-		include/vtb/vk/logicalDevice.hpp
-		include/vtb/vk/window.h
-		src/vtb/vk/window.cpp
-		include/vtb/vk/swapChain.h
-		src/vtb/vk/swapChain.cpp
-		include/vtb/vk/graphicsPipeline.h
-		src/vtb/vk/graphicsPipeline.cpp
-		include/vtb/vk/shaderModule.h
-		src/vtb/vk/shaderModule.cpp
-		include/vtb/vk/renderPass.h
-		src/vtb/vk/renderPass.cpp
-		include/vtb/vk/frameBuffer.h
-		src/vtb/vk/frameBuffer.cpp
-		include/vtb/vk/commandPool.h
-		src/vtb/vk/commandPool.cpp
-		include/vtb/vk/commandBuffer.h
-		src/vtb/vk/commandBuffer.cpp
-		include/vtb/vk/buffer.h
-		src/vtb/vk/buffer.cpp
-		include/vtb/vk/texture.h
-		src/vtb/vk/texture.cpp
-		include/vtb/vk/descriptors/descriptorSetLayout.h
-		src/vtb/vk/descriptors/descriptorSetLayout.cpp
-		include/vtb/vk/descriptors/descriptorPool.h
-		src/vtb/vk/descriptors/descriptorPool.cpp
-		include/vtb/vk/descriptors/descriptorSetInfo.h
-		src/vtb/vk/descriptors/descriptorSetInfo.cpp
-		include/vtb/vk/cmdSync.h
-		src/vtb/vk/cmdSync.cpp
-		include/vtb/app/config/JSON.h
-		include/vtb/app/log.hpp
-		src/vtb/app/log.cpp
+		include/magma/vk/vulkan_common.h
+		src/magma/vk/vulkan_common.cpp
+		include/magma/vk/vkInstanceHolder.h
+		src/magma/vk/vkInstanceHolder.cpp
+		include/magma/vk/vk_extensions.h
+		src/magma/vk/vk_extensions.cpp
+		include/magma/vk/validationLayers.h
+		src/magma/vk/validationLayers.cpp
+		include/magma/vk/physicalDevice.h
+		src/magma/vk/physicalDevice.cpp
+		include/magma/vk/logicalDevice.h
+		src/magma/vk/logicalDevice.cpp
+		include/magma/vk/logicalDevice.hpp
+		include/magma/vk/window.h
+		src/magma/vk/window.cpp
+		include/magma/vk/swapChain.h
+		src/magma/vk/swapChain.cpp
+		include/magma/vk/graphicsPipeline.h
+		src/magma/vk/graphicsPipeline.cpp
+		include/magma/vk/shaderModule.h
+		src/magma/vk/shaderModule.cpp
+		include/magma/vk/renderPass.h
+		src/magma/vk/renderPass.cpp
+		include/magma/vk/frameBuffer.h
+		src/magma/vk/frameBuffer.cpp
+		include/magma/vk/commandPool.h
+		src/magma/vk/commandPool.cpp
+		include/magma/vk/commandBuffer.h
+		src/magma/vk/commandBuffer.cpp
+		include/magma/vk/buffer.h
+		src/magma/vk/buffer.cpp
+		include/magma/vk/texture.h
+		src/magma/vk/texture.cpp
+		include/magma/vk/descriptors/descriptorSetLayout.h
+		src/magma/vk/descriptors/descriptorSetLayout.cpp
+		include/magma/vk/descriptors/descriptorPool.h
+		src/magma/vk/descriptors/descriptorPool.cpp
+		include/magma/vk/descriptors/descriptorSetInfo.h
+		src/magma/vk/descriptors/descriptorSetInfo.cpp
+		include/magma/vk/cmdSync.h
+		src/magma/vk/cmdSync.cpp
+		include/magma/app/config/JSON.h
+		include/magma/app/log.hpp
+		src/magma/app/log.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}
@@ -122,8 +122,8 @@ set(EDITOR_EXE_NAME ${LIBRARY_NAME}_editor)
 
 add_executable(${EDITOR_EXE_NAME}
 		src/main.cpp
-		include/vtb/app/App.h
-		src/vtb/app/App.cpp
+		include/magma/app/App.h
+		src/magma/app/App.cpp
 )
 target_link_libraries(${EDITOR_EXE_NAME}
         ${LIBRARY_NAME}
