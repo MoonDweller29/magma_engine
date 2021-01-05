@@ -189,8 +189,7 @@ void GUI::initCmdBuffers() {
 
 CmdSync GUI::draw(uint32_t i, VkFence waitFence) {
 
-    //vkWaitForFences(_device.handler(), 1, &waitFence, VK_TRUE, UINT64_MAX);
-
+    recordCmdBuffers(i);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -202,8 +201,6 @@ CmdSync GUI::draw(uint32_t i, VkFence waitFence) {
 
     VkResult result = vkQueueSubmit(_device.getGraphicsQueue(), 1, &submitInfo, _iRenderFinished.fence);
     vk_check_err(result, "failed to submit draw command buffer!");
-
-    recordCmdBuffers(i);
 
     return _iRenderFinished;
 }
