@@ -9,6 +9,7 @@
 #include "vk/buffer.h"
 #include "vk/texture.h"
 #include "app/scene/mesh.h"
+#include "app/gui/GUI.h"
 #include "scene/meshReader.h"
 #include "scene/directLight.h"
 #include "render/depthPass.h"
@@ -35,16 +36,16 @@ class App {
     std::unique_ptr<VkInstanceHolder>     instance;
     std::unique_ptr<DebugMessenger>       debugMessenger;
     std::unique_ptr<PhysicalDevice>       physicalDevice;
-    std::unique_ptr<LogicalDevice>  device;
+    std::unique_ptr<LogicalDevice>        device;
     std::unique_ptr<Window>               window;
     Keyboard *keyBoard;
     Mouse *mouse;
-    std::unique_ptr<Camera> mainCamera;
-    std::unique_ptr<DirectLight> light;
+    std::unique_ptr<Camera>               mainCamera;
+    std::unique_ptr<DirectLight>          light;
     std::unique_ptr<SwapChain>            swapChain;
-    std::unique_ptr<DepthPass> depthPass;
-    std::unique_ptr<ColorPass> colorPass;
-    std::unique_ptr<DepthPass> renderShadow;
+    std::unique_ptr<DepthPass>            depthPass;
+    std::unique_ptr<ColorPass>            colorPass;
+    std::unique_ptr<DepthPass>            renderShadow;
     Buffer vertexBuffer;
     Buffer indexBuffer;
     Buffer uniformBuffer;
@@ -60,6 +61,7 @@ class App {
     Texture shadowMap;
 
     Clock global_clock;
+    std::unique_ptr<GUI> _gui;
 
 	void initWindow();
 	void initFromConfig();
@@ -80,6 +82,8 @@ class App {
     void createSyncObjects();
     void mainLoop();
     void drawFrame();
+
+    void initGUI();
 
     void cleanUp();
 

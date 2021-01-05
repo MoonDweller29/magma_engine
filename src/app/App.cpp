@@ -53,6 +53,7 @@ void App::run()
     initFromConfig();
     initWindow();
     initVulkan();
+    initGUI();
     mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
     mainLoop();
     cleanUp();
@@ -290,6 +291,14 @@ void App::initVulkan()
     createSyncObjects();
 }
 
+void App::initGUI() {
+    _gui = std::make_unique<GUI>(*window, *instance, *physicalDevice, *device, *swapChain);
+    _gui->SetupImGui();
+    _gui->SetupWithVulkan();
+    _gui->uploadFonts();
+    _gui->initCmdBuffers();
+}
+
 void App::cleanupSwapChain()
 {
     device->deleteBuffer(uniformBuffer);
@@ -369,7 +378,7 @@ void App::drawFrame()
     waitFences = { depthPassSync.fence, shadowPassSync.fence};
     waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.semaphore, shadowPassSync.semaphore};
     CmdSync colorPassSync = colorPass->draw(imageIndex, waitSemaphores, waitFences);
-
+    _gui->draw(imageIndex, colorPassSync.fence);
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -377,7 +386,7 @@ void App::drawFrame()
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = &colorPassSync.semaphore;
 
-    VkSwapchainKHR swapChains[] = {swapChain->getSwapChain()};
+    VkSwapchainKHR swapChains[] = { swapChain->getSwapChain() };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
@@ -405,7 +414,6 @@ void App::updateUniformBuffer(uint32_t currentImage)
         light_view = !light_view;
 
     UniformBufferObject ubo{};
-//    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.model = glm::mat4x4( 1.0f );
     ubo.view = mainCamera->getViewMat();
     ubo.proj = mainCamera->getProjMat();
@@ -472,7 +480,6 @@ void App::mainLoop()
         glfwPollEvents();
         mouse->update();
         mainCamera->update(*keyBoard, *mouse, frameTime);
-//        light->lookAt(glm::vec3(0,0,0), glm::vec3(sin(time), 0.4f, cos(time)));
         light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
 
         // @TODO Move this to input class
@@ -512,6 +519,7 @@ void App::cleanUp()
         vkDestroySemaphore(device->handler(), imageAvailableSemaphores[i], nullptr);
     }
 
+    _gui.reset();
     cleanupSwapChain();
     device->deleteBuffer(shadowUniform);
     device->deleteBuffer(lightSpaceUniform);

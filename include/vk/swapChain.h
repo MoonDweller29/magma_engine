@@ -31,6 +31,7 @@ public:
     VkExtent2D getExtent() const { return extent; }
     size_t imgCount() const { return imageViews.size(); }
     std::vector<VkFramebuffer> getVkFrameBuffers() const;
+    std::vector<VkImageView> getImageViews() const;
     void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
     void clearFrameBuffers();
 };
