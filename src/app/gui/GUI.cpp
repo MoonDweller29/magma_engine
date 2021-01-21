@@ -16,13 +16,14 @@ GUI::GUI(Window &window,
     : _window(window), 
     _instance(instance), 
     _physicalDevice(physicalDevice),
-    _device(device), 
-    _swapChain(swapChain) {
-    _iCommandBuffers.allocate(_device.handler(), _device.getGraphicsCmdPool(), _swapChain.imgCount());
-    _iRenderFinished.create(_device.handler());
+    _device(device),
+    _imgCount(swapChain.imgCount()),
+    _extent(swapChain.getExtent()),
+    _iCommandBuffers(_device.handler(), _device.getGraphicsCmdPool(), swapChain.imgCount()),
+    _iRenderFinished(_device.handler()) {
     createDescriptorPool();
-    createRenderPass();
-    createFrameBuffers();
+    createRenderPass(swapChain);
+    createFrameBuffers(swapChain);
 }
 
 GUI::~GUI() {
@@ -36,9 +37,9 @@ GUI::~GUI() {
     vkDestroyDescriptorPool(_device.handler(), _iDescriptorPool, nullptr);
 }
 
-void GUI::createRenderPass() {
+void GUI::createRenderPass(SwapChain &swapChain) {
     VkAttachmentDescription attachment = {};
-    attachment.format = _swapChain.getImageFormat();
+    attachment.format = swapChain.getImageFormat();
     attachment.samples = VK_SAMPLE_COUNT_1_BIT;
     attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
     attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -78,9 +79,12 @@ void GUI::createRenderPass() {
     }
 }
 
-void GUI::createFrameBuffers() {
-    std::vector<VkImageView> attachments = _swapChain.getImageViews();
-    VkExtent2D extent = _swapChain.getExtent();
+void GUI::createFrameBuffers(SwapChain &swapChain) {
+    if (_iFrameBuffers.size() != 0) {
+        _iFrameBuffers.clear();
+    }
+    std::vector<VkImageView> attachments = swapChain.getImageViews();
+    VkExtent2D extent = swapChain.getExtent();
     for (uint32_t i = 0; i < attachments.size(); i++) {
         std::vector<VkImageView> currImage = { attachments[i] };
         _iFrameBuffers.emplace_back(currImage, extent, _iRenderPass, _device.handler());
@@ -126,7 +130,7 @@ void GUI::recordCmdBuffers(uint32_t i) {
         renderPassInfo.framebuffer = _iFrameBuffers[i].getHandler();
 
         renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = _swapChain.getExtent();
+        renderPassInfo.renderArea.extent = _extent;
 
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -143,14 +147,14 @@ void GUI::recordCmdBuffers(uint32_t i) {
     _iCommandBuffers.endCmdBuf(i);
 }
 
-void GUI::SetupImGui() {
+void GUI::setupImGui() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsDark();
 }
 
-void GUI::SetupWithVulkan() {
+void GUI::setupWithVulkan() {
     ImGui_ImplGlfw_InitForVulkan(_window.getGLFWp(), true);
     ImGui_ImplVulkan_InitInfo _initInfo = {};
     _initInfo.Instance = _instance.get();
@@ -161,8 +165,8 @@ void GUI::SetupWithVulkan() {
     _initInfo.PipelineCache = VK_NULL_HANDLE;
     _initInfo.DescriptorPool = _iDescriptorPool;
     _initInfo.Allocator = nullptr;
-    _initInfo.MinImageCount = _swapChain.imgCount(); //I don't know what mean this var
-    _initInfo.ImageCount = _swapChain.imgCount();
+    _initInfo.MinImageCount = _imgCount; //I don't know what mean this var
+    _initInfo.ImageCount = _imgCount;
     _initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     _initInfo.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&_initInfo, _iRenderPass);
@@ -176,12 +180,22 @@ void GUI::uploadFonts() {
     tmpCmdBuffer.endRecordingAndSubmit();  
 }
 
-void GUI::recreateSwapChain() {
-    //TODO
+void GUI::cleanup() {
+    _iFrameBuffers.clear();
+    vkDestroyRenderPass(_device.handler(), _iRenderPass, nullptr);
+}
+
+void GUI::recreateSwapChain(SwapChain &swapChain, uint32_t width, uint32_t height) {
+    // @TODO
+    _imgCount = swapChain.imgCount();
+    _extent = swapChain.getExtent();
+    ImGui_ImplVulkan_SetMinImageCount(_imgCount);
+    createRenderPass(swapChain);
+    createFrameBuffers(swapChain);
 }
 
 void GUI::initCmdBuffers() {
-    for (size_t i = 0; i < _swapChain.imgCount(); ++i)
+    for (size_t i = 0; i < _imgCount; ++i)
     {
         recordCmdBuffers(i);
     }

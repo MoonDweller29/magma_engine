@@ -18,16 +18,17 @@ class GUI
     VkInstanceHolder& _instance;
     PhysicalDevice& _physicalDevice;
     LogicalDevice& _device;
-    SwapChain& _swapChain;
 
     std::vector<FrameBuffer> _iFrameBuffers;
     VkRenderPass _iRenderPass;
     VkDescriptorPool _iDescriptorPool;
     CommandBufferArr _iCommandBuffers;
     CmdSync _iRenderFinished;
+    int _imgCount;
+    VkExtent2D _extent;
 
-    void createRenderPass();
-    void createFrameBuffers();
+    void createRenderPass(SwapChain &swapChain);
+    void createFrameBuffers(SwapChain &swapChain);
     void createCommandBuffers();
     void createDescriptorPool();
     void recordCmdBuffers(uint32_t i);
@@ -36,10 +37,11 @@ public:
     GUI(Window &window, VkInstanceHolder &instance, PhysicalDevice &physicalDevice,
         LogicalDevice &device, SwapChain &swapChain);
     ~GUI();
-    void SetupImGui();
-    void SetupWithVulkan();
+    void cleanup();
+    void setupImGui();
+    void setupWithVulkan();
     void uploadFonts();
-    void recreateSwapChain();
+    void recreateSwapChain(SwapChain &swapChain, uint32_t width, uint32_t height);
     void initCmdBuffers();
     CmdSync draw(uint32_t i, VkFence waitFence);
 };

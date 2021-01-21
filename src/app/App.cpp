@@ -250,7 +250,6 @@ void App::createDepthResources()
             VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-
 void App::initVulkan()
 {
     instance = std::make_unique<VkInstanceHolder>();
@@ -293,8 +292,8 @@ void App::initVulkan()
 
 void App::initGUI() {
     _gui = std::make_unique<GUI>(*window, *instance, *physicalDevice, *device, *swapChain);
-    _gui->SetupImGui();
-    _gui->SetupWithVulkan();
+    _gui->setupImGui();
+    _gui->setupWithVulkan();
     _gui->uploadFonts();
     _gui->initCmdBuffers();
 }
@@ -316,6 +315,7 @@ void App::recreateSwapChain()
 {
     vkDeviceWaitIdle(device->handler());
 
+    _gui->cleanup();
     cleanupSwapChain();
 
     window->updateResolution();
@@ -344,6 +344,7 @@ void App::recreateSwapChain()
             swapChain->getVkFrameBuffers()
     );
     mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
+    _gui->recreateSwapChain(*swapChain, WINT_WIDTH, WIN_HEIGHT);
 }
 
 void App::drawFrame()
