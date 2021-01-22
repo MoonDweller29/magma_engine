@@ -344,7 +344,7 @@ void App::recreateSwapChain()
             swapChain->getVkFrameBuffers()
     );
     mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
-    _gui->recreateSwapChain(*swapChain, WINT_WIDTH, WIN_HEIGHT);
+    _gui->recreateSwapChain(*swapChain);
 }
 
 void App::drawFrame()

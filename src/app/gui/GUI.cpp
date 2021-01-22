@@ -1,40 +1,52 @@
+/**
+ * @file GUI.cpp
+ * @author Nastormo
+ * @brief Cpp file that contains the GUI declaration
+ * @version 0.1
+ * @date 2021-01-22
+ */
 #include "app/gui/GUI.h"
+
+#include <iostream>
 
 #include "vk/vulkan_common.h"
 
+/**
+ * @brief Support callback function
+ * 
+ * @param err Contains execution key 
+ */
 void check_vk_result(VkResult err)
 {
     if (err != VK_SUCCESS)
        throw std::runtime_error("Error in init with vulkan");
 }
 
-GUI::GUI(Window &window, 
-    VkInstanceHolder &instance, 
-    PhysicalDevice &physicalDevice,
-    LogicalDevice &device, 
-    SwapChain &swapChain) 
+GUI::GUI(Window &window, VkInstanceHolder &instance, 
+    PhysicalDevice &physicalDevice, LogicalDevice &device, SwapChain &swapChain) 
     : _window(window), 
     _instance(instance), 
     _physicalDevice(physicalDevice),
     _device(device),
     _imgCount(swapChain.imgCount()),
     _extent(swapChain.getExtent()),
-    _iCommandBuffers(_device.handler(), _device.getGraphicsCmdPool(), swapChain.imgCount()),
-    _iRenderFinished(_device.handler()) {
+    _commandBuffers(_device.handler(), _device.getGraphicsCmdPool(), swapChain.imgCount()),
+    _renderFinished(_device.handler()),
+    _iAnotherWindow(true) {
     createDescriptorPool();
     createRenderPass(swapChain);
     createFrameBuffers(swapChain);
 }
 
 GUI::~GUI() {
-    _iFrameBuffers.clear();
-    vkDestroyRenderPass(_device.handler(), _iRenderPass, nullptr);
+    _frameBuffers.clear();
+    vkDestroyRenderPass(_device.handler(), _renderPass, nullptr);
     vkFreeCommandBuffers(_device.handler(), _device.getGraphicsCmdPool(),
-        _iCommandBuffers.size(), _iCommandBuffers.data());
+        _commandBuffers.size(), _commandBuffers.data());
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    vkDestroyDescriptorPool(_device.handler(), _iDescriptorPool, nullptr);
+    vkDestroyDescriptorPool(_device.handler(), _descriptorPool, nullptr);
 }
 
 void GUI::createRenderPass(SwapChain &swapChain) {
@@ -74,20 +86,17 @@ void GUI::createRenderPass(SwapChain &swapChain) {
     info.dependencyCount = 1;
     info.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(_device.handler(), &info, nullptr, &_iRenderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(_device.handler(), &info, nullptr, &_renderPass) != VK_SUCCESS) {
         throw std::runtime_error("Could not create Dear ImGui's render pass");
     }
 }
 
 void GUI::createFrameBuffers(SwapChain &swapChain) {
-    if (_iFrameBuffers.size() != 0) {
-        _iFrameBuffers.clear();
-    }
     std::vector<VkImageView> attachments = swapChain.getImageViews();
     VkExtent2D extent = swapChain.getExtent();
     for (uint32_t i = 0; i < attachments.size(); i++) {
         std::vector<VkImageView> currImage = { attachments[i] };
-        _iFrameBuffers.emplace_back(currImage, extent, _iRenderPass, _device.handler());
+        _frameBuffers.emplace_back(currImage, extent, _renderPass, _device.handler());
     }
 }
 
@@ -112,23 +121,36 @@ void GUI::createDescriptorPool() {
     pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
     pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
     pool_info.pPoolSizes = pool_sizes;
-    vkCreateDescriptorPool(_device.handler(), &pool_info, nullptr, &_iDescriptorPool);
+    vkCreateDescriptorPool(_device.handler(), &pool_info, nullptr, &_descriptorPool);
+}
+
+void GUI::createInterface() {
+    ImGui::ShowMetricsWindow();
+
+    bool show_another_window = true;
+    if (_iAnotherWindow)
+    {
+        ImGui::Begin("Another Window", &_iAnotherWindow);
+        ImGui::Text("Hello from another window!");
+        if (ImGui::Button("Close Me"))
+            _iAnotherWindow = false;
+        ImGui::End();
+    }
 }
 
 void GUI::recordCmdBuffers(uint32_t i) {
-    _iCommandBuffers.resetCmdBuf(i);
+    _commandBuffers.resetCmdBuf(i);
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ImGui::ShowDemoWindow();
+    createInterface();
     ImGui::Render();
-    VkCommandBuffer cmdBuf = _iCommandBuffers.beginCmdBuf(i);
+    VkCommandBuffer cmdBuf = _commandBuffers.beginCmdBuf(i);
     {
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = _iRenderPass;
-        renderPassInfo.framebuffer = _iFrameBuffers[i].getHandler();
-
+        renderPassInfo.renderPass = _renderPass;
+        renderPassInfo.framebuffer = _frameBuffers[i].getHandler();
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = _extent;
 
@@ -144,7 +166,7 @@ void GUI::recordCmdBuffers(uint32_t i) {
         }
         vkCmdEndRenderPass(cmdBuf);
     }
-    _iCommandBuffers.endCmdBuf(i);
+    _commandBuffers.endCmdBuf(i);
 }
 
 void GUI::setupImGui() {
@@ -163,13 +185,13 @@ void GUI::setupWithVulkan() {
     _initInfo.QueueFamily = 1; //May be wrong
     _initInfo.Queue = _device.getGraphicsQueue();
     _initInfo.PipelineCache = VK_NULL_HANDLE;
-    _initInfo.DescriptorPool = _iDescriptorPool;
+    _initInfo.DescriptorPool = _descriptorPool;
     _initInfo.Allocator = nullptr;
     _initInfo.MinImageCount = _imgCount; //I don't know what mean this var
     _initInfo.ImageCount = _imgCount;
     _initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     _initInfo.CheckVkResultFn = check_vk_result;
-    ImGui_ImplVulkan_Init(&_initInfo, _iRenderPass);
+    ImGui_ImplVulkan_Init(&_initInfo, _renderPass);
 }
 
 void GUI::uploadFonts() {
@@ -181,12 +203,11 @@ void GUI::uploadFonts() {
 }
 
 void GUI::cleanup() {
-    _iFrameBuffers.clear();
-    vkDestroyRenderPass(_device.handler(), _iRenderPass, nullptr);
+    _frameBuffers.clear();
+    vkDestroyRenderPass(_device.handler(), _renderPass, nullptr);
 }
 
-void GUI::recreateSwapChain(SwapChain &swapChain, uint32_t width, uint32_t height) {
-    // @TODO
+void GUI::recreateSwapChain(SwapChain &swapChain) {
     _imgCount = swapChain.imgCount();
     _extent = swapChain.getExtent();
     ImGui_ImplVulkan_SetMinImageCount(_imgCount);
@@ -202,19 +223,16 @@ void GUI::initCmdBuffers() {
 }
 
 CmdSync GUI::draw(uint32_t i, VkFence waitFence) {
-
     recordCmdBuffers(i);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &_iCommandBuffers[i];
+    submitInfo.pCommandBuffers = &_commandBuffers[i];
 
-    vkResetFences(_device.handler(), 1, &_iRenderFinished.fence);
+    vkResetFences(_device.handler(), 1, &_renderFinished.fence);
 
-    VkResult result = vkQueueSubmit(_device.getGraphicsQueue(), 1, &submitInfo, _iRenderFinished.fence);
+    VkResult result = vkQueueSubmit(_device.getGraphicsQueue(), 1, &submitInfo, _renderFinished.fence);
     vk_check_err(result, "failed to submit draw command buffer!");
-
-    return _iRenderFinished;
+    return _renderFinished;
 }
