@@ -42,6 +42,9 @@ add_subdirectory(external/assimp)
 # including glm
 add_subdirectory(external/glm)
 
+#includind imgui
+add_subdirectory(external/imgui)
+
 # JSON
 set(JSON_BuildTests OFF)
 add_subdirectory(external/json)
@@ -123,6 +126,8 @@ add_executable(${EXE_NAME}
 		include/app/config/JSON.h
 		include/app/log.hpp
 		src/app/log.cpp
+		include/app/gui/GUI.h
+		src/app/gui/GUI.cpp
 )
 
 target_include_directories(${EXE_NAME}
@@ -136,6 +141,7 @@ target_link_libraries(${EXE_NAME}
 		glm
 		assimp
 		nlohmann_json
+		imgui
 )
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_DIR_PATH_LENGTH)
 target_compile_definitions(${EXE_NAME}

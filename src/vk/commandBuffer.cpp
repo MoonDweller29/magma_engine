@@ -23,6 +23,10 @@ void CommandBufferArr::allocate(VkDevice device, VkCommandPool commandPool, uint
     vk_check_err(result, "failed to allocate command buffers!");
 }
 
+void CommandBufferArr::resetCmdBuf(uint32_t i, VkCommandBufferResetFlags flag) {
+    vkResetCommandBuffer(commandBuffers[i], flag);
+}
+
 VkCommandBuffer CommandBufferArr::beginCmdBuf(uint32_t i)
 {
     VkCommandBufferBeginInfo beginInfo{};

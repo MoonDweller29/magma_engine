@@ -164,6 +164,10 @@ std::vector<VkFramebuffer> SwapChain::getVkFrameBuffers() const
     return buffers;
 }
 
+std::vector<VkImageView> SwapChain::getImageViews() const {
+    return imageViews;
+}
+
 SwapChain::~SwapChain()
 {
     for (auto imageView : imageViews)
