@@ -66,6 +66,8 @@ add_executable(${EXE_NAME}
 		src/app/clock.cpp
 		include/app/image.h
 		src/app/image.cpp
+		include/app/textureDump.h
+		src/app/textureDump.cpp
 
 		include/app/scene/mesh.h
 		src/app/scene/mesh.cpp

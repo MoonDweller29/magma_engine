@@ -7,9 +7,16 @@
  */
 #pragma once
 
-class FrameDump {
+
+#include "vk/buffer.h"
+#include "vk/texture.h"
+#include "vk/logicalDevice.h"
+#include "vk/commandBuffer.h"
+
+class TextureDump {
 private:
 
 public:
+    void save(LogicalDevice &device, Texture &texture);
 
 };

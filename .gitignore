@@ -8,3 +8,5 @@ out/*
 external/*
 data/models/*
 data/textures/*
+/.vscode
+/.cache

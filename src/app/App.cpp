@@ -365,6 +365,8 @@ void App::drawFrame()
     std::vector<VkFence> waitFences = { colorPass->getSync().fence };
     std::vector<VkSemaphore> waitSemaphores;
     CmdSync depthPassSync = depthPass->draw(waitSemaphores, waitFences);
+    TextureDump textureDump;
+    textureDump.save(*device, depthTex);
     CmdSync shadowPassSync = renderShadow->draw(waitSemaphores, waitFences);
     waitFences = { depthPassSync.fence, shadowPassSync.fence};
     waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.semaphore, shadowPassSync.semaphore};

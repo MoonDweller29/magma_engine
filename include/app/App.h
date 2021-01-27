@@ -17,6 +17,8 @@
 #include "camera.h"
 #include "clock.h"
 
+#include "app/textureDump.h"
+
 
 
 
