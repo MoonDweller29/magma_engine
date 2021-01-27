@@ -442,7 +442,7 @@ void App::updateShadowUniform()
 
     LightSpaceUniform lu{};
     lu.lightSpaceMat = ubo.proj * ubo.view;
-    vkMapMemory(device->handler(), lightSpaceUniform.mem, 0, sizeof(ubo), 0, &data_p);
+    vkMapMemory(device->handler(), lightSpaceUniform.mem, 0, sizeof(lu), 0, &data_p);
     memcpy(data_p, &lu, sizeof(lu));
     vkUnmapMemory(device->handler(), lightSpaceUniform.mem);
 }
