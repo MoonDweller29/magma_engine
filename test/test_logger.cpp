@@ -1,4 +1,4 @@
-#include <app/log.hpp>
+#include <magma/app/log.hpp>
 
 struct NonPrintable {};
 

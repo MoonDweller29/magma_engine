@@ -5,6 +5,5 @@ models/*
 .idea/*
 .vs/*
 out/*
-external/*
 data/models/*
 data/textures/*
