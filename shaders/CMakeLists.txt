@@ -1,7 +1,7 @@
 # @TODO: proper paths and subprojects
 
 # create dir for shaders
-set(SHADER_EXE_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+set(SHADER_EXE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 file(MAKE_DIRECTORY ${SHADER_EXE_DIR})
 
 # shaders_compilation for linux
