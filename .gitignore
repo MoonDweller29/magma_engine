@@ -7,3 +7,5 @@ models/*
 out/*
 data/models/*
 data/textures/*
+/.vscode
+/.cache
