@@ -245,7 +245,8 @@ void App::createDepthResources()
     depthTex = device->createTexture2D(
             WIN_WIDTH, WIN_HEIGHT, depthFormat,
             VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
@@ -340,6 +341,8 @@ void App::recreateSwapChain()
 void App::drawFrame()
 {
     vkWaitForFences(device->handler(), 1, &colorPass->getSync().fence, VK_TRUE, UINT64_MAX);
+    TextureDump textureDump;
+    textureDump.save(*device, depthTex);
 
     if (window->wasResized())
         recreateSwapChain();
@@ -365,8 +368,6 @@ void App::drawFrame()
     std::vector<VkFence> waitFences = { colorPass->getSync().fence };
     std::vector<VkSemaphore> waitSemaphores;
     CmdSync depthPassSync = depthPass->draw(waitSemaphores, waitFences);
-    TextureDump textureDump;
-    textureDump.save(*device, depthTex);
     CmdSync shadowPassSync = renderShadow->draw(waitSemaphores, waitFences);
     waitFences = { depthPassSync.fence, shadowPassSync.fence};
     waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.semaphore, shadowPassSync.semaphore};
