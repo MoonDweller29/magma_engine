@@ -1,4 +1,4 @@
-# VULKAN_3D
+# Magma Engine
 
 ## Getting started from git
 * Cloning the repo:
@@ -30,13 +30,13 @@ cd build
 ```
 cmake ..
 ```
-* build vk_3D:
+* build magma_editor:
 ```
 make
 ```
-* run vk_3D:
+* run magma_editor:
 ```
-./vk_3D
+./magma_editor
 ```
 
 ### Windows build
@@ -57,20 +57,20 @@ cd build
 ```
 cmake .. -G "MinGW Makefiles"
 ```
-* build vk_3D:
+* build magma_editor:
 ```
 mingw32-make
 ```
-* run vk_3D:
+* run magma_editor:
 ```
-.\vk_3D.exe
+.\magma_editor.exe
 ```
 
 #### Windows VS build
 * Choose **Open a local folder**
 * Choose vulkan_3d root folder
 * Wait for cmake loading
-* Choose target **vk_3D**
+* Choose target **magma_editor**
 * run
 
 ## Controls
@@ -79,3 +79,5 @@ mingw32-make
 * E - move up
 * Q - move down
 * toggle **2** to switch camera to light view
+* hold down **Ctrl** to move slower
+* hold down **L Shift** to move faster
