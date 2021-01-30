@@ -182,22 +182,24 @@ void save(const std::string &filename, const T &object) {
     file << std::setw(4) << json;
 }
 
-template <typename T>
-void load(const std::string &filename, T &object) {
-    JSON json;
-    std::ifstream file(filename);
-    file >> json;
-    detail::json::Serializer<T>::from_json(json, object);
-}
+void save(const std::string &filename, const JSON &json);
 
 template <typename T>
 T load(const std::string &filename) {
-    JSON json;
     T object;
-    std::ifstream file(filename);
-    file >> json;
+    JSON json = load<JSON>(filename);
+
     detail::json::Serializer<T>::from_json(json, object);
     return object;
+}
+
+template <>
+JSON load<JSON>(const std::string &filename);
+
+template <typename T>
+void load(const std::string &filename, T &object) {
+    JSON json = load<JSON>(filename);
+    detail::json::Serializer<T>::from_json(json, object);
 }
 
 } // namespace json

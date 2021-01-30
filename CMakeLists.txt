@@ -93,6 +93,7 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/vk/cmdSync.h
 		src/magma/vk/cmdSync.cpp
 		include/magma/app/config/JSON.h
+		src/magma/app/config/JSON.cpp
 		include/magma/app/log.hpp
 		src/magma/app/log.cpp
 )
