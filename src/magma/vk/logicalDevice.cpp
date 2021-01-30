@@ -50,7 +50,7 @@ LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice)
     }
 
     VkResult result = vkCreateDevice(physicalDevice.device(), &createInfo, nullptr, &device);
-    vk_check_err(result, "failed to create logical device!");
+    VK_CHECK_ERR(result, "failed to create logical device!");
 
     std::cout << "Logical Device is created\n";
     acquireQueues(indices);
@@ -96,7 +96,7 @@ Buffer LogicalDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     VkResult result = vkCreateBuffer(device, &bufferInfo, nullptr, &buffer.buf);
-    vk_check_err(result, "failed to create vertex buffer!");
+    VK_CHECK_ERR(result, "failed to create vertex buffer!");
 
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(device, buffer.buf, &memRequirements);
@@ -107,7 +107,7 @@ Buffer LogicalDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
     allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
 
     result = vkAllocateMemory(device, &allocInfo, nullptr, &buffer.mem);
-    vk_check_err(result, "failed to allocate vertex buffer memory!");
+    VK_CHECK_ERR(result, "failed to allocate vertex buffer memory!");
 
     vkBindBufferMemory(device, buffer.buf, buffer.mem, 0);
 
@@ -167,7 +167,7 @@ Texture LogicalDevice::createTexture2D(
 
     VkImage textureImage;
     VkResult result = vkCreateImage(device, &imageInfo, nullptr, &textureImage);
-    vk_check_err(result, "failed to create image!");
+    VK_CHECK_ERR(result, "failed to create image!");
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(device, textureImage, &memRequirements);
@@ -179,7 +179,7 @@ Texture LogicalDevice::createTexture2D(
 
     VkDeviceMemory textureImageMemory;
     result = vkAllocateMemory(device, &allocInfo, nullptr, &textureImageMemory);
-    vk_check_err(result, "failed to allocate image memory!");
+    VK_CHECK_ERR(result, "failed to allocate image memory!");
 
     vkBindImageMemory(device, textureImage, textureImageMemory, 0);
 
@@ -309,7 +309,7 @@ VkImageView LogicalDevice::createImageView(VkImage image, VkFormat format, VkIma
 
     VkImageView imageView;
     VkResult result = vkCreateImageView(device, &viewInfo, nullptr, &imageView);
-    vk_check_err(result, "failed to create texture image view!");
+    VK_CHECK_ERR(result, "failed to create texture image view!");
 
     return imageView;
 }

@@ -18,10 +18,10 @@ void CmdSync::create(VkDevice device)
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     VkResult result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore);
-    vk_check_err(result, "failed to create semaphores!");
+    VK_CHECK_ERR(result, "failed to create semaphores!");
 
     result = vkCreateFence(device, &fenceInfo, nullptr, &fence);
-    vk_check_err(result, "failed to create fences!");
+    VK_CHECK_ERR(result, "failed to create fences!");
 }
 
 CmdSync::CmdSync(VkDevice device)

@@ -29,7 +29,7 @@ DescriptorPool::DescriptorPool(
     poolInfo.flags = 0; //Optional
 
     VkResult result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &pool);
-    vk_check_err(result, "failed to create descriptor pool!");
+    VK_CHECK_ERR(result, "failed to create descriptor pool!");
 }
 
 DescriptorPool::DescriptorPool(DescriptorPool &&other_pool):
@@ -51,7 +51,7 @@ VkDescriptorSet DescriptorPool::allocateSet(VkDescriptorSetLayout layout)
 
     VkDescriptorSet descriptorSet;
     VkResult result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
-    vk_check_err(result, "failed to allocate descriptor sets!");
+    VK_CHECK_ERR(result, "failed to allocate descriptor sets!");
     setCount+=1;
 
     return descriptorSet;
@@ -74,7 +74,7 @@ std::vector<VkDescriptorSet> DescriptorPool::allocateSets(VkDescriptorSetLayout 
     allocInfo.pSetLayouts = layouts.data();
 
     VkResult result = vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data());
-    vk_check_err(result, "failed to allocate descriptor sets!");
+    VK_CHECK_ERR(result, "failed to allocate descriptor sets!");
     setCount += descriptorCount;
 
     return descriptorSets;

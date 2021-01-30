@@ -86,7 +86,7 @@ void DepthPass::createRenderPass()
     renderPassInfo.pDependencies = &dependency;
 
     VkResult result = vkCreateRenderPass(device.handler(), &renderPassInfo, nullptr, &renderPass);
-    vk_check_err(result, "failed to create render pass!");
+    VK_CHECK_ERR(result, "failed to create render pass!");
 }
 
 void DepthPass::recordCmdBuffers(
@@ -162,7 +162,7 @@ CmdSync DepthPass::draw(
     vkResetFences(device.handler(), 1, &renderFinished.fence);
 
     VkResult result = vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, renderFinished.fence);
-    vk_check_err(result, "failed to submit draw command buffer!");
+    VK_CHECK_ERR(result, "failed to submit draw command buffer!");
 
     return renderFinished;
 }

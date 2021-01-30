@@ -111,7 +111,7 @@ DebugMessenger::DebugMessenger(const VkInstance &vk_instance)
     DebugMessenger::fillCreateInfo(createInfo);
 
     VkResult result = CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger);
-    vk_check_err(result, "failed to set up debug messenger!");
+    VK_CHECK_ERR(result, "failed to set up debug messenger!");
 }
 
 DebugMessenger::~DebugMessenger()

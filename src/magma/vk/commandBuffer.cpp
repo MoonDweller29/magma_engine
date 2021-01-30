@@ -20,7 +20,7 @@ void CommandBufferArr::allocate(VkDevice device, VkCommandPool commandPool, uint
     allocInfo.commandBufferCount = count;
 
     VkResult result = vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data());
-    vk_check_err(result, "failed to allocate command buffers!");
+    VK_CHECK_ERR(result, "failed to allocate command buffers!");
 }
 
 VkCommandBuffer CommandBufferArr::beginCmdBuf(uint32_t i)
@@ -32,7 +32,7 @@ VkCommandBuffer CommandBufferArr::beginCmdBuf(uint32_t i)
 
     //resets command buffer
     VkResult result = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
-    vk_check_err(result, "failed to begin recording command buffer!");
+    VK_CHECK_ERR(result, "failed to begin recording command buffer!");
 
     return commandBuffers.at(i);
 }
@@ -40,7 +40,7 @@ VkCommandBuffer CommandBufferArr::beginCmdBuf(uint32_t i)
 void CommandBufferArr::endCmdBuf(uint32_t i)
 {
     VkResult result = vkEndCommandBuffer(commandBuffers[i]);
-    vk_check_err(result, "failed to record command buffer!");
+    VK_CHECK_ERR(result, "failed to record command buffer!");
 }
 
 //void CommandBufferArr::record(
@@ -62,7 +62,7 @@ void CommandBufferArr::endCmdBuf(uint32_t i)
 //
 //        //resets command buffer
 //        VkResult result = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
-//        vk_check_err(result, "failed to begin recording command buffer!");
+//        VK_CHECK_ERR(result, "failed to begin recording command buffer!");
 //        {
 //            VkRenderPassBeginInfo renderPassInfo{};
 //            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -95,7 +95,7 @@ void CommandBufferArr::endCmdBuf(uint32_t i)
 //            vkCmdEndRenderPass(commandBuffers[i]);
 //        }
 //        result = vkEndCommandBuffer(commandBuffers[i]);
-//        vk_check_err(result, "failed to record command buffer!");
+//        VK_CHECK_ERR(result, "failed to record command buffer!");
 //    }
 //}
 

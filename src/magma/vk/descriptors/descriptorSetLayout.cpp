@@ -24,7 +24,7 @@ const VkDescriptorSetLayout &DescriptorSetLayout::createLayout(VkDevice device)
     layoutInfo.pBindings = bindings.data();
 
     VkResult result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &layout);
-    vk_check_err(result, "failed to create descriptor set layout!");
+    VK_CHECK_ERR(result, "failed to create descriptor set layout!");
 
     pools.push_back(DescriptorPool(device, poolSizes, DescriptorPool::DEFAULT_SET_COUNT));
 

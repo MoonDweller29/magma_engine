@@ -99,7 +99,7 @@ void App::createSyncObjects()
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkResult result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
-        vk_check_err(result, "failed to create semaphores!");
+        VK_CHECK_ERR(result, "failed to create semaphores!");
     }
 }
 
@@ -185,7 +185,7 @@ void App::createTextureSampler()
     samplerInfo.maxLod = 0.0f;
 
     VkResult result = vkCreateSampler(device->handler(), &samplerInfo, nullptr, &textureSampler);
-    vk_check_err(result, "failed to create texture sampler!");
+    VK_CHECK_ERR(result, "failed to create texture sampler!");
 }
 
 void App::createShadowMapSampler()
@@ -211,7 +211,7 @@ void App::createShadowMapSampler()
     samplerInfo.maxLod = 0.0f;
 
     VkResult result = vkCreateSampler(device->handler(), &samplerInfo, nullptr, &shadowMapSampler);
-    vk_check_err(result, "failed to create texture sampler!");
+    VK_CHECK_ERR(result, "failed to create texture sampler!");
 }
 
 

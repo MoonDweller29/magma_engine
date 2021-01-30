@@ -164,7 +164,7 @@ GraphicsPipeline::GraphicsPipeline(
     device(device)
 {
     VkResult result = vkCreatePipelineLayout(device, &pipelineSettings.getPipelineLayoutInfo(), nullptr, &pipelineLayout);
-    vk_check_err(result, "failed to create pipeline layout!");
+    VK_CHECK_ERR(result, "failed to create pipeline layout!");
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -187,7 +187,7 @@ GraphicsPipeline::GraphicsPipeline(
     pipelineInfo.basePipelineIndex = -1; // Optional
 
     result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline);
-    vk_check_err(result, "failed to create graphics pipeline!");
+    VK_CHECK_ERR(result, "failed to create graphics pipeline!");
 }
 
 GraphicsPipeline::~GraphicsPipeline()
