@@ -43,23 +43,7 @@ struct LightSpaceUniform {
     glm::mat4 lightSpaceMat;
 };
 
-bool App::isClosed()
-{
-	return keyBoard->wasPressed(GLFW_KEY_ESCAPE);
-}
-
-void App::run()
-{
-    initFromConfig();
-    initWindow();
-    initVulkan();
-    mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
-    mainLoop();
-    cleanUp();
-}
-
-static std::string joinPath(const std::string &s1, const std::string &s2)
-{
+static std::string joinPath(const std::string &s1, const std::string &s2) {
     if (s1[s1.size() - 1] == '/') {
         return s1 + s2;
     } else {
@@ -67,19 +51,43 @@ static std::string joinPath(const std::string &s1, const std::string &s2)
     }
 }
 
-void App::initFromConfig()
+
+bool App::isClosed()
 {
-    std::ifstream file(buildInfoFilename);
-    if (!file) {
-        std::stringstream err_msg;
-        err_msg << "can't open file " << buildInfoFilename;
-        throw std::runtime_error(err_msg.str());
+	return keyBoard->wasPressed(GLFW_KEY_ESCAPE);
+}
+
+int App::run() {
+    try {
+        initFromConfig();
+        initWindow();
+        initVulkan();
+        mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
+        mainLoop();
+        cleanUp();
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
-    JSON buildInfo;
-    file >> buildInfo;
+
+    return EXIT_SUCCESS;
+}
+
+
+void App::initFromConfig() {
+    JSON buildInfo = json::load<JSON>(buildInfoFilename);
     dataPath = joinPath(buildInfo["build_info"]["src_dir"], "data");
     texturePath = joinPath(dataPath, "textures/viking_room.png");
     modelPath = joinPath(dataPath, "models/viking_room.obj");
+    JSON main_config = json::load<JSON>(joinPath(dataPath, "config.json"));
+
+    Log::Config log_config = main_config["logger"].get<Log::Config>();
+    Log::initFromConfig(log_config);
+
+    WIN_WIDTH = main_config["win_width"];
+    WIN_HEIGHT = main_config["win_height"];
+
+    LOG_INFO("Inited from config file");
 }
 
 void App::initWindow()
@@ -99,7 +107,7 @@ void App::createSyncObjects()
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkResult result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
-        vk_check_err(result, "failed to create semaphores!");
+        VK_CHECK_ERR(result, "failed to create semaphores!");
     }
 }
 
@@ -185,7 +193,7 @@ void App::createTextureSampler()
     samplerInfo.maxLod = 0.0f;
 
     VkResult result = vkCreateSampler(device->handler(), &samplerInfo, nullptr, &textureSampler);
-    vk_check_err(result, "failed to create texture sampler!");
+    VK_CHECK_ERR(result, "failed to create texture sampler!");
 }
 
 void App::createShadowMapSampler()
@@ -211,7 +219,7 @@ void App::createShadowMapSampler()
     samplerInfo.maxLod = 0.0f;
 
     VkResult result = vkCreateSampler(device->handler(), &samplerInfo, nullptr, &shadowMapSampler);
-    vk_check_err(result, "failed to create texture sampler!");
+    VK_CHECK_ERR(result, "failed to create texture sampler!");
 }
 
 

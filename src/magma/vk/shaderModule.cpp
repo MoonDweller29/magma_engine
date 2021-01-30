@@ -12,7 +12,7 @@ Shader::Shader(VkDevice device, const std::string &name, Stage stage)
     createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
     VkResult result = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
-    vk_check_err(result, "failed to create shader module!");
+    VK_CHECK_ERR(result, "failed to create shader module!");
     this->device = device;
 
     //vertShaderStageInfo creation

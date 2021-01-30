@@ -60,7 +60,7 @@ RenderPass::RenderPass(VkDevice device, VkPhysicalDevice physicalDevice, VkForma
     renderPassInfo.pDependencies = &dependency;
 
     VkResult result = vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
-    vk_check_err(result, "failed to create render pass!");
+    VK_CHECK_ERR(result, "failed to create render pass!");
 }
 
 RenderPass::~RenderPass()

@@ -18,7 +18,7 @@ FrameBuffer::FrameBuffer(
     framebufferInfo.layers = 1;
 
     VkResult result = vkCreateFramebuffer(device, &framebufferInfo, nullptr, &frameBuffer);
-    vk_check_err(result, "failed to create framebuffer!");
+    VK_CHECK_ERR(result, "failed to create framebuffer!");
 }
 
 FrameBuffer::FrameBuffer(FrameBuffer&& other)

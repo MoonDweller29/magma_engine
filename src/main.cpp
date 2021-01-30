@@ -5,15 +5,11 @@
 
 int main() {
     App app;
+    int exit_code = app.run();
 
-    try {
-        app.run();
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
+
 
     std::cout << "\n\n Bebyak \n\n";
 
-    return EXIT_SUCCESS;
+    return exit_code;
 }

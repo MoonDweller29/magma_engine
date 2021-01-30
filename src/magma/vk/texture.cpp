@@ -15,7 +15,7 @@ Texture::Texture(VkImage img, VkDeviceMemory mem,
     info.viewInfo = getDefaultViewInfo();
 
     VkResult result = vkCreateImageView(device, &info.viewInfo, nullptr, &imageView);
-    vk_check_err(result, "failed to create texture image view!");
+    VK_CHECK_ERR(result, "failed to create texture image view!");
 }
 
 VkImageViewCreateInfo Texture::getDefaultViewInfo()
@@ -66,5 +66,5 @@ void Texture::setView(VkImageViewCreateInfo viewInfo)
     info.viewInfo = viewInfo;
 
     VkResult result = vkCreateImageView(info.device, &info.viewInfo, nullptr, &imageView);
-    vk_check_err(result, "failed to create texture image view!");
+    VK_CHECK_ERR(result, "failed to create texture image view!");
 }

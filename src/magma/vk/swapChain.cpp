@@ -115,7 +115,7 @@ SwapChain::SwapChain(LogicalDevice &device, const PhysicalDevice &physicalDevice
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     VkResult result = vkCreateSwapchainKHR(device.handler(), &createInfo, nullptr, &swapChain);
-    vk_check_err(result, "failed to create swap chain!");
+    VK_CHECK_ERR(result, "failed to create swap chain!");
 
     imageFormat = surfaceFormat.format;
     extent = resolution;

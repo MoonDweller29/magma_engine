@@ -43,7 +43,7 @@ VkInstanceHolder::VkInstanceHolder()
     }
 
     VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
-    vk_check_err(result, "failed to create instance!");
+    VK_CHECK_ERR(result, "failed to create instance!");
 
     print_available_extensions();
 }

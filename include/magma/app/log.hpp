@@ -22,11 +22,13 @@ public:
     struct Config {
         std::string   log_filename       =  "default_log.log";
         bool          write_to_console   =  true;
+        bool          write_to_file      =  false;
         Level         minimal_level      =  Level::DEBUG;
     private:
         JSON_MAPPINGS(
-            {log_filename, "filename"},
+            {log_filename, "output_filename"},
             {write_to_console, "write_to_console"},
+            {write_to_file, "write_to_file"},
             {minimal_level, "minimal_level"},
         )
     };
@@ -109,7 +111,7 @@ void Log::message(Level level, const Args &... args) {
     if (_config.write_to_console) {
         std::cerr << ss.str();
     }
-    if (log_out_fs.is_open()) {
+    if (log_out_fs.is_open() && _config.write_to_file) {
         log_out_fs << ss.str();
     }
 }

@@ -2,11 +2,14 @@
 #include <vulkan/vulkan.h>
 #include <stdexcept>
 #include <vector>
+#include "magma/app/log.hpp"
 
-inline void vk_check_err(const VkResult& result, const char* message)
-{
-    if (result != VK_SUCCESS)
-       throw std::runtime_error(message);
+#define VK_CHECK_ERR(result, message)      \
+{                                          \
+    if (result != VK_SUCCESS) {            \
+       LOG_ERROR(message);                 \
+       throw std::runtime_error(message);  \
+    }                                      \
 }
 
 VkFormat findSupportedFormat(

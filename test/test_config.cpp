@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <cstdio>
 
 enum class Gender {
     UNSPECIFIED,
@@ -86,6 +87,7 @@ void test_config() {
     std::cout << another_sneaky.get_x() << std::endl;
 
     std::string test_person_filename = "test_person.json";
+    std::remove(test_person_filename.c_str());
     Person test_person = json::load<Person>(test_person_filename); //must log error if file not exist
     test_person.age = 98;
     test_person.gender = Gender::FEMALE;
