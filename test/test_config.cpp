@@ -85,4 +85,16 @@ void test_config() {
     hidden::Sneaky another_sneaky = sneaky_json.get<hidden::Sneaky>();
     std::cout << another_sneaky.get_x() << std::endl;
 
+    std::string test_person_filename = "test_person.json";
+    Person test_person = json::load<Person>(test_person_filename); //must log error if file not exist
+    test_person.age = 98;
+    test_person.gender = Gender::FEMALE;
+    test_person.name = "JSON_PERSON";
+
+    json::save(test_person_filename, test_person);
+    test_person.age = 2;
+    test_person = json::load<Person>(test_person_filename); //should be ok now
+    JSON test_person_json = test_person;
+    std::cout << test_person_json.dump(4) << std::endl;
+
 }
