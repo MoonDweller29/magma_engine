@@ -174,15 +174,14 @@ public:
 
 namespace json {
 
+void save(const std::string &filename, const JSON &json);
+
 template <typename T>
 void save(const std::string &filename, const T &object) {
     JSON json;
     detail::json::Serializer<T>::to_json(json, object);
-    std::ofstream file(filename);
-    file << std::setw(4) << json;
+    save(filename, json);
 }
-
-void save(const std::string &filename, const JSON &json);
 
 template <typename T>
 T load(const std::string &filename) {
