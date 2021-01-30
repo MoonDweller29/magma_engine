@@ -6,6 +6,7 @@ void test_logger() {
     Log::Config config {
         "default.log",
         true,
+        true,
         Log::Level::DEBUG
     };
     Log::initFromConfig(config);
