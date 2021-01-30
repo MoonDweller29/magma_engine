@@ -6,7 +6,7 @@
 
 #define VK_CHECK_ERR(result, message)\
 {\
-    if (result == VK_SUCCESS) {\
+    if (result != VK_SUCCESS) {\
        LOG_ERROR(message);\
        throw std::runtime_error(message);\
     }\

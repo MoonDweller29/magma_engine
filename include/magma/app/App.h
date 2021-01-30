@@ -21,6 +21,10 @@
 
 
 class App {
+public:
+    int run();
+
+private:
     uint32_t WIN_WIDTH = 960, WIN_HEIGHT = 540;
     const int MAX_FRAMES_IN_FLIGHT = 2;
     const std::string buildInfoFilename = "build_info.config";
@@ -30,8 +34,8 @@ class App {
     MeshReader meshReader;
     std::vector<Mesh> scene;
     std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
 
+    std::vector<uint32_t> indices;
     std::unique_ptr<VkInstanceHolder>     instance;
     std::unique_ptr<DebugMessenger>       debugMessenger;
     std::unique_ptr<PhysicalDevice>       physicalDevice;
@@ -57,16 +61,16 @@ class App {
     VkSampler textureSampler;
     VkSampler shadowMapSampler;
     Texture depthTex;
+
     Texture shadowMap;
 
     Clock global_clock;
-
-	void initWindow();
-	void initFromConfig();
+    void initWindow();
+    void initFromConfig();
     void cleanupSwapChain();
-	void recreateSwapChain();
-	void loadScene();
+    void recreateSwapChain();
 
+    void loadScene();
     void initVulkan();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
@@ -79,11 +83,9 @@ class App {
     void createDepthResources();
     void createSyncObjects();
     void mainLoop();
+
     void drawFrame();
 
     void cleanUp();
-
     bool isClosed();
-public:
-    void run();
 };
