@@ -26,7 +26,7 @@ public:
         Level         minimal_level      =  Level::DEBUG;
     private:
         JSON_MAPPINGS(
-            {log_filename, "filename"},
+            {log_filename, "output_filename"},
             {write_to_console, "write_to_console"},
             {write_to_file, "write_to_file"},
             {minimal_level, "minimal_level"},

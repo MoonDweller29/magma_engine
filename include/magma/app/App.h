@@ -34,8 +34,8 @@ private:
     MeshReader meshReader;
     std::vector<Mesh> scene;
     std::vector<Vertex> vertices;
-
     std::vector<uint32_t> indices;
+
     std::unique_ptr<VkInstanceHolder>     instance;
     std::unique_ptr<DebugMessenger>       debugMessenger;
     std::unique_ptr<PhysicalDevice>       physicalDevice;
@@ -61,10 +61,10 @@ private:
     VkSampler textureSampler;
     VkSampler shadowMapSampler;
     Texture depthTex;
-
     Texture shadowMap;
 
     Clock global_clock;
+
     void initWindow();
     void initFromConfig();
     void cleanupSwapChain();

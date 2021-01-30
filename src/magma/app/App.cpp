@@ -43,6 +43,15 @@ struct LightSpaceUniform {
     glm::mat4 lightSpaceMat;
 };
 
+static std::string joinPath(const std::string &s1, const std::string &s2) {
+    if (s1[s1.size() - 1] == '/') {
+        return s1 + s2;
+    } else {
+        return s1 + "/" + s2;
+    }
+}
+
+
 bool App::isClosed()
 {
 	return keyBoard->wasPressed(GLFW_KEY_ESCAPE);
@@ -64,13 +73,6 @@ int App::run() {
     return EXIT_SUCCESS;
 }
 
-static std::string joinPath(const std::string &s1, const std::string &s2) {
-    if (s1[s1.size() - 1] == '/') {
-        return s1 + s2;
-    } else {
-        return s1 + "/" + s2;
-    }
-}
 
 void App::initFromConfig() {
     JSON buildInfo = json::load<JSON>(buildInfoFilename);

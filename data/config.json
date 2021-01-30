@@ -2,7 +2,7 @@
     "win_width"  : 960,
     "win_height" : 540,
     "logger" : {
-        "filename"         : "default_log.log",
+        "output_filename"  : "default_log.log",
         "write_to_console" : true,
         "write_to_file"    : true,
         "minimal_level"    : "DEBUG"

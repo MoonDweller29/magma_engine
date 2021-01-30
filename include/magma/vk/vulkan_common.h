@@ -4,13 +4,13 @@
 #include <vector>
 #include "magma/app/log.hpp"
 
-#define VK_CHECK_ERR(result, message)\
-{\
-    if (result != VK_SUCCESS) {\
-       LOG_ERROR(message);\
-       throw std::runtime_error(message);\
-    }\
-}\
+#define VK_CHECK_ERR(result, message)      \
+{                                          \
+    if (result != VK_SUCCESS) {            \
+       LOG_ERROR(message);                 \
+       throw std::runtime_error(message);  \
+    }                                      \
+}
 
 VkFormat findSupportedFormat(
         VkPhysicalDevice physicalDevice,
