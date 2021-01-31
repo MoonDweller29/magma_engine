@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "magma/app/App.h"
+#include "magma/vk/CmdSync.h"
 #include "magma/vk/buffers/BufferManager.h"
 #include "magma/vk/textures/TextureManager.h"
 #include "magma/vk/vulkan_common.h"
@@ -208,6 +209,11 @@ void App::initVulkan() {
     createResolutionDependentRenderModules();
 }
 
+void App::createPostProcess() {
+    _motionVector = std::make_unique<MotionVector>(*_device, _gBuffer->getDepth(), _mainCamera->getProjMat());
+    _motionVector->recordCmdBuffers();
+}
+
 void App::createResolutionDependentRenderModules() {
     _depthPass = std::make_unique<DepthPass>(_device->getDevice(), _gBuffer->getDepth(),
                                              vk::ImageLayout::eDepthStencilAttachmentOptimal,
@@ -230,9 +236,11 @@ void App::createResolutionDependentRenderModules() {
             _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
     );
     _swapChainImageSupplier->recordCmdBuffers();
+    createPostProcess();
 }
 
 void App::clearResolutionDependentRenderModules() {
+    _motionVector.reset();
     _depthPass.reset();
     _mainColorPass.reset();
     _gBufferResolve.reset();
@@ -289,8 +297,10 @@ void App::drawFrame() {
 
     updateUniformBuffer(imageIndex);
     updateShadowUniform();
+    _motionVector->updateUniformBuffer(_mainCamera->getViewMat());
 
-    CmdSync depthPassSync = _depthPass->draw({}, {});
+    CmdSync motionVectorSync = _motionVector->computeMotionVector();
+    CmdSync depthPassSync = _depthPass->draw({}, {motionVectorSync.getFence()});
     CmdSync shadowPassSync = _renderShadow->draw({}, {});
     const CmdSync &mainColorPassSync = _mainColorPass->draw(
             { depthPassSync.getSemaphore() }, {}

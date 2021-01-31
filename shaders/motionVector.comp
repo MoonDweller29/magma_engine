@@ -1,0 +1,20 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (binding = 0) uniform sampler2D inputImage;
+layout (binding = 1, rgba8) uniform image2D resultImage;
+layout(binding = 2) uniform UniformBufferObject {
+	mat4 transform;
+} ubo;
+
+void main()
+{
+	float depth = texture(inputImage, ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y)).r;
+	ivec2 imageSize = textureSize(inputImage, 0);
+
+	vec4 res = ubo.transform * vec4((float(gl_GlobalInvocationID.x) / imageSize.x - 0.5f) * 2.0f, (float(gl_GlobalInvocationID.y) / imageSize.y - 0.5f) * 2.0f, depth, 1.0);
+	res = res / res.w;
+	res.xy = res.xy / 2.0f + 0.5f;
+
+	imageStore(resultImage, ivec2(gl_GlobalInvocationID.xy), res);
+}

@@ -15,6 +15,7 @@ set(SHADERS
         imageProcess.vert
         imageTransfer.frag
         gBufferResolve.frag
+        motionVector.comp
 )
 
 set(COMPILED_SHADERS)

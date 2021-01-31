@@ -14,6 +14,7 @@
 #include "magma/app/render/MainColorPass.h"
 #include "magma/app/render/GBufferResolve.h"
 #include "magma/app/render/SwapChainImageSupplier.h"
+#include "magma/app/postProcess/MotionVector.h"
 #include "magma/glm_inc.h"
 #include "magma/app/Camera.h"
 #include "clock.h"
@@ -55,6 +56,7 @@ private:
     std::unique_ptr<MainColorPass>          _mainColorPass;
     std::unique_ptr<GBufferResolve>         _gBufferResolve;
     std::unique_ptr<SwapChainImageSupplier> _swapChainImageSupplier;
+    std::unique_ptr<MotionVector>           _motionVector;
 
     Buffer _vertexBuffer;
     Buffer _indexBuffer;
@@ -90,6 +92,7 @@ private:
     void updateShadowUniform();
     void createMainRenderTarget();
     void createSyncObjects();
+    void createPostProcess();
     void mainLoop();
 
     void drawFrame();

@@ -39,6 +39,9 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/app/image.h
 		src/magma/app/image.cpp
 
+		include/magma/app/compute/ComputePass.h
+		src/magma/app/compute/ComputePass.cpp
+
 		include/magma/app/scene/mesh.h
 		src/magma/app/scene/mesh.cpp
 		include/magma/app/scene/meshReader.h
@@ -56,6 +59,9 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/app/render/GBufferResolve.cpp
 		include/magma/app/render/SwapChainImageSupplier.h
 		src/magma/app/render/SwapChainImageSupplier.cpp
+
+		include/magma/app/postProcess/MotionVector.h
+		src/magma/app/postProcess/MotionVector.cpp
 
 		include/magma/vk/vulkan_common.h
 		src/magma/vk/vulkan_common.cpp
