@@ -4,7 +4,20 @@
 #include "magma/vk/vk_extensions.h"
 #include "magma/vk/validationLayers.h"
 
+#if ( VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1 )
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+#endif
+
 Context::Context() {
+    #if ( VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1 )
+        LOG_INFO("DYNAMIC LOADER");
+
+        static vk::DynamicLoader  dl;
+        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+                dl.getProcAddress<PFN_vkGetInstanceProcAddr>( "vkGetInstanceProcAddr" );
+        VULKAN_HPP_DEFAULT_DISPATCHER.init( vkGetInstanceProcAddr );
+    #endif
+
     if (ValidationLayers::ENABLED && !ValidationLayers::supported()) {
         LOG_WARNING("validation layers requested, but not available!");
     }
@@ -38,7 +51,13 @@ Context::Context() {
 
     auto [result, _instance] = vk::createInstance(createInfo);
     VK_HPP_CHECK_ERR(result, "failed to create instance!");
+    _c_instance = VkInstance (_instance);
     print_available_extensions();
+
+    #if ( VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1 )
+        // initialize function pointers for instance
+        VULKAN_HPP_DEFAULT_DISPATCHER.init( _instance );
+    #endif
 }
 
 Context::~Context() {

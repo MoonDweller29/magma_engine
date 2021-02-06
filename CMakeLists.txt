@@ -116,6 +116,8 @@ target_compile_definitions(${LIBRARY_NAME}
 )
 # vulkan-hpp defines
 target_compile_definitions(${LIBRARY_NAME} PUBLIC VULKAN_HPP_NO_EXCEPTIONS)
+target_compile_definitions(${LIBRARY_NAME} PUBLIC VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
+
 
 # //////////////////////////////////////////////////////
 # editor
