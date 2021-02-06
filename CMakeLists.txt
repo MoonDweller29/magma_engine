@@ -53,8 +53,8 @@ add_library(${LIBRARY_NAME} STATIC
 
 		include/magma/vk/vulkan_common.h
 		src/magma/vk/vulkan_common.cpp
-		include/magma/vk/vkInstanceHolder.h
-		src/magma/vk/vkInstanceHolder.cpp
+		include/magma/vk/Context.h
+		src/magma/vk/Context.cpp
 		include/magma/vk/vk_extensions.h
 		src/magma/vk/vk_extensions.cpp
 		include/magma/vk/validationLayers.h

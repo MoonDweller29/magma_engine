@@ -1,10 +1,10 @@
-#include "magma/vk/vkInstanceHolder.h"
+#include "magma/vk/Context.h"
 
 #include "magma/vk/vulkan_common.h"
 #include "magma/vk/vk_extensions.h"
 #include "magma/vk/validationLayers.h"
 
-VkInstanceHolder::VkInstanceHolder()
+Context::Context()
 {
     if (enableValidationLayers && !check_validation_layer_support())
     {
@@ -48,7 +48,7 @@ VkInstanceHolder::VkInstanceHolder()
     print_available_extensions();
 }
 
-VkInstanceHolder::~VkInstanceHolder()
+Context::~Context()
 {
     vkDestroyInstance(instance, nullptr);
 }

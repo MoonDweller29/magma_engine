@@ -1,13 +1,13 @@
 #pragma once
 #include <vulkan/vulkan.h>
 
-class VkInstanceHolder
+class Context
 {
 private:
 	VkInstance instance;
 public:
 	const VkInstance &get(){ return instance; }
 
-	VkInstanceHolder();
-	~VkInstanceHolder();
+	Context();
+	~Context();
 };

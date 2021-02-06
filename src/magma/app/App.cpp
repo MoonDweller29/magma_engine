@@ -260,7 +260,7 @@ void App::createDepthResources()
 
 void App::initVulkan()
 {
-    instance = std::make_unique<VkInstanceHolder>();
+    instance = std::make_unique<Context>();
     debugMessenger = std::make_unique<DebugMessenger>(instance->get());
     window->initSurface(instance->get());
     physicalDevice = std::make_unique<PhysicalDevice>(instance->get(), window->getSurface());
