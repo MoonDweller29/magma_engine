@@ -1,7 +1,7 @@
 #include "magma/vk/Context.h"
 
 #include "magma/vk/vulkan_common.h"
-#include "magma/vk/vk_extensions.h"
+#include "magma/vk/Extensions.h"
 #include "magma/vk/validationLayers.h"
 
 #if ( VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1 )
@@ -10,8 +10,6 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 Context::Context() {
     #if ( VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1 )
-        LOG_INFO("DYNAMIC LOADER");
-
         static vk::DynamicLoader  dl;
         PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
                 dl.getProcAddress<PFN_vkGetInstanceProcAddr>( "vkGetInstanceProcAddr" );
@@ -33,10 +31,11 @@ Context::Context() {
     vk::InstanceCreateInfo createInfo;
     createInfo.pApplicationInfo = &appInfo;
 
-    auto requiredExtensions = get_required_extensions();
+    auto requiredExtensions = Extensions::requiredExtensions();
+    Extensions::printRequiredExtensions();
+    Extensions::printAvailableExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
-    print_required_extensions(requiredExtensions);
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (ValidationLayers::ENABLED) {
@@ -51,8 +50,7 @@ Context::Context() {
 
     auto [result, _instance] = vk::createInstance(createInfo);
     VK_HPP_CHECK_ERR(result, "failed to create instance!");
-    _c_instance = VkInstance (_instance);
-    print_available_extensions();
+    _c_instance = VkInstance(_instance);
 
     #if ( VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1 )
         // initialize function pointers for instance
