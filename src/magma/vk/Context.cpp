@@ -2,7 +2,7 @@
 
 #include "magma/vk/vulkan_common.h"
 #include "magma/vk/Extensions.h"
-#include "magma/vk/validationLayers.h"
+#include "magma/vk/validationLayers/DebugMessenger.h"
 
 #if ( VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1 )
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE

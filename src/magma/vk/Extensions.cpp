@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <iostream>
-#include "magma/vk/validationLayers.h"
+#include "magma/vk/validationLayers/ValidationLayers.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>

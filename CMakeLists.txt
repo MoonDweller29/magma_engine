@@ -57,8 +57,10 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/Context.cpp
         include/magma/vk/Extensions.h
         src/magma/vk/Extensions.cpp
-		include/magma/vk/validationLayers.h
-		src/magma/vk/validationLayers.cpp
+		include/magma/vk/validationLayers/ValidationLayers.h
+		src/magma/vk/validationLayers/ValidationLayers.cpp
+		include/magma/vk/validationLayers/DebugMessenger.h
+		src/magma/vk/validationLayers/DebugMessenger.cpp
 		include/magma/vk/physicalDevice.h
 		src/magma/vk/physicalDevice.cpp
 		include/magma/vk/logicalDevice.h

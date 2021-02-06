@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "magma/vk/Context.h"
-#include "magma/vk/validationLayers.h"
+#include "magma/vk/validationLayers/DebugMessenger.h"
 #include "magma/vk/physicalDevice.h"
 #include "magma/vk/logicalDevice.h"
 #include "magma/vk/window.h"
