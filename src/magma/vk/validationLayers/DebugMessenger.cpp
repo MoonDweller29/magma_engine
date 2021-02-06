@@ -8,17 +8,30 @@
 //VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: Informational message like the creation of a resource
 //VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: Message about behavior that is not necessarily an error, but very likely a bug in your application
 //VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: Message about behavior that is invalid and may cause crashes
+Log::Level DebugMessenger::msgSeverityToLogLevel(VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity) {
+    switch (msgSeverity) {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+            return Log::Level::DEBUG;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+            return Log::Level::INFO;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+            return Log::Level::WARNING;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+            return Log::Level::ERROR;
+        default:
+            return Log::Level::CRITICAL;
+    }
+}
+
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* pUserData)
-{
-//    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-//    {
-//        // Message is important enough to show
-//    }
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+        void* pUserData
+) {
+    Log::message(DebugMessenger::msgSeverityToLogLevel(messageSeverity),
+            "[VALIDATION LAYER] ", pCallbackData->pMessage);
 
     return VK_FALSE;
 }
@@ -27,8 +40,8 @@ static VkResult CreateDebugUtilsMessengerEXT(
         VkInstance instance,
         const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
         const VkAllocationCallbacks* pAllocator,
-        VkDebugUtilsMessengerEXT* pDebugMessenger)
-{
+        VkDebugUtilsMessengerEXT* pDebugMessenger
+) {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -40,16 +53,15 @@ static VkResult CreateDebugUtilsMessengerEXT(
 static void DestroyDebugUtilsMessengerEXT(
         VkInstance instance,
         VkDebugUtilsMessengerEXT debugMessenger,
-        const VkAllocationCallbacks* pAllocator)
-{
+        const VkAllocationCallbacks* pAllocator
+) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
     }
 }
 
-void DebugMessenger::fillCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)
-{
+void DebugMessenger::fillCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -58,8 +70,7 @@ void DebugMessenger::fillCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createIn
     createInfo.pUserData = nullptr; // Optional
 }
 
-DebugMessenger::DebugMessenger(const VkInstance &vk_instance)
-{
+DebugMessenger::DebugMessenger(const VkInstance &vk_instance) {
     instance = vk_instance;
     if (!ValidationLayers::ENABLED)
         return;
@@ -71,8 +82,8 @@ DebugMessenger::DebugMessenger(const VkInstance &vk_instance)
     VK_CHECK_ERR(result, "failed to set up debug messenger!");
 }
 
-DebugMessenger::~DebugMessenger()
-{
-    if (ValidationLayers::ENABLED)
+DebugMessenger::~DebugMessenger() {
+    if (ValidationLayers::ENABLED) {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+    }
 }

@@ -18,7 +18,7 @@ bool ValidationLayers::supported() {
     auto [result, availableLayers] = vk::enumerateInstanceLayerProperties();
 
     for (const char* layerName : validationLayers) {
-    	bool layerFound = false;
+        bool layerFound = false;
 
         for (const auto& layerProperties : availableLayers) {
             if (strcmp(layerName, layerProperties.layerName) == 0) {
