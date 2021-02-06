@@ -107,12 +107,11 @@ void Log::message(Level level, const Args &... args) {
     ss.str("");
     ss << "[" << SystemClock::getTime() << "] " << level << ' ';
     (print<Args>(ss, args), ...);
-    ss << std::endl;
     if (_config.write_to_console) {
-        std::cerr << ss.str();
+        std::cerr << ss.str() << std::endl;
     }
     if (log_out_fs.is_open() && _config.write_to_file) {
-        log_out_fs << ss.str();
+        log_out_fs << ss.str() << std::endl;
     }
 }
 
