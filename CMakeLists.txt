@@ -114,6 +114,8 @@ string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_DIR_PATH_LENGTH)
 target_compile_definitions(${LIBRARY_NAME}
 		PUBLIC __FILENAME__=&__FILE__[${SOURCE_DIR_PATH_LENGTH}]
 )
+# vulkan-hpp defines
+target_compile_definitions(${LIBRARY_NAME} PUBLIC VULKAN_HPP_NO_EXCEPTIONS)
 
 # //////////////////////////////////////////////////////
 # editor

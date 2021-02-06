@@ -1,11 +1,16 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
+
 #include <vector>
 
-extern const bool enableValidationLayers;
-extern const std::vector<const char*> validationLayers;
+class ValidationLayers {
+public:
+    static const bool ENABLED;
+    static const std::vector<const char*> validationLayers;
 
-bool check_validation_layer_support();
+    static bool supported();
+};
+
 
 class DebugMessenger
 {

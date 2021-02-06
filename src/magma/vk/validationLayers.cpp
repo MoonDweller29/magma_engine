@@ -1,44 +1,36 @@
 #include "magma/vk/validationLayers.h"
 
 #include "magma/vk/vulkan_common.h"
-#include <vulkan/vulkan.h>
+#include "magma/app/log.hpp"
 #include <cstring>
 #include <iostream>
 
 
 #ifdef NDEBUG
-    const bool enableValidationLayers = false;
+    const bool ValidationLayers::ENABLED = false;
 #else
-    const bool enableValidationLayers = true;
+    const bool ValidationLayers::ENABLED = true;
 #endif
 
-const std::vector<const char*> validationLayers = {
+const std::vector<const char*> ValidationLayers::validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
-bool check_validation_layer_support()
-{
-    uint32_t layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+bool ValidationLayers::supported() {
+    auto [result, availableLayers] = vk::enumerateInstanceLayerProperties();
 
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-    for (const char* layerName : validationLayers)
-    {
+    for (const char* layerName : validationLayers) {
     	bool layerFound = false;
 
-        for (const auto& layerProperties : availableLayers)
-        {
-            if (strcmp(layerName, layerProperties.layerName) == 0)
-            {
+        for (const auto& layerProperties : availableLayers) {
+            if (strcmp(layerName, layerProperties.layerName) == 0) {
                 layerFound = true;
                 break;
             }
         }
 
-        if (!layerFound)
-        {
+        if (!layerFound) {
+            LOG_WARNING("Validation layer \"", layerName, "\" not found");
             return false;
         }
     }
@@ -104,7 +96,7 @@ void DebugMessenger::fillCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createIn
 DebugMessenger::DebugMessenger(const VkInstance &vk_instance)
 {
     instance = vk_instance;
-    if (!enableValidationLayers)
+    if (!ValidationLayers::ENABLED)
         return;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
@@ -116,6 +108,6 @@ DebugMessenger::DebugMessenger(const VkInstance &vk_instance)
 
 DebugMessenger::~DebugMessenger()
 {
-    if (enableValidationLayers)
+    if (ValidationLayers::ENABLED)
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 }

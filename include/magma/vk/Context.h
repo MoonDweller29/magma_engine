@@ -1,13 +1,12 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
-class Context
-{
-private:
-	VkInstance instance;
+class Context {
 public:
-	const VkInstance &get(){ return instance; }
+    const VkInstance c_instance(){ return static_cast<VkInstance>(_instance); }
 
-	Context();
-	~Context();
+    Context();
+    ~Context();
+private:
+    vk::Instance _instance;
 };

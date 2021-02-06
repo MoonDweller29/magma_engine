@@ -41,10 +41,10 @@ LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice)
     createInfo.enabledExtensionCount = static_cast<uint32_t>(PhysicalDevice::extensions.size());
     createInfo.ppEnabledExtensionNames = PhysicalDevice::extensions.data();
 
-    if (enableValidationLayers)
+    if (ValidationLayers::ENABLED)
     {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+        createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers::validationLayers.size());
+        createInfo.ppEnabledLayerNames = ValidationLayers::validationLayers.data();
     } else {
         createInfo.enabledLayerCount = 0;
     }
