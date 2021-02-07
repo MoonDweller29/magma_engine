@@ -55,8 +55,8 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/vulkan_common.cpp
 		include/magma/vk/Context.h
 		src/magma/vk/Context.cpp
-        include/magma/vk/Extensions.h
-        src/magma/vk/Extensions.cpp
+		include/magma/vk/Extensions.h
+		src/magma/vk/Extensions.cpp
 		include/magma/vk/validationLayers/ValidationLayers.h
 		src/magma/vk/validationLayers/ValidationLayers.cpp
 		include/magma/vk/validationLayers/DebugMessenger.h
