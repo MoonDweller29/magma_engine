@@ -37,11 +37,10 @@ Context::Context() {
     createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (ValidationLayers::ENABLED) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers::validationLayers.size());
         createInfo.ppEnabledLayerNames = ValidationLayers::validationLayers.data();
-        DebugMessenger::fillCreateInfo(debugCreateInfo);
+        auto debugCreateInfo = DebugMessenger::getCreateInfo();
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
     } else {
         createInfo.enabledLayerCount = 0;
