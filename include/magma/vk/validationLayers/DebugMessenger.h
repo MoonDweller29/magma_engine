@@ -4,12 +4,12 @@
 
 class DebugMessenger {
 public:
-    static Log::Level msgSeverityToLogLevel(VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity);
-    static VkDebugUtilsMessengerCreateInfoEXT getCreateInfo();
+    static Log::Level msgSeverityToLogLevel(vk::DebugUtilsMessageSeverityFlagBitsEXT msgSeverity);
+    static vk::DebugUtilsMessengerCreateInfoEXT getCreateInfo();
 
-    DebugMessenger(const VkInstance &vk_instance);
+    DebugMessenger(const vk::Instance &instance);
     ~DebugMessenger();
 private:
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkInstance instance;
+    vk::DebugUtilsMessengerEXT debugMessenger;
+    vk::Instance _instance;
 };
