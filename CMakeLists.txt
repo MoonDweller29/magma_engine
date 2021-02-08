@@ -53,12 +53,14 @@ add_library(${LIBRARY_NAME} STATIC
 
 		include/magma/vk/vulkan_common.h
 		src/magma/vk/vulkan_common.cpp
-		include/magma/vk/vkInstanceHolder.h
-		src/magma/vk/vkInstanceHolder.cpp
-		include/magma/vk/vk_extensions.h
-		src/magma/vk/vk_extensions.cpp
-		include/magma/vk/validationLayers.h
-		src/magma/vk/validationLayers.cpp
+		include/magma/vk/Context.h
+		src/magma/vk/Context.cpp
+		include/magma/vk/Extensions.h
+		src/magma/vk/Extensions.cpp
+		include/magma/vk/validationLayers/ValidationLayers.h
+		src/magma/vk/validationLayers/ValidationLayers.cpp
+		include/magma/vk/validationLayers/DebugMessenger.h
+		src/magma/vk/validationLayers/DebugMessenger.cpp
 		include/magma/vk/physicalDevice.h
 		src/magma/vk/physicalDevice.cpp
 		include/magma/vk/logicalDevice.h
@@ -114,6 +116,10 @@ string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_DIR_PATH_LENGTH)
 target_compile_definitions(${LIBRARY_NAME}
 		PUBLIC __FILENAME__=&__FILE__[${SOURCE_DIR_PATH_LENGTH}]
 )
+# vulkan-hpp defines
+target_compile_definitions(${LIBRARY_NAME} PUBLIC VULKAN_HPP_NO_EXCEPTIONS)
+target_compile_definitions(${LIBRARY_NAME} PUBLIC VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
+
 
 # //////////////////////////////////////////////////////
 # editor
