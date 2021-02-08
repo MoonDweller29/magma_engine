@@ -1,5 +1,5 @@
-#include "magma/vk/vulkan_common.h"
 #include <vector>
+#include "magma/vk/vulkan_common.h"
 
 class Extensions {
 public:
