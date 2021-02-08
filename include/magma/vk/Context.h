@@ -3,8 +3,8 @@
 
 class Context {
 public:
-    const vk::Instance &instance(){ return _instance; }
-    const VkInstance &c_instance(){ return _c_instance; } //only for Vulkan C API
+    const vk::Instance &instance()   { return _instance; }
+    const VkInstance   &c_instance() { return _c_instance; } //only for Vulkan C API
 
     Context();
     ~Context();

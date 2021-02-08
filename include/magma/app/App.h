@@ -36,7 +36,7 @@ private:
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
 
-    std::unique_ptr<Context>     instance;
+    std::unique_ptr<Context>              instance;
     std::unique_ptr<DebugMessenger>       debugMessenger;
     std::unique_ptr<PhysicalDevice>       physicalDevice;
     std::unique_ptr<LogicalDevice>  device;
