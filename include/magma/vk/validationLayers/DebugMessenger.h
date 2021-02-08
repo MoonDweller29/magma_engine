@@ -10,6 +10,6 @@ public:
     DebugMessenger(const vk::Instance &instance);
     ~DebugMessenger();
 private:
-    vk::DebugUtilsMessengerEXT debugMessenger;
+    vk::DebugUtilsMessengerEXT _debugMessenger;
     vk::Instance _instance;
 };

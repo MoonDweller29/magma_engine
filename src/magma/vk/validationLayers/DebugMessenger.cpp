@@ -1,7 +1,7 @@
 #include "magma/vk/validationLayers/DebugMessenger.h"
 
-#include "magma/vk/vulkan_common.h"
 #include <iostream>
+#include "magma/vk/vulkan_common.h"
 
 
 //VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: Diagnostic message
@@ -58,12 +58,12 @@ DebugMessenger::DebugMessenger(const vk::Instance &instance) : _instance(instanc
         return;
 
     auto createInfo = getCreateInfo();
-    auto [result, debugMessenger] = _instance.createDebugUtilsMessengerEXT(createInfo);
+    auto [result, _debugMessenger] = _instance.createDebugUtilsMessengerEXT(createInfo);
     VK_HPP_CHECK_ERR(result, "failed to set up debug messenger!");
 }
 
 DebugMessenger::~DebugMessenger() {
     if (ValidationLayers::ENABLED) {
-        _instance.destroyDebugUtilsMessengerEXT(debugMessenger);
+        _instance.destroyDebugUtilsMessengerEXT(_debugMessenger);
     }
 }

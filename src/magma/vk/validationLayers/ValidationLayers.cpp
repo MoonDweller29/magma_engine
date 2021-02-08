@@ -1,8 +1,8 @@
 #include "magma/vk/validationLayers/ValidationLayers.h"
 
+#include <cstring>
 #include "magma/vk/vulkan_common.h"
 #include "magma/app/log.hpp"
-#include <cstring>
 
 #ifdef NDEBUG
     const bool ValidationLayers::ENABLED = false;
