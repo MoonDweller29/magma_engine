@@ -47,7 +47,8 @@ Context::Context() {
         createInfo.pNext = nullptr;
     }
 
-    auto [result, _instance] = vk::createInstance(createInfo);
+    vk::Result result;
+    std::tie(result, _instance) = vk::createInstance(createInfo);
     VK_HPP_CHECK_ERR(result, "failed to create instance!");
     _c_instance = VkInstance(_instance);
 
