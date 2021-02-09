@@ -29,7 +29,7 @@ public:
 
 private:
     uint32_t                   _width, _height;
-    bool                       _wasResized = false;
+    bool                       _wasResized;
     GLFWwindow               * _window;
     std::unique_ptr<Keyboard>  _keyboard;
     std::unique_ptr<Mouse>     _mouse;

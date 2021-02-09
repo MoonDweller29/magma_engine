@@ -4,11 +4,8 @@
 #include "magma/vk/vulkan_common.h"
 
 void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-//    bool volatile loop = true;
     Window *app_window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
     app_window->_wasResized = true;
-//    while (loop);
-//    std::cout << "RESIZED\n";
 }
 
 VkSurfaceKHR Window::createSurface(
@@ -24,7 +21,7 @@ VkSurfaceKHR Window::createSurface(
 }
 
 Window::Window(uint32_t width, uint32_t height, const vk::Instance &instance) :
-    _width(width), _height(height), _instance(instance)
+    _width(width), _height(height), _instance(instance), _wasResized(false)
 {
     initContext();
 
@@ -43,6 +40,7 @@ Window::Window(uint32_t width, uint32_t height, const vk::Instance &instance) :
 void Window::initContext() {
     glfwInit();
 }
+
 void Window::closeContext() {
     glfwTerminate();
 }
