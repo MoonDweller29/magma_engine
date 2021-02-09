@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "magma/vk/validationLayers/ValidationLayers.h"
-#include "magma/vk/window.h"
+#include "magma/vk/Window.h"
 
 void Extensions::printAvailableExtensions() {
 	auto [result, extensions] = vk::enumerateInstanceExtensionProperties(nullptr);

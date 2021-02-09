@@ -1,5 +1,5 @@
 #include "magma/app/mouse.h"
-#include "magma/vk/window.h"
+#include "magma/vk/Window.h"
 
 #include <iostream>
 

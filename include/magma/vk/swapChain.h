@@ -1,7 +1,7 @@
 #pragma once
 #include "physicalDevice.h"
 #include "logicalDevice.h"
-#include "window.h"
+#include "Window.h"
 #include "frameBuffer.h"
 #include <vulkan/vulkan.h>
 #include <vector>

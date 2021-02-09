@@ -1,4 +1,4 @@
-#include "magma/vk/window.h"
+#include "magma/vk/Window.h"
 
 #include "magma/vk/vulkan_common.h"
 #include <iostream>

@@ -4,7 +4,6 @@
 
 #include "magma/app/App.h"
 #include "magma/vk/vulkan_common.h"
-#include "magma/vk/window.h"
 #include "magma/glm_inc.h"
 #include "magma/app/image.h"
 #include "magma/app/config/JSON.h"
