@@ -1,11 +1,10 @@
 #include "magma/vk/Extensions.h"
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <vector>
 #include <iostream>
 
 #include "magma/vk/validationLayers/ValidationLayers.h"
+#include "magma/vk/window.h"
 
 void Extensions::printAvailableExtensions() {
 	auto [result, extensions] = vk::enumerateInstanceExtensionProperties(nullptr);
@@ -17,11 +16,7 @@ void Extensions::printAvailableExtensions() {
 }
 
 std::vector<const char*> Extensions::requiredExtensions() {
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions;
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    auto extensions = Window::getRequiredVkExtensions();
 
 	if (ValidationLayers::ENABLED) {
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

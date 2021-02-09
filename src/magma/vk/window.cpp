@@ -23,11 +23,10 @@ VkSurfaceKHR createSurface(
     return surface;
 }
 
-Window::Window(uint32_t width, uint32_t height)
-{
+Window::Window(uint32_t width, uint32_t height) {
+    initContext();
     this->width = width;
     this->height = height;
-    glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); //call that turns off OpenGL context
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //potential problem. Resizable window is unstable
@@ -38,6 +37,23 @@ Window::Window(uint32_t width, uint32_t height)
     keyboard = std::make_unique<Keyboard>(window);
     mouse = std::make_unique<Mouse>(this);
 }
+
+void Window::initContext() {
+    glfwInit();
+}
+
+std::vector<const char*> Window::getRequiredVkExtensions() {
+    initContext();
+
+    uint32_t glfwExtensionCount = 0;
+    const char** glfwExtensions;
+    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+    return extensions;
+}
+
 
 void Window::initSurface(const VkInstance &instance)
 {

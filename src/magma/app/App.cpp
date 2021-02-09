@@ -60,7 +60,6 @@ bool App::isClosed()
 int App::run() {
     try {
         initFromConfig();
-        initWindow();
         initVulkan();
         mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
         mainLoop();
@@ -258,10 +257,10 @@ void App::createDepthResources()
 }
 
 
-void App::initVulkan()
-{
+void App::initVulkan() {
     instance = std::make_unique<Context>();
     debugMessenger = std::make_unique<DebugMessenger>(instance->c_instance());
+    initWindow();
     window->initSurface(instance->c_instance());
     physicalDevice = std::make_unique<PhysicalDevice>(instance->c_instance(), window->getSurface());
     device = std::make_unique<LogicalDevice>(*physicalDevice);
