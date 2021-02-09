@@ -3,8 +3,7 @@
 #include "magma/vk/vulkan_common.h"
 #include <iostream>
 
-void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
-{
+void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 //    bool volatile loop = true;
     Window *app_window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
     app_window->_wasResized = true;
@@ -14,8 +13,8 @@ void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height
 
 VkSurfaceKHR createSurface(
         const VkInstance &instance,
-        GLFWwindow* window)
-{
+        GLFWwindow* window
+) {
     VkSurfaceKHR surface;
     VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
     VK_CHECK_ERR(result, "failed to create window surface!");
@@ -23,24 +22,28 @@ VkSurfaceKHR createSurface(
     return surface;
 }
 
-Window::Window(uint32_t width, uint32_t height) {
+Window::Window(uint32_t width, uint32_t height) :
+    _width(width), _height(height)
+{
     initContext();
-    this->width = width;
-    this->height = height;
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); //call that turns off OpenGL context
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //potential problem. Resizable window is unstable
 
-    window = glfwCreateWindow(width, height, "Vulkan 3D", nullptr, nullptr);
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    keyboard = std::make_unique<Keyboard>(window);
-    mouse = std::make_unique<Mouse>(this);
+    _window = glfwCreateWindow(width, height, "Vulkan 3D", nullptr, nullptr);
+    glfwSetWindowUserPointer(_window, this);
+    glfwSetFramebufferSizeCallback(_window, framebufferResizeCallback);
+    _keyboard = std::make_unique<Keyboard>(_window);
+    _mouse = std::make_unique<Mouse>(this);
 }
 
 void Window::initContext() {
     glfwInit();
 }
+void Window::closeContext() {
+    glfwTerminate();
+}
+
 
 std::vector<const char*> Window::getRequiredVkExtensions() {
     initContext();
@@ -55,39 +58,34 @@ std::vector<const char*> Window::getRequiredVkExtensions() {
 }
 
 
-void Window::initSurface(const VkInstance &instance)
-{
-    this->instance = instance;
-    surface = createSurface(instance, window);
+void Window::initSurface(const VkInstance &instance) {
+    this->_instance = instance;
+    _surface = createSurface(instance, _window);
 }
 
-void Window::closeSurface()
-{
-    if (surface != VK_NULL_HANDLE)
-        vkDestroySurfaceKHR(instance, surface, nullptr);
-    surface = VK_NULL_HANDLE;
+void Window::closeSurface() {
+    if (_surface != VK_NULL_HANDLE)
+        vkDestroySurfaceKHR(_instance, _surface, nullptr);
+    _surface = VK_NULL_HANDLE;
 }
 
-void Window::updateResolution()
-{
+void Window::updateResolution() {
     int new_w = 0, new_h = 0;
 
-    glfwGetFramebufferSize(window, &new_w, &new_h);
-    while (new_w == 0 || new_h == 0)
-    {
+    glfwGetFramebufferSize(_window, &new_w, &new_h);
+    while (new_w == 0 || new_h == 0) {
         glfwWaitEvents();
-        glfwGetFramebufferSize(window, &new_w, &new_h);
+        glfwGetFramebufferSize(_window, &new_w, &new_h);
     }
-    width = new_w;
-    height = new_h;
+    _width = new_w;
+    _height = new_h;
 
     _wasResized = false;
 }
 
-Window::~Window()
-{
+Window::~Window() {
     closeSurface();
-    keyboard.reset();
-    mouse.reset();
-    glfwDestroyWindow(window);
+    _keyboard.reset();
+    _mouse.reset();
+    glfwDestroyWindow(_window);
 }

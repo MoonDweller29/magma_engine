@@ -530,10 +530,9 @@ void App::cleanUp()
     device->deleteBuffer(vertexBuffer);
     device.reset();
     physicalDevice.reset();
-    window->closeSurface();
+    window.reset();
     debugMessenger.reset();
     instance.reset();
-    window.reset();
 
-    glfwTerminate();
+    Window::closeContext();
 }

@@ -17,29 +17,30 @@ public:
     ~Window();
 
     static void initContext();
+    static void closeContext();
     static std::vector<const char*> getRequiredVkExtensions();
 
-    VkExtent2D getResolution() const { return {width, height}; }
+    VkExtent2D getResolution() const { return {_width, _height}; }
     void       updateResolution();
 
     void initSurface(const VkInstance &instance);
     void closeSurface();
 
     // Meh? Is this good?
-    GLFWwindow  *getGLFWp()         { return window;         }
-    VkSurfaceKHR getSurface() const { return surface;        }
-    bool         wasResized() const { return _wasResized;    }
-    Keyboard    *getKeyboard()      { return keyboard.get(); }
-    Mouse       *getMouse()         { return mouse.get();    }
+    GLFWwindow * getGLFWp()         { return _window;         }
+    VkSurfaceKHR getSurface() const { return _surface;        }
+    bool         wasResized() const { return _wasResized;     }
+    Keyboard *   getKeyboard()      { return _keyboard.get(); }
+    Mouse *      getMouse()         { return _mouse.get();    }
 
 private:
-    uint32_t width, height;
-    GLFWwindow* window;
-    std::unique_ptr<Keyboard> keyboard;
-    std::unique_ptr<Mouse> mouse;
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkInstance instance = VK_NULL_HANDLE;
-    bool _wasResized = false;
+    uint32_t                   _width, _height;
+    bool                       _wasResized = false;
+    GLFWwindow                *_window;
+    std::unique_ptr<Keyboard>  _keyboard;
+    std::unique_ptr<Mouse>     _mouse;
+    VkSurfaceKHR               _surface = VK_NULL_HANDLE;
+    VkInstance                 _instance = VK_NULL_HANDLE;
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 };
