@@ -1,6 +1,6 @@
 #include "magma/app/keyboard.h"
 #include <iostream>
-#include "magma/vk/window.h"
+#include "magma/vk/Window.h"
 
 void Keyboard::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {

@@ -4,7 +4,6 @@
 
 #include "magma/app/App.h"
 #include "magma/vk/vulkan_common.h"
-#include "magma/vk/window.h"
 #include "magma/glm_inc.h"
 #include "magma/app/image.h"
 #include "magma/app/config/JSON.h"
@@ -60,7 +59,6 @@ bool App::isClosed()
 int App::run() {
     try {
         initFromConfig();
-        initWindow();
         initVulkan();
         mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
         mainLoop();
@@ -92,7 +90,7 @@ void App::initFromConfig() {
 
 void App::initWindow()
 {
-    window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT);
+    window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT, instance->instance());
     keyBoard = window->getKeyboard();
     mouse = window->getMouse();
 }
@@ -258,11 +256,10 @@ void App::createDepthResources()
 }
 
 
-void App::initVulkan()
-{
+void App::initVulkan() {
     instance = std::make_unique<Context>();
     debugMessenger = std::make_unique<DebugMessenger>(instance->c_instance());
-    window->initSurface(instance->c_instance());
+    initWindow();
     physicalDevice = std::make_unique<PhysicalDevice>(instance->c_instance(), window->getSurface());
     device = std::make_unique<LogicalDevice>(*physicalDevice);
     loadScene();
@@ -532,10 +529,9 @@ void App::cleanUp()
     device->deleteBuffer(vertexBuffer);
     device.reset();
     physicalDevice.reset();
-    window->closeSurface();
+    window.reset();
     debugMessenger.reset();
     instance.reset();
-    window.reset();
 
-    glfwTerminate();
+    Window::closeContext();
 }
