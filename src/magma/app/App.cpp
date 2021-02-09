@@ -90,7 +90,7 @@ void App::initFromConfig() {
 
 void App::initWindow()
 {
-    window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT);
+    window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT, instance->instance());
     keyBoard = window->getKeyboard();
     mouse = window->getMouse();
 }
@@ -260,7 +260,6 @@ void App::initVulkan() {
     instance = std::make_unique<Context>();
     debugMessenger = std::make_unique<DebugMessenger>(instance->c_instance());
     initWindow();
-    window->initSurface(instance->c_instance());
     physicalDevice = std::make_unique<PhysicalDevice>(instance->c_instance(), window->getSurface());
     device = std::make_unique<LogicalDevice>(*physicalDevice);
     loadScene();

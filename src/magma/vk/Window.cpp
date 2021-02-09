@@ -1,7 +1,7 @@
 #include "magma/vk/Window.h"
 
-#include "magma/vk/vulkan_common.h"
 #include <iostream>
+#include "magma/vk/vulkan_common.h"
 
 void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 //    bool volatile loop = true;
@@ -11,10 +11,11 @@ void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height
 //    std::cout << "RESIZED\n";
 }
 
-VkSurfaceKHR createSurface(
-        const VkInstance &instance,
+VkSurfaceKHR Window::createSurface(
+        const vk::Instance &hpp_instance,
         GLFWwindow* window
 ) {
+    VkInstance instance(hpp_instance);
     VkSurfaceKHR surface;
     VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
     VK_CHECK_ERR(result, "failed to create window surface!");
@@ -22,8 +23,8 @@ VkSurfaceKHR createSurface(
     return surface;
 }
 
-Window::Window(uint32_t width, uint32_t height) :
-    _width(width), _height(height)
+Window::Window(uint32_t width, uint32_t height, const vk::Instance &instance) :
+    _width(width), _height(height), _instance(instance)
 {
     initContext();
 
@@ -35,6 +36,8 @@ Window::Window(uint32_t width, uint32_t height) :
     glfwSetFramebufferSizeCallback(_window, framebufferResizeCallback);
     _keyboard = std::make_unique<Keyboard>(_window);
     _mouse = std::make_unique<Mouse>(this);
+
+    _surface = createSurface(_instance, _window);
 }
 
 void Window::initContext() {
@@ -43,7 +46,6 @@ void Window::initContext() {
 void Window::closeContext() {
     glfwTerminate();
 }
-
 
 std::vector<const char*> Window::getRequiredVkExtensions() {
     initContext();
@@ -57,17 +59,6 @@ std::vector<const char*> Window::getRequiredVkExtensions() {
     return extensions;
 }
 
-
-void Window::initSurface(const VkInstance &instance) {
-    this->_instance = instance;
-    _surface = createSurface(instance, _window);
-}
-
-void Window::closeSurface() {
-    if (_surface != VK_NULL_HANDLE)
-        vkDestroySurfaceKHR(_instance, _surface, nullptr);
-    _surface = VK_NULL_HANDLE;
-}
 
 void Window::updateResolution() {
     int new_w = 0, new_h = 0;
@@ -84,7 +75,7 @@ void Window::updateResolution() {
 }
 
 Window::~Window() {
-    closeSurface();
+    _instance.destroySurfaceKHR(_surface);
     _keyboard.reset();
     _mouse.reset();
     glfwDestroyWindow(_window);

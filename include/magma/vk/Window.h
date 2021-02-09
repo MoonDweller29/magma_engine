@@ -9,11 +9,9 @@
 #include "magma/app/mouse.h"
 #include "magma/glm_inc.h"
 
-VkSurfaceKHR createSurface(const VkInstance &instance, GLFWwindow* window);
-
 class Window {
 public:
-    Window(uint32_t width, uint32_t height);
+    Window(uint32_t width, uint32_t height, const vk::Instance &instance);
     ~Window();
 
     static void initContext();
@@ -23,10 +21,6 @@ public:
     VkExtent2D getResolution() const { return {_width, _height}; }
     void       updateResolution();
 
-    void initSurface(const VkInstance &instance);
-    void closeSurface();
-
-    // Meh? Is this good?
     GLFWwindow * getGLFWp()         { return _window;         }
     VkSurfaceKHR getSurface() const { return _surface;        }
     bool         wasResized() const { return _wasResized;     }
@@ -36,11 +30,12 @@ public:
 private:
     uint32_t                   _width, _height;
     bool                       _wasResized = false;
-    GLFWwindow                *_window;
+    GLFWwindow               * _window;
     std::unique_ptr<Keyboard>  _keyboard;
     std::unique_ptr<Mouse>     _mouse;
-    VkSurfaceKHR               _surface = VK_NULL_HANDLE;
-    VkInstance                 _instance = VK_NULL_HANDLE;
+    VkSurfaceKHR               _surface;
+    vk::Instance               _instance;
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+    static VkSurfaceKHR createSurface(const vk::Instance &hpp_instance, GLFWwindow* window);
 };
