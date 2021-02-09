@@ -46,6 +46,7 @@ using JSON = nlohmann::basic_json<
     }                                                           \
                                                                 \
     void from_json(const JSON &json) {                          \
+        std::cout << "FROM JSON" << std::endl;                                                        \
         ::detail::json::ValueReader mappings[] = {__VA_ARGS__}; \
         for (const auto &mapping : mappings) {                  \
             mapping.apply(json);                                \
@@ -76,6 +77,7 @@ using JSON = nlohmann::basic_json<
     }                                                                           \
                                                                                 \
     inline void from_json(const JSON &json, type &value) {                             \
+        std::cout << json << "LOOOOOL" << std::endl;                                                                        \
         static const std::pair<type, std::string> mappings[] = {__VA_ARGS__};   \
         auto mapping = std::find_if(                                            \
             std::begin(mappings),                                               \

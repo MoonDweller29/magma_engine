@@ -3,6 +3,11 @@
 #include <iostream>
 #include "magma/vk/vulkan_common.h"
 
+DebugMessenger::Config DebugMessenger::_config;
+
+void DebugMessenger::initConfig(const DebugMessenger::Config& config) {
+    _config = config;
+}
 
 //VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: Diagnostic message
 //VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: Informational message like the creation of a resource
@@ -23,16 +28,18 @@ Log::Level DebugMessenger::msgSeverityToLogLevel(vk::DebugUtilsMessageSeverityFl
     }
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessenger::debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData
 ) {
-    Log::message(
-            DebugMessenger::msgSeverityToLogLevel(
-                    vk::DebugUtilsMessageSeverityFlagBitsEXT(messageSeverity)),
-            "[VALIDATION LAYER] ", pCallbackData->pMessage);
+    auto msgSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT(messageSeverity);
+    if (msgSeverity >= _config.minSeverity) {
+        Log::message(
+                DebugMessenger::msgSeverityToLogLevel(msgSeverity),
+                "[VALIDATION LAYER] ", pCallbackData->pMessage);
+    }
 
     return VK_FALSE;
 }

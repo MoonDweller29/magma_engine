@@ -81,6 +81,9 @@ void App::initFromConfig() {
 
     Log::Config log_config = main_config["logger"].get<Log::Config>();
     Log::initFromConfig(log_config);
+//    std::cout << main_config["validation_layers"] << std::endl;
+    DebugMessenger::Config dbg_config = main_config["validation_layers"].get<DebugMessenger::Config>();
+    DebugMessenger::initConfig(dbg_config);
 
     WIN_WIDTH = main_config["win_width"];
     WIN_HEIGHT = main_config["win_height"];
