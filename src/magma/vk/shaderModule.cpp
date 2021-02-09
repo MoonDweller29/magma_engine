@@ -33,6 +33,8 @@ VkShaderStageFlagBits Shader::stageToVkStage(Stage stage)
             return VK_SHADER_STAGE_GEOMETRY_BIT;
         case FRAG_SH:
             return VK_SHADER_STAGE_FRAGMENT_BIT;
+        case COMP_SH:
+            return VK_SHADER_STAGE_COMPUTE_BIT;
         default:
             throw std::runtime_error("WRONG SHADER STAGE");
     }

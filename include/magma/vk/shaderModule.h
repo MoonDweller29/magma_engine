@@ -11,7 +11,8 @@ public:
     {
         VERT_SH,
         GEOM_SH,
-        FRAG_SH
+        FRAG_SH,
+        COMP_SH
     };
 private:
     VkShaderModule shaderModule;
