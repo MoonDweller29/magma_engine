@@ -10,7 +10,7 @@
 #include "shaderModule.h"
 
 /**
- * @brief Class for  create and contain info about compute pipeline
+ * @brief Class that contains info for creating compute pipeline
  */
 class ComputePipelineInfo {
 public:
