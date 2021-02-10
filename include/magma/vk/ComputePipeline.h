@@ -26,7 +26,7 @@ private:
 };
 
 /**
- * @brief Class for create compute pipeline
+ * @brief Class for creating compute pipeline
  */
 class ComputePipeline {
 public:
