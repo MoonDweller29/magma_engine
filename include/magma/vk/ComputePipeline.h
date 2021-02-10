@@ -1,6 +1,6 @@
 /**
  * @file ComputePipeline.h
- * @brief Class create compute pipeline
+ * @brief Class for creating compute pipeline
  * @version 0.1
  * @date 2021-02-09
  */
