@@ -1,6 +1,5 @@
 /**
  * @file ComputePipeline.h
- * @author Nastormo
  * @brief Class create compute pipeline
  * @version 0.1
  * @date 2021-02-09
@@ -11,6 +10,9 @@
 #include "magma/vk/graphicsPipeline.h"
 #include "shaderModule.h"
 
+/**
+ * @brief Class for  create and contain info about compute pipeline
+ */
 class ComputePipelineInfo {
 public:
     ComputePipelineInfo();
@@ -24,6 +26,9 @@ private:
     VkPipelineLayoutCreateInfo _pipelineLayoutInfo;
 };
 
+/**
+ * @brief Class for create compute pipeline
+ */
 class ComputePipeline {
 public:
     ComputePipeline(
@@ -38,5 +43,4 @@ private:
     VkDevice            _device;
     VkPipelineLayout    _pipelineLayout;
     VkPipeline          _pipeline;
-
 };

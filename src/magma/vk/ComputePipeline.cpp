@@ -1,6 +1,5 @@
 /**
  * @file ComputePipeline.cpp
- * @author Nastormo
  * @brief Class create compute pipeline
  * @version 0.1
  * @date 2021-02-09
