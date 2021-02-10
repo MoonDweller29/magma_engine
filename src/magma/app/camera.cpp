@@ -19,12 +19,15 @@ Camera::Camera(float z_near, float z_far, int width, int height, float FOV):
     yaw(180),
     sensitivity(0.2f),
     speed(5.f)
-{}
+{
+    updateProjMat();
+}
 
 void Camera::updateScreenSize(int width, int height)
 {
     this->width = width;
     this->height = height;
+    updateProjMat();
 }
 
 void Camera::update(Keyboard& keyboard, Mouse& mouse, float elapsed_time)
@@ -80,7 +83,6 @@ void Camera::update(Keyboard& keyboard, Mouse& mouse, float elapsed_time)
         pos -= elapsed_time*curr_speed*up;
     }
 
-    updateProjMat();
     updateViewMat();
 }
 
