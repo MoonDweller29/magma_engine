@@ -17,7 +17,7 @@ ComputePipelineInfo::ComputePipelineInfo() {
     _pipelineLayoutInfo.pPushConstantRanges = nullptr;
 }
 
-void ComputePipelineInfo::setLayout(const std::vector<VkDescriptorSetLayout> &descriptorSetLayouts) {
+void ComputePipelineInfo::setLayouts(const std::vector<VkDescriptorSetLayout> &descriptorSetLayouts) {
     _pipelineLayoutInfo.setLayoutCount = descriptorSetLayouts.size();
     _pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 }

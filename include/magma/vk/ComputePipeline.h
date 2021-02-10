@@ -19,7 +19,7 @@ public:
 
     const VkPipelineLayoutCreateInfo &getPipelineLayoutInfo() const { return _pipelineLayoutInfo; }
 
-    void setLayout(const std::vector<VkDescriptorSetLayout> &descriptorSetLayouts);
+    void setLayouts(const std::vector<VkDescriptorSetLayout> &descriptorSetLayouts);
     void setLayout(const VkDescriptorSetLayout &descriptorSetLayout);
 private:
     VkPipelineLayoutCreateInfo _pipelineLayoutInfo;
