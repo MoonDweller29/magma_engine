@@ -66,6 +66,18 @@ void DescriptorSetLayout::addCombinedImageSampler(VkShaderStageFlags stage_flags
     increaseDescriptorsCount(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
 }
 
+void DescriptorSetLayout::addStorageImage(VkShaderStageFlags stage_flags) {
+    VkDescriptorSetLayoutBinding storageImageLayoutBinding{};
+    storageImageLayoutBinding.binding = bindings.size();
+    storageImageLayoutBinding.descriptorCount = 1;
+    storageImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    storageImageLayoutBinding.pImmutableSamplers = nullptr;
+    storageImageLayoutBinding.stageFlags = stage_flags;
+
+    bindings.push_back(storageImageLayoutBinding);
+    increaseDescriptorsCount(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
+}
+
 void DescriptorSetLayout::freePool()
 {
     pools.clear();
@@ -158,6 +170,32 @@ void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, VkImageView
     descriptorWrite.dstBinding = binding;
     descriptorWrite.dstArrayElement = 0;
     descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.pImageInfo = imageInfo;
+}
+
+void DescriptorSetLayout::bindStorageImage(uint32_t binding, VkImageView imageView, VkSampler sampler, VkImageLayout imageLayout)
+{
+    if (bindings[binding].descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
+    {
+        std::stringstream message;
+        message << "bindStorageImage: binding index mismatch:\n binding <" << binding <<
+                "> has type <" << bindings[binding].descriptorType << "> which is not VK_DESCRIPTOR_TYPE_STORAGE_IMAGE";
+        throw std::runtime_error(message.str());
+    }
+
+    VkDescriptorImageInfo *imageInfo = descriptorSetInfo.newImageInfo();
+    imageInfo->imageLayout = imageLayout;
+    imageInfo->imageView = imageView;
+    imageInfo->sampler = sampler;
+
+    VkWriteDescriptorSet &descriptorWrite = descriptorSetInfo.newDescriptorWriteInfo();
+
+    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = descriptorSets[setInd];
+    descriptorWrite.dstBinding = binding;
+    descriptorWrite.dstArrayElement = 0;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     descriptorWrite.descriptorCount = 1;
     descriptorWrite.pImageInfo = imageInfo;
 }
