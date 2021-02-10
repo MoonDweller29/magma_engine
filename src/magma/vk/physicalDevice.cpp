@@ -7,7 +7,7 @@
 
 bool QueueFamilyIndices::isComplete()
 {
-    return graphicsFamily.has_value() && presentFamily.has_value();
+    return graphicsFamily.has_value() && computeFamily.has_value() && presentFamily.has_value();
 }
 
 const std::vector<const char*> PhysicalDevice::extensions = {
@@ -38,6 +38,9 @@ QueueFamilyIndices PhysicalDevice::findQueueFamilies(VkPhysicalDevice device, co
     {
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
             indices.graphicsFamily = i;
+
+        if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+            indices.computeFamily = i;
 
         if (hasSurfaceSupportKHR(device, i, surface))
             indices.presentFamily = i;

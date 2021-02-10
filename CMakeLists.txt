@@ -70,6 +70,8 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/Window.cpp
 		include/magma/vk/swapChain.h
 		src/magma/vk/swapChain.cpp
+		include/magma/vk/ComputePipeline.h
+		src/magma/vk/ComputePipeline.cpp
 		include/magma/vk/graphicsPipeline.h
 		src/magma/vk/graphicsPipeline.cpp
 		include/magma/vk/shaderModule.h
