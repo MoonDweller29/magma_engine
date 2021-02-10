@@ -7,7 +7,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
 
-#include "magma/vk/graphicsPipeline.h"
 #include "shaderModule.h"
 
 /**
@@ -34,7 +33,7 @@ public:
     ComputePipeline(
             VkDevice device,
             const VkPipelineShaderStageCreateInfo &shaderStage,
-            const PipelineInfo &pipelineInfo);
+            const ComputePipelineInfo &pipelineInfo);
     ~ComputePipeline();
 
     VkPipeline          getPipeline()       const { return _pipeline;       }

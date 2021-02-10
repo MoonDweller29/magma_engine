@@ -30,7 +30,7 @@ void ComputePipelineInfo::setLayout(const VkDescriptorSetLayout &descriptorSetLa
 ComputePipeline::ComputePipeline(
         VkDevice device,
         const VkPipelineShaderStageCreateInfo &shaderStage,
-        const PipelineInfo &pipelineInfo
+        const ComputePipelineInfo &pipelineInfo
 ) : _device(device) {
     VkResult result;
     result = vkCreatePipelineLayout(device, &pipelineInfo.getPipelineLayoutInfo(), nullptr, &_pipelineLayout);
