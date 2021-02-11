@@ -174,7 +174,7 @@ void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, VkImageView
     descriptorWrite.pImageInfo = imageInfo;
 }
 
-void DescriptorSetLayout::bindStorageImage(uint32_t binding, VkImageView imageView, VkSampler sampler, VkImageLayout imageLayout)
+void DescriptorSetLayout::bindStorageImage(uint32_t binding, VkImageView imageView, VkImageLayout imageLayout)
 {
     if (bindings[binding].descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
     {
@@ -187,7 +187,7 @@ void DescriptorSetLayout::bindStorageImage(uint32_t binding, VkImageView imageVi
     VkDescriptorImageInfo *imageInfo = descriptorSetInfo.newImageInfo();
     imageInfo->imageLayout = imageLayout;
     imageInfo->imageView = imageView;
-    imageInfo->sampler = sampler;
+    imageInfo->sampler = VK_NULL_HANDLE;
 
     VkWriteDescriptorSet &descriptorWrite = descriptorSetInfo.newDescriptorWriteInfo();
 

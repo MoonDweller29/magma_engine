@@ -47,7 +47,7 @@ public:
     void beginSet(uint32_t ind);
     void bindUniformBuffer(uint32_t binding, VkBuffer buf, VkDeviceSize offset, VkDeviceSize range);
     void bindCombinedImageSampler(uint32_t binding, VkImageView imageView, VkSampler sampler, VkImageLayout imageLayout);
-    void bindStorageImage(uint32_t binding, VkImageView imageView, VkSampler sampler, VkImageLayout imageLayout);
+    void bindStorageImage(uint32_t binding, VkImageView imageView, VkImageLayout imageLayout);
     std::vector<VkDescriptorSet> recordAndReturnSets();
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //
