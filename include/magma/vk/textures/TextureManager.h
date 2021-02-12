@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "magma/vk/Texture.h"
+#include "magma/vk/textures/Texture.h"
 #include "magma/vk/logicalDevice.h"
 
 class TextureManager {
@@ -16,12 +16,13 @@ public:
     TextureManager(LogicalDevice &device);
     ~TextureManager();
 
-    Texture getTexture(const std::string &name);
+    Texture getTexture(const std::string &name) { return _textures[name]; };
 
-    Texture createTexture(std::string &name, VkFormat format, VkExtent3D extend, VkImageUsageFlags usage);
+    Texture createTexture2D(std::string &name, VkFormat format, VkExtent3D extent,
+        VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
 
-    Texture createTexture2D(uint32_t width, uint32_t height,
-        VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags);
+    Texture createTexture2D(uint32_t width, uint32_t height, VkFormat format,
+        VkImageUsageFlags usage, VkImageAspectFlags aspectFlags);
 
     void deleteTexture(Texture &texture);
 private:

@@ -28,6 +28,8 @@ public:
     VkQueue getPresentQueue() const { return presentQueue; }
     const VkCommandPool &getGraphicsCmdPool() const { return graphicsCmdPool; }
 
+    VkDeviceMemory createDeviceMemory(VkMemoryRequirements memRequirements, VkMemoryPropertyFlags properties);
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     // buffer management
     //////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -86,6 +86,18 @@ static uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFil
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
+VkDeviceMemory LogicalDevice::createDeviceMemory(VkMemoryRequirements memRequirements, VkMemoryPropertyFlags properties) {
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+
+    VkDeviceMemory deviceMemory;
+    VkResult result = vkAllocateMemory(device, &allocInfo, nullptr, &deviceMemory);
+    VK_CHECK_ERR(result, "failed to allocate memory!");
+    return deviceMemory;
+}
+
 Buffer LogicalDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 {
     Buffer buffer;
