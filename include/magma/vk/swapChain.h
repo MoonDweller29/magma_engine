@@ -1,5 +1,5 @@
 #pragma once
-#include "physicalDevice.h"
+#include "magma/vk/physicalDevice/PhysicalDevice.h"
 #include "logicalDevice.h"
 #include "Window.h"
 #include "frameBuffer.h"

@@ -2,7 +2,7 @@
 #include <memory>
 #include "magma/vk/Context.h"
 #include "magma/vk/validationLayers/DebugMessenger.h"
-#include "magma/vk/physicalDevice.h"
+#include "magma/vk/physicalDevice/PhysicalDevice.h"
 #include "magma/vk/logicalDevice.h"
 #include "magma/vk/Window.h"
 #include "magma/vk/swapChain.h"

@@ -1,13 +1,13 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include "physicalDevice.h"
-#include "buffer.h"
 
 #include <vector>
 #include <cstring>
 #include <memory>
 
 #include "magma/vk/textures/TextureManager.h"
+#include "magma/vk/physicalDevice/PhysicalDevice.h"
+#include "magma/vk/buffer.h"
 
 class LogicalDevice
 {

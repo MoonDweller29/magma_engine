@@ -10,7 +10,7 @@
 
 LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice)
 {
-    this->physicalDevice = physicalDevice.device();
+    this->physicalDevice = physicalDevice.c_device();
     QueueFamilyIndices indices = physicalDevice.getQueueFamilyInds();
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -49,7 +49,7 @@ LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice)
         createInfo.enabledLayerCount = 0;
     }
 
-    VkResult result = vkCreateDevice(physicalDevice.device(), &createInfo, nullptr, &device);
+    VkResult result = vkCreateDevice(physicalDevice.c_device(), &createInfo, nullptr, &device);
     VK_CHECK_ERR(result, "failed to create logical device!");
 
     std::cout << "Logical Device is created\n";

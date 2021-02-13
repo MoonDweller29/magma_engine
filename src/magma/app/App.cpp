@@ -216,7 +216,7 @@ void App::createShadowMapResources()
 
 void App::createDepthResources()
 {
-    VkFormat depthFormat = findDepthFormat(physicalDevice->device());
+    VkFormat depthFormat = findDepthFormat(physicalDevice->c_device());
     depthTex = device->getTextureManager().createTexture2D("depth_texture", 
         depthFormat, 
         VkExtent2D{WIN_WIDTH, WIN_HEIGHT}, 

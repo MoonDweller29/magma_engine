@@ -20,6 +20,12 @@
     }                                      \
 }
 
+#define VK_ERROR(message)               \
+{                                       \
+    LOG_ERROR(message);                 \
+    throw std::runtime_error(message);  \
+}
+
 VkFormat findSupportedFormat(
         VkPhysicalDevice physicalDevice,
         const std::vector<VkFormat>& candidates,
