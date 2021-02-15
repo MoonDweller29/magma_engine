@@ -133,10 +133,9 @@ void SwapChain::acquireImages()
 
 void SwapChain::createImageViews()
 {
-    imageViews.resize(images.size());
-    for (uint32_t i = 0; i < imageViews.size(); i++)
+    for (uint32_t i = 0; i < images.size(); i++)
     {
-        imageViews[i] = device.createImageView(images[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+        imageViews.emplace_back(device.handler(), images[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 
@@ -144,7 +143,7 @@ void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthIma
 {
     for (size_t i = 0; i < imageViews.size(); i++)
     {
-        std::vector<VkImageView> currImage = { imageViews[i], depthImageView };
+        std::vector<VkImageView> currImage = { imageViews[i].getImageView(), depthImageView };
         frameBuffers.emplace_back(currImage, extent, renderPass, device.handler());
     }
 }
@@ -166,9 +165,5 @@ std::vector<VkFramebuffer> SwapChain::getVkFrameBuffers() const
 
 SwapChain::~SwapChain()
 {
-    for (auto imageView : imageViews)
-    {
-        vkDestroyImageView(device.handler(), imageView, nullptr);
-    }
     vkDestroySwapchainKHR(device.handler(), swapChain, nullptr);
 }

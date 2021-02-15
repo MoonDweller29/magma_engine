@@ -7,7 +7,7 @@
 #include "magma/vk/Window.h"
 #include "magma/vk/swapChain.h"
 #include "magma/vk/buffer.h"
-#include "magma/vk/texture.h"
+#include "magma/vk/textures/Texture.h"
 #include "magma/app/scene/mesh.h"
 #include "magma/app/scene/meshReader.h"
 #include "magma/app/scene/directLight.h"

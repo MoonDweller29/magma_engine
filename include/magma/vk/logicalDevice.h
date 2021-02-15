@@ -2,9 +2,12 @@
 #include <vulkan/vulkan.h>
 #include "physicalDevice.h"
 #include "buffer.h"
-#include "texture.h"
+
 #include <vector>
 #include <cstring>
+#include <memory>
+
+#include "magma/vk/textures/TextureManager.h"
 
 class LogicalDevice
 {
@@ -13,6 +16,7 @@ class LogicalDevice
     VkQueue graphicsQueue;
     VkQueue presentQueue;
     VkCommandPool graphicsCmdPool;
+    std::unique_ptr<TextureManager> _textureManager;
 
     void acquireQueues(QueueFamilyIndices indices);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -27,6 +31,7 @@ public:
     VkQueue getGraphicsQueue() const { return graphicsQueue; }
     VkQueue getPresentQueue() const { return presentQueue; }
     const VkCommandPool &getGraphicsCmdPool() const { return graphicsCmdPool; }
+    TextureManager &getTextureManager() const { return *_textureManager; }
 
     VkDeviceMemory createDeviceMemory(VkMemoryRequirements memRequirements, VkMemoryPropertyFlags properties);
 
@@ -41,22 +46,6 @@ public:
     Buffer createUniformBuffer(VkDeviceSize size);
 
     void deleteBuffer(Buffer &buffer);
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    // texture management
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    Texture createTexture2D(
-            uint32_t width, uint32_t height,
-            VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags);
-    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-    VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-    void deleteTexture(Texture &tex);
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////////////////

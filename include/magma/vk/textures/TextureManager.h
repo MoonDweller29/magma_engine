@@ -8,24 +8,27 @@
 #include <string>
 #include <unordered_map>
 
+#include "magma/vk/commandBuffer.h"
 #include "magma/vk/textures/Texture.h"
-#include "magma/vk/logicalDevice.h"
+
+class LogicalDevice;
 
 class TextureManager {
 public:
     TextureManager(LogicalDevice &device);
     ~TextureManager();
 
-    Texture getTexture(const std::string &name) { return _textures[name]; };
+    const Texture &getTexture(const std::string &name) const;
 
-    Texture createTexture2D(std::string &name, VkFormat format, VkExtent3D extent,
+    Texture &createTexture2D(const std::string &name, VkFormat format, VkExtent3D extent,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
 
-    Texture createTexture2D(uint32_t width, uint32_t height, VkFormat format,
-        VkImageUsageFlags usage, VkImageAspectFlags aspectFlags);
+    void setLayout(Texture &texture, VkImageLayout newLayout);
+    void copyFromBuffer(Texture &texture, VkBuffer buffer);
 
     void deleteTexture(Texture &texture);
 private:
     LogicalDevice &_device;
+    CommandBufferArr _commandBuffers;
     std::unordered_map<std::string, Texture> _textures;
 };

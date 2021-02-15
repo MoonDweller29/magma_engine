@@ -86,8 +86,16 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/commandBuffer.cpp
 		include/magma/vk/buffer.h
 		src/magma/vk/buffer.cpp
-		include/magma/vk/texture.h
-		src/magma/vk/texture.cpp
+
+		include/magma/vk/textures/TextureManager.h
+		src/magma/vk/textures/TextureManager.cpp
+		include/magma/vk/textures/CustomImageView.h
+		src/magma/vk/textures/CustomImageView.cpp
+		include/magma/vk/textures/ImageView.h
+		src/magma/vk/textures/ImageView.cpp
+		include/magma/vk/textures/Texture.h
+		src/magma/vk/textures/Texture.cpp
+
 		include/magma/vk/descriptors/descriptorSetLayout.h
 		src/magma/vk/descriptors/descriptorSetLayout.cpp
 		include/magma/vk/descriptors/descriptorPool.h

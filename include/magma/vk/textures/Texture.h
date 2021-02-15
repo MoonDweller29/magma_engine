@@ -19,12 +19,13 @@ struct TextureInfo
 
 class Texture {
 public:
+    Texture();
     Texture(VkImage img, VkDeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
 
     const VkImage           &getImage()     const { return _image;              }
     const VkDeviceMemory    &getMemory()    const { return _imageMemory;        }
     const ImageView         &getView()      const { return _defaultImageView;   }
-    const TextureInfo*       getInfo()      const { return _info;               }
+    TextureInfo*             getInfo()      const { return _info;               }
 
 private:
     VkDevice _device;

@@ -9,17 +9,10 @@
 
 class ImageView {
 public:
+    ImageView();
     ImageView(VkImageView imageView);
 
-    const VkImageView &getImageView() { return _imageView; }
-private:
+    const VkImageView &getImageView() const { return _imageView; }
+protected:
     VkImageView _imageView;
-};
-
-class CustomImageView : ImageView {
-public:
-    CustomImageView(VkDevice device);
-    ~CustomImageView();
-private:
-    VkDevice _device;
 };

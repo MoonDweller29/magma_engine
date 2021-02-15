@@ -43,6 +43,28 @@ void CommandBufferArr::endCmdBuf(uint32_t i)
     VK_CHECK_ERR(result, "failed to record command buffer!");
 }
 
+void CommandBufferArr::endAndSubmitCmdBuf(uint32_t i, VkQueue queue) {
+    VkResult result = vkEndCommandBuffer(commandBuffers[i]);
+    VK_CHECK_ERR(result, "failed to record command buffer!");
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffers[i];
+
+    vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(queue);
+}
+
+void CommandBufferArr::resetCmdBuf(uint32_t i, VkCommandBufferResetFlags flag) {
+    vkResetCommandBuffer(commandBuffers[i], flag);
+}
+
+void CommandBufferArr::freeCmdBuf(VkDevice device, VkCommandPool commandPool) {
+    vkFreeCommandBuffers(device, commandPool, commandBuffers.size(), commandBuffers.data());
+}
+
+
 //void CommandBufferArr::record(
 //        VkBuffer indexBuffer,
 //        VkBuffer vertexBuffer,

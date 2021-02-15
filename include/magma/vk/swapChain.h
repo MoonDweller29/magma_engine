@@ -6,12 +6,14 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
+#include "magma/vk/textures/CustomImageView.h"
+
 class SwapChain
 {
     VkSwapchainKHR swapChain;
     LogicalDevice &device;
     std::vector<VkImage> images;
-    std::vector<VkImageView> imageViews;
+    std::vector<CustomImageView> imageViews;
     std::vector<FrameBuffer> frameBuffers;
     VkFormat imageFormat;
     VkExtent2D extent;
