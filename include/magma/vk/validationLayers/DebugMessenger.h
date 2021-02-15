@@ -6,8 +6,7 @@
 class DebugMessenger {
 public:
     struct Config {
-        vk::DebugUtilsMessageSeverityFlagBitsEXT minSeverity =
-                vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose;
+        Log::Level minSeverity = Log::Level::DEBUG;
     private:
         JSON_MAPPINGS(
             { minSeverity, "minimal_severity"}
@@ -32,11 +31,3 @@ private:
 
     static Config _config;
 };
-
-JSON_ENUM_MAPPING(vk::DebugUtilsMessageSeverityFlagBitsEXT,
-    { vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose,  "eDEBUG"    },
-    { vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo,     "eINFO"     },
-    { vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning,  "eWARNING"  },
-    { vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,    "eERROR"    }
-)
-

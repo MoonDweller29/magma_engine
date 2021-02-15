@@ -8,6 +8,6 @@
         "minimal_level"    : "DEBUG"
     },
     "validation_layers" : {
-    	"minimal_severity" : "eDEBUG"
+    	"minimal_severity" : "DEBUG"
     }
 }

@@ -34,11 +34,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessenger::debugCallback(
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData
 ) {
-    auto msgSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT(messageSeverity);
+    auto msgSeverity = DebugMessenger::msgSeverityToLogLevel(
+            vk::DebugUtilsMessageSeverityFlagBitsEXT(messageSeverity));
     if (msgSeverity >= _config.minSeverity) {
-        Log::message(
-                DebugMessenger::msgSeverityToLogLevel(msgSeverity),
-                "[VALIDATION LAYER] ", pCallbackData->pMessage);
+        Log::message(msgSeverity, "[VALIDATION LAYER] ", pCallbackData->pMessage);
     }
 
     return VK_FALSE;
