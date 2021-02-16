@@ -292,7 +292,7 @@ void App::cleanupSwapChain()
     device->deleteBuffer(uniformBuffer);
     device->deleteBuffer(fragmentUniform);
 
-    //device->getTextureManager().deleteTexture(depthTex);
+    device->getTextureManager().deleteTexture(depthTex);
 
     swapChain->clearFrameBuffers();
     colorPass.reset();
