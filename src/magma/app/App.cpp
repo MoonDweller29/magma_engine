@@ -273,10 +273,10 @@ void App::initVulkan() {
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                    fragmentUniform, sizeof(FragmentUniform),
-                                   texture.getView().getImageView(), textureSampler,
+                                   texture.getView(), textureSampler,
                                    lightSpaceUniform, sizeof(LightSpaceUniform),
-                                   shadowMap.getView().getImageView(), shadowMapSampler);
-    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView().getImageView());
+                                   shadowMap.getView(), shadowMapSampler);
+    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
     colorPass->recordCmdBuffers(
             indexBuffer.buf,
             vertexBuffer.buf,
@@ -323,10 +323,10 @@ void App::recreateSwapChain()
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                    fragmentUniform, sizeof(FragmentUniform),
-                                   texture.getView().getImageView(), textureSampler,
+                                   texture.getView(), textureSampler,
                                    lightSpaceUniform, sizeof(LightSpaceUniform),
-                                   shadowMap.getView().getImageView(), shadowMapSampler);
-    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView().getImageView());
+                                   shadowMap.getView(), shadowMapSampler);
+    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
     colorPass->recordCmdBuffers(
             indexBuffer.buf, vertexBuffer.buf, indices.size(),
             swapChain->getVkFrameBuffers()

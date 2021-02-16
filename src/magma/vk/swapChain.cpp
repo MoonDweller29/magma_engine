@@ -143,7 +143,7 @@ void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthIma
 {
     for (size_t i = 0; i < imageViews.size(); i++)
     {
-        std::vector<VkImageView> currImage = { imageViews[i].getImageView(), depthImageView };
+        std::vector<VkImageView> currImage = { imageViews[i].getView(), depthImageView };
         frameBuffers.emplace_back(currImage, extent, renderPass, device.handler());
     }
 }

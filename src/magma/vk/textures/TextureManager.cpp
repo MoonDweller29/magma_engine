@@ -207,7 +207,7 @@ void TextureManager::copyFromBuffer(Texture &texture, VkBuffer buffer) {
 void TextureManager::deleteTexture(Texture &texture) {
      _textures.erase(texture.getInfo()->name);
     delete texture.getInfo();
-    vkDestroyImageView(_device.handler(), texture.getView().getImageView(), nullptr);
+    vkDestroyImageView(_device.handler(), texture.getView(), nullptr);
     vkDestroyImage(_device.handler(), texture.getImage(), nullptr);
     vkFreeMemory(_device.handler(), texture.getMemory(), nullptr);
 }

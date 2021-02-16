@@ -12,7 +12,7 @@ public:
     ImageView();
     ImageView(VkImageView imageView);
 
-    const VkImageView &getImageView() const { return _imageView; }
+    const VkImageView &getView() const { return _imageView; }
 protected:
     VkImageView _imageView;
 };

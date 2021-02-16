@@ -21,7 +21,7 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShader.getStageInfo() };
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device.handler(), shaderStages, pipelineInfo, renderPass);
 
-    std::vector<VkImageView> attachments = { depthTex.getView().getImageView() };
+    std::vector<VkImageView> attachments = { depthTex.getView() };
     frameBuffer = std::make_unique<FrameBuffer>(attachments, extent, renderPass, device.handler());
 
     commandBuffers.allocate(device.handler(), device.getGraphicsCmdPool(), 1);
