@@ -6,8 +6,10 @@
  */
 #include "magma/vk/textures/TextureManager.h"
 
+#include <stdexcept>
 #include <vulkan/vulkan_core.h>
 
+#include "magma/app/log.hpp"
 #include "magma/vk/logicalDevice.h"
 #include "magma/vk/vulkan_common.h"
 
@@ -18,14 +20,31 @@ TextureManager::TextureManager(LogicalDevice &device)
 
 TextureManager::~TextureManager() {
     _commandBuffers.freeCmdBuf(_device.handler(), _device.getGraphicsCmdPool());
+    if (_textures.size() > 0) {
+        LOG_WARNING(_textures.size(), " textures not been removed");
+        while(_textures.size() > 0) {
+            deleteTexture(_textures.begin()->second);
+        }
+    }
 }
 
-const Texture &TextureManager::getTexture(const std::string &name) const { 
-    return _textures.at(name); 
+bool TextureManager::textureExist(const std::string &name) const {
+    return _textures.find(name) != _textures.end();
+}
+
+Texture& TextureManager::getTexture(const std::string &name) {
+    if (textureExist(name)) {
+        return _textures.at(name);
+    } else {
+        throw std::invalid_argument("TextureManager::getTexture::texture not exist");
+    }
 };
 
 Texture &TextureManager::createTexture2D(const std::string &name, VkFormat format, VkExtent3D extent,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask) {
+    if (textureExist(name)) {
+        throw std::invalid_argument("TextureManager::createTexture2D::texture exist");
+    }
     
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -70,6 +89,7 @@ Texture &TextureManager::createTexture2D(const std::string &name, VkFormat forma
     textureInfo->imageInfo = imageInfo;
     textureInfo->viewInfo = viewInfo;
     textureInfo->curLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    textureInfo->name = name;
 
     _textures.emplace(name, Texture(textureImage, textureMemory, ImageView(textureView), textureInfo));
     return _textures.at(name);
@@ -184,6 +204,7 @@ void TextureManager::copyFromBuffer(Texture &texture, VkBuffer buffer) {
 }
 
 void TextureManager::deleteTexture(Texture &texture) {
+     _textures.erase(texture.getInfo()->name);
     delete texture.getInfo();
     vkDestroyImageView(_device.handler(), texture.getView().getImageView(), nullptr);
     vkDestroyImage(_device.handler(), texture.getImage(), nullptr);

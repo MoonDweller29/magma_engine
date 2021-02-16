@@ -5,6 +5,7 @@
  * @date 2021-02-12
  */
 #pragma once
+#include <string>
 #include <vulkan/vulkan.h>
 #include <memory>
 
@@ -15,6 +16,7 @@ struct TextureInfo
     VkImageCreateInfo       imageInfo;
     VkImageViewCreateInfo   viewInfo;
     VkImageLayout           curLayout;
+    std::string             name;
 };
 
 class Texture {

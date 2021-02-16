@@ -18,7 +18,8 @@ public:
     TextureManager(LogicalDevice &device);
     ~TextureManager();
 
-    const Texture &getTexture(const std::string &name) const;
+    bool textureExist(const std::string &name) const;
+    Texture &getTexture(const std::string &name);
 
     Texture &createTexture2D(const std::string &name, VkFormat format, VkExtent3D extent,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask);

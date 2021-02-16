@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "magma/app/App.h"
+#include "magma/vk/textures/TextureManager.h"
 #include "magma/vk/vulkan_common.h"
 #include "magma/glm_inc.h"
 #include "magma/app/image.h"
@@ -148,14 +149,15 @@ void App::createTexture()
         memcpy(data, img.data(), static_cast<size_t>(imageSize));
     vkUnmapMemory(device->handler(), stagingBuffer.mem);
 
-    texture = device->getTextureManager().createTexture2D("input_texture",
+    TextureManager& textureManager = device->getTextureManager();
+    texture = textureManager.createTexture2D("input_texture",
         VK_FORMAT_R8G8B8A8_SRGB,
         VkExtent3D{(uint)img.getWidth(), (uint)img.getHeight(), 1},
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         VK_IMAGE_ASPECT_COLOR_BIT);
-    device->getTextureManager().setLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    device->getTextureManager().copyFromBuffer(texture, stagingBuffer.buf);
-    device->getTextureManager().setLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    textureManager.setLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    textureManager.copyFromBuffer(texture, stagingBuffer.buf);
+    textureManager.setLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     device->deleteBuffer(stagingBuffer);
 }
@@ -243,11 +245,6 @@ void App::createDepthResources()
         VkExtent3D{WIN_WIDTH, WIN_HEIGHT, 1}, 
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
         VK_IMAGE_ASPECT_DEPTH_BIT);
-    // depthTex = device->createTexture2D(
-    //         WIN_WIDTH, WIN_HEIGHT, depthFormat,
-    //         VK_IMAGE_TILING_OPTIMAL,
-    //         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-    //         VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 
@@ -295,7 +292,7 @@ void App::cleanupSwapChain()
     device->deleteBuffer(uniformBuffer);
     device->deleteBuffer(fragmentUniform);
 
-    device->getTextureManager().deleteTexture(depthTex);
+    //device->getTextureManager().deleteTexture(depthTex);
 
     swapChain->clearFrameBuffers();
     colorPass.reset();
