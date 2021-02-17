@@ -9,8 +9,8 @@
 #include "magma/vk/vulkan_common.h"
 #include <vulkan/vulkan_core.h>
 
-CustomImageView::CustomImageView(VkDevice device, Texture &texture, VkImageAspectFlags aspectMask) 
-        : _device(device) {
+CustomImageView::CustomImageView(Texture &texture, VkImageAspectFlags aspectMask) 
+        : _device(texture.getInfo()->device) {
     VkImageCreateInfo info = texture.getInfo()->imageInfo;
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -23,9 +23,8 @@ CustomImageView::CustomImageView(VkDevice device, Texture &texture, VkImageAspec
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    VkImageView textureView;
-    VkResult result = vkCreateImageView(device, &viewInfo, nullptr, &_imageView);
-    VK_CHECK_ERR(result, "CustomImageView::failed to create image view!");
+    VkResult result = vkCreateImageView(_device, &viewInfo, nullptr, &_imageView);
+    VK_CHECK_ERR(result, "CustomImageView: failed to create image view!");
 }
 
 CustomImageView::CustomImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask)
@@ -41,9 +40,8 @@ CustomImageView::CustomImageView(VkDevice device, VkImage image, VkFormat format
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    VkImageView textureView;
     VkResult result = vkCreateImageView(device, &viewInfo, nullptr, &_imageView);
-    VK_CHECK_ERR(result, "CustomImageView::failed to create image view!");
+    VK_CHECK_ERR(result, "CustomImageView: failed to create image view!");
 }
 
 CustomImageView::~CustomImageView() {

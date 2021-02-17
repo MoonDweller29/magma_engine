@@ -18,14 +18,14 @@ public:
     TextureManager(LogicalDevice &device);
     ~TextureManager();
 
-    bool textureExist(const std::string &name) const;
+    bool textureExists(const std::string &name) const;
     Texture &getTexture(const std::string &name);
 
     Texture &createTexture2D(const std::string &name, VkFormat format, VkExtent3D extent,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
 
     void setLayout(Texture &texture, VkImageLayout newLayout);
-    void copyFromBuffer(Texture &texture, VkBuffer buffer);
+    void copyBufToTex(Texture &texture, VkBuffer buffer);
 
     void deleteTexture(Texture &texture);
 private:

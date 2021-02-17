@@ -12,7 +12,7 @@
 
 class CustomImageView final : public ImageView {
 public:
-    CustomImageView(VkDevice device, Texture &texture, VkImageAspectFlags aspectMask);
+    CustomImageView(Texture &texture, VkImageAspectFlags aspectMask);
     CustomImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
     CustomImageView(CustomImageView &&other);
     ~CustomImageView();

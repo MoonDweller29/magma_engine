@@ -21,29 +21,29 @@ TextureManager::TextureManager(LogicalDevice &device)
 TextureManager::~TextureManager() {
     _commandBuffers.freeCmdBuf(_device.handler(), _device.getGraphicsCmdPool());
     if (_textures.size() > 0) {
-        LOG_WARNING(_textures.size(), " textures not been removed");
+        LOG_WARNING(_textures.size(), " textures haven't been removed");
         while(_textures.size() > 0) {
             deleteTexture(_textures.begin()->second);
         }
     }
 }
 
-bool TextureManager::textureExist(const std::string &name) const {
+bool TextureManager::textureExists(const std::string &name) const {
     return _textures.find(name) != _textures.end();
 }
 
 Texture& TextureManager::getTexture(const std::string &name) {
-    if (textureExist(name)) {
+    if (textureExists(name)) {
         return _textures.at(name);
     } else {
-        throw std::invalid_argument("TextureManager::getTexture::texture not exist");
+        throw std::invalid_argument("TextureManager::getTexture texture not exist");
     }
 };
 
 Texture &TextureManager::createTexture2D(const std::string &name, VkFormat format, VkExtent3D extent,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask) {
-    if (textureExist(name)) {
-        throw std::invalid_argument("TextureManager::createTexture2D::texture exist");
+    if (textureExists(name)) {
+        throw std::invalid_argument("TextureManager::createTexture2D texture exist");
     }
     
     VkImageCreateInfo imageInfo{};
@@ -86,6 +86,7 @@ Texture &TextureManager::createTexture2D(const std::string &name, VkFormat forma
     VK_CHECK_ERR(result, "TextureManager::failed to create image view!");
 
     TextureInfo* textureInfo = new TextureInfo;
+    textureInfo->device = _device.handler();
     textureInfo->imageInfo = imageInfo;
     textureInfo->viewInfo = viewInfo;
     textureInfo->curLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -120,15 +121,12 @@ void TextureManager::setLayout(Texture &texture, VkImageLayout newLayout) {
         VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
         VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-        if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-        {
+        if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
             if (hasStencilComponent(imageInfo.format))
                 barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-        }
-        else
-        {
+        } else {
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         }
 
@@ -176,7 +174,7 @@ void TextureManager::setLayout(Texture &texture, VkImageLayout newLayout) {
     texture.getInfo()->curLayout = newLayout;
 }
 
-void TextureManager::copyFromBuffer(Texture &texture, VkBuffer buffer) {
+void TextureManager::copyBufToTex(Texture &texture, VkBuffer buffer) {
     VkImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
     _commandBuffers.resetCmdBuf(0);
     VkCommandBuffer cmdBuf = _commandBuffers.beginCmdBuf(0);

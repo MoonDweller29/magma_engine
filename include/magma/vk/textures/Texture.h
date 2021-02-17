@@ -13,6 +13,7 @@
 
 struct TextureInfo
 {
+    VkDevice                device;
     VkImageCreateInfo       imageInfo;
     VkImageViewCreateInfo   viewInfo;
     VkImageLayout           curLayout;
@@ -22,16 +23,15 @@ struct TextureInfo
 class Texture {
 public:
     Texture();
-    Texture(VkImage img, VkDeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
-
     const VkImage           &getImage()     const { return _image;                      }
     const VkDeviceMemory    &getMemory()    const { return _imageMemory;                }
     const VkImageView       &getView()      const { return _defaultImageView.getView(); }
     const ImageView         &getImageView() const { return _defaultImageView;           }
     TextureInfo*             getInfo()      const { return _info;                       }
 
+    friend class TextureManager;
 private:
-    VkDevice _device;
+    Texture(VkImage img, VkDeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
 
     VkImage _image;
     VkDeviceMemory _imageMemory;
