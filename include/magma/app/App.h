@@ -2,7 +2,6 @@
 #include <memory>
 #include "magma/vk/Context.h"
 #include "magma/vk/validationLayers/DebugMessenger.h"
-#include "magma/vk/physicalDevice/PhysicalDevice.h"
 #include "magma/vk/logicalDevice.h"
 #include "magma/vk/Window.h"
 #include "magma/vk/swapChain.h"
@@ -38,8 +37,7 @@ private:
 
     std::unique_ptr<Context>              instance;
     std::unique_ptr<DebugMessenger>       debugMessenger;
-    std::unique_ptr<PhysicalDevice>       physicalDevice;
-    std::unique_ptr<LogicalDevice>  device;
+    std::unique_ptr<LogicalDevice>        device;
     std::unique_ptr<Window>               window;
     Keyboard *keyBoard;
     Mouse *mouse;

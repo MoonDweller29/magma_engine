@@ -9,9 +9,8 @@
 #include "magma/vk/physicalDevice/PhysicalDevice.h"
 #include "magma/vk/buffer.h"
 
-class LogicalDevice
-{
-    VkPhysicalDevice physicalDevice;
+class LogicalDevice {
+    PhysicalDevice _physDevice;
     VkDevice device;
     VkQueue graphicsQueue;
     VkQueue presentQueue;
@@ -27,7 +26,8 @@ public:
 
     LogicalDevice(const PhysicalDevice &physicalDevice);
     VkDevice handler() const { return device; }
-    const VkPhysicalDevice &physDevice() const { return physicalDevice; }
+    VkPhysicalDevice getVkPhysDevice() const { return _physDevice.c_device(); }
+    const PhysicalDevice &physDevice() const { return _physDevice; }
     VkQueue getGraphicsQueue() const { return graphicsQueue; }
     VkQueue getPresentQueue() const { return presentQueue; }
     const VkCommandPool &getGraphicsCmdPool() const { return graphicsCmdPool; }

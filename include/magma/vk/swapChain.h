@@ -25,7 +25,7 @@ public:
     static VkPresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
     static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, VkExtent2D actualExtent);
 
-    SwapChain(LogicalDevice &device, const PhysicalDevice &physicalDevice, const Window &window);
+    SwapChain(LogicalDevice &device, const Window &window);
     ~SwapChain();
 
     VkSwapchainKHR getSwapChain() const { return swapChain; }

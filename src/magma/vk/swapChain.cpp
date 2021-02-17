@@ -97,7 +97,7 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
     }
 }
 
-uint32_t chooseImageCount(const SwapChainSupportDetails &swapChainSupport)
+uint32_t chooseImageCount(const SwapChainSupportInfo &swapChainSupport)
 {
 //    std::cout << "swap_chain minImageCount : " << swapChainSupport.capabilities.minImageCount << std::endl;
 //    std::cout << "swap_chain maxImageCount : " << swapChainSupport.capabilities.maxImageCount << std::endl;
@@ -111,10 +111,10 @@ uint32_t chooseImageCount(const SwapChainSupportDetails &swapChainSupport)
     return imageCount;
 }
 
-SwapChain::SwapChain(LogicalDevice &device, const PhysicalDevice &physicalDevice, const Window &window):
+SwapChain::SwapChain(LogicalDevice &device, const Window &window):
     device(device)
 {
-    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice.c_device(), window.getSurface());
+    SwapChainSupportInfo swapChainSupport = querySwapChainSupport(device.getVkPhysDevice(), window.getSurface());
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -133,7 +133,7 @@ SwapChain::SwapChain(LogicalDevice &device, const PhysicalDevice &physicalDevice
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 
-    QueueFamilyIndices indices = physicalDevice.getQueueFamilyInds();
+    QueueFamilyIndices indices = device.physDevice().getQueueFamilyInds();
     uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
     if (indices.graphicsFamily != indices.presentFamily) {

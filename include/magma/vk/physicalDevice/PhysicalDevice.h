@@ -11,31 +11,33 @@ struct QueueFamilyIndices {
     bool isComplete();
 };
 
-struct SwapChainSupportDetails {
+struct SwapChainSupportInfo {
     vk::SurfaceCapabilitiesKHR capabilities;
     std::vector<vk::SurfaceFormatKHR> formats;
     std::vector<vk::PresentModeKHR> presentModes;
 };
 
-SwapChainSupportDetails querySwapChainSupport(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+SwapChainSupportInfo querySwapChainSupport(vk::PhysicalDevice device, vk::SurfaceKHR surface);
 
 class PhysicalDevice {
 public:
     static const std::vector<const char*> extensions;
 
-    PhysicalDevice(vk::Instance instance, vk::SurfaceKHR surface);
+    PhysicalDevice(vk::PhysicalDevice physDevice);
     ~PhysicalDevice() = default;
 
     QueueFamilyIndices getQueueFamilyInds() const { return _inds; }
     VkPhysicalDevice   c_device() const { return (VkPhysicalDevice)_physicalDevice; }
     vk::PhysicalDevice device()   const { return _physicalDevice; }
+
+    vk::PhysicalDeviceProperties getProperties() const { return _physicalDevice.getProperties(); }
+    vk::PhysicalDeviceFeatures   getFeatures()   const { return _physicalDevice.getFeatures();   }
+    bool checkExtensionSupport(const std::vector<const char*> &extensions) const;
+    SwapChainSupportInfo getSwapChainSupportInfo(vk::SurfaceKHR surface) const;
+    void initInds(vk::SurfaceKHR surface);
 private:
     QueueFamilyIndices _inds;
     vk::PhysicalDevice _physicalDevice;
 
-    static bool checkDeviceExtensionSupport(vk::PhysicalDevice device);
-    static bool isSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface);
-    static int rateSuitability(vk::PhysicalDevice device, vk::SurfaceKHR surface);
-    static vk::PhysicalDevice selectDevice(vk::Instance instance, vk::SurfaceKHR surface);
     static QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface);
 };
