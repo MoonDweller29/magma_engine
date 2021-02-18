@@ -92,7 +92,7 @@ VkDeviceMemory LogicalDevice::createDeviceMemory(VkMemoryRequirements memRequire
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = findMemoryType(_physDevice.c_device(), memRequirements.memoryTypeBits, properties);
 
     VkDeviceMemory deviceMemory;
     VkResult result = vkAllocateMemory(device, &allocInfo, nullptr, &deviceMemory);
