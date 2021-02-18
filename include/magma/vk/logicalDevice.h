@@ -24,7 +24,7 @@ class LogicalDevice {
 public:
 
 
-    LogicalDevice(const PhysicalDevice &physicalDevice);
+    LogicalDevice(const PhysicalDevice &physicalDevice, const std::vector<const char*> &deviceExtensions);
     VkDevice handler() const { return device; }
     VkPhysicalDevice getVkPhysDevice() const { return _physDevice.c_device(); }
     const PhysicalDevice &physDevice() const { return _physDevice; }

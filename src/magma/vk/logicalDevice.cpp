@@ -8,8 +8,9 @@
 #include <iostream>
 #include <set>
 
-LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice) :
-    _physDevice(physicalDevice)
+LogicalDevice::LogicalDevice(
+        const PhysicalDevice &physicalDevice, const std::vector<const char*> &deviceExtensions
+) : _physDevice(physicalDevice)
 {
     QueueFamilyIndices indices = _physDevice.getQueueFamilyInds();
 
@@ -38,8 +39,8 @@ LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice) :
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(PhysicalDevice::extensions.size());
-    createInfo.ppEnabledExtensionNames = PhysicalDevice::extensions.data();
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     if (ValidationLayers::ENABLED)
     {

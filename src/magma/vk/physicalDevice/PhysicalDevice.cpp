@@ -12,10 +12,6 @@ bool QueueFamilyIndices::isComplete() {
     return graphicsFamily.has_value() && computeFamily.has_value() && presentFamily.has_value();
 }
 
-const std::vector<const char*> PhysicalDevice::extensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
 static VkBool32 hasSurfaceSupportKHR(
         vk::PhysicalDevice device,
         uint32_t queueFamilyIndex,
@@ -100,15 +96,5 @@ SwapChainSupportInfo PhysicalDevice::getSwapChainSupportInfo(vk::SurfaceKHR surf
 
 void PhysicalDevice::initInds(vk::SurfaceKHR surface) {
     _inds = findQueueFamilies(_physicalDevice, surface);
-}
-
-SwapChainSupportInfo querySwapChainSupport(vk::PhysicalDevice device, vk::SurfaceKHR surface) {
-    SwapChainSupportInfo details;
-
-    details.capabilities = device.getSurfaceCapabilitiesKHR(surface).value;
-    details.formats = device.getSurfaceFormatsKHR(surface).value;
-    details.presentModes = device.getSurfacePresentModesKHR(surface).value;
-
-    return details;
 }
 

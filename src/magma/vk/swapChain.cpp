@@ -114,7 +114,7 @@ uint32_t chooseImageCount(const SwapChainSupportInfo &swapChainSupport)
 SwapChain::SwapChain(LogicalDevice &device, const Window &window):
     device(device)
 {
-    SwapChainSupportInfo swapChainSupport = querySwapChainSupport(device.getVkPhysDevice(), window.getSurface());
+    SwapChainSupportInfo swapChainSupport = device.physDevice().getSwapChainSupportInfo(window.getSurface());
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
