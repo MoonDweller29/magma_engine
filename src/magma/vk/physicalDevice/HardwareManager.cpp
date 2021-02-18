@@ -65,31 +65,50 @@ QueueFamilyIndices findQueueFamilies(
     return indices;
 }
 
-bool isSuitable(const PhysicalDevice &device, vk::SurfaceKHR surface) {
+bool HardwareManager::isDeviceSuitable(
+        const PhysicalDevice &device, const DeviceRequirements &requirements
+) {
+    if (!device.checkExtensionSupport(requirements.requiredExtensions())) {
+        return false;
+    }
+    vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
     vk::PhysicalDeviceFeatures deviceFeatures = device.getFeatures();
-    QueueFamilyIndices indices = findQueueFamilies(device.device(), surface);
-    bool extensionsSupported = device.checkExtensionSupport(PhysicalDevice::extensions);
 
-    bool swapChainAdequate = false;
-    if (extensionsSupported) {
-        SwapChainSupportInfo swapChainSupport = device.getSwapChainSupportInfo(surface);
-        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+    if (requirements.deviceType.isRequired() &&
+            (deviceProperties.deviceType != requirements.deviceType.getValue())) {
+        return false;
+    }
+    if (requirements.samplerAnisotropy.isRequired() &&
+            (deviceFeatures.samplerAnisotropy != requirements.samplerAnisotropy.getValue())) {
+        return false;
     }
 
-    return indices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
+    if (requirements.surface.isRequired()) {
+        vk::SurfaceKHR surface = requirements.surface.getValue();
+        QueueFamilyIndices indices = findQueueFamilies(device.device(), surface);
+        SwapChainSupportInfo swapChainSupport = device.getSwapChainSupportInfo(surface);
+        bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+
+        return indices.isComplete() && swapChainAdequate;
+    }
+
+    return true;
 }
 
-int HardwareManager::rateSuitability(const PhysicalDevice &device, vk::SurfaceKHR surface) {
-    if (!isSuitable(device, surface))
+int HardwareManager::rateSuitability(
+        const PhysicalDevice &device, const DeviceRequirements &requirements
+) {
+    if (!isDeviceSuitable(device, requirements)) {
         return 0;
+    }
 
     int score = 0;
 
     vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
     vk::PhysicalDeviceFeatures deviceFeatures = device.getFeatures();
 
-    // Discrete GPUs have a significant performance advantage
-    if (deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) {
+    if (requirements.deviceType.isRecommended() &&
+        (deviceProperties.deviceType == requirements.deviceType.getValue())) {
         score += 1000;
     }
 
@@ -114,14 +133,14 @@ std::vector<PhysicalDevice> HardwareManager::acquirePhysicalDevicesList() {
     return devices;
 }
 
-std::multimap<int, PhysicalDevice> HardwareManager::findSuitableDevices(vk::SurfaceKHR surface) {
+std::multimap<int, PhysicalDevice> HardwareManager::findSuitableDevices(const DeviceRequirements &requirements) {
     auto devices = acquirePhysicalDevicesList();
 
     // Use an ordered map to automatically sort candidates by increasing score
     std::multimap<int, PhysicalDevice> candidates;
 
     for (const auto& device : devices) {
-        int score = rateSuitability(device, surface);
+        int score = rateSuitability(device, requirements);
         if (score > 0) {
             candidates.insert(std::make_pair(score, device));
         }
@@ -130,12 +149,12 @@ std::multimap<int, PhysicalDevice> HardwareManager::findSuitableDevices(vk::Surf
     return candidates;
 }
 
-PhysicalDevice HardwareManager::selectBestSuitableDevice(vk::SurfaceKHR surface) {
-    std::multimap<int, PhysicalDevice> candidates = findSuitableDevices(surface);
+PhysicalDevice HardwareManager::selectBestSuitableDevice(const DeviceRequirements &requirements) {
+    std::multimap<int, PhysicalDevice> candidates = findSuitableDevices(requirements);
     if (candidates.empty() || candidates.rbegin()->first == 0) {
         VK_ERROR("failed to find a suitable GPU!");
     }
-    candidates.rbegin()->second.initInds(surface); //deprecated
+    candidates.rbegin()->second.initInds(requirements.surface.getValue()); //deprecated
 
     return candidates.rbegin()->second;
 }

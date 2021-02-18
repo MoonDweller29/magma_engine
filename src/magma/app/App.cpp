@@ -230,9 +230,15 @@ void App::initVulkan() {
     instance = std::make_unique<Context>();
     debugMessenger = std::make_unique<DebugMessenger>(instance->c_instance());
     initWindow();
+
     HardwareManager hardwareMGR(instance->instance());
-    auto physDevice = hardwareMGR.selectBestSuitableDevice(window->getSurface());
+    DeviceRequirements deviceRequirements;
+    deviceRequirements.surface.require(window->getSurface());
+    deviceRequirements.deviceType.recommend(vk::PhysicalDeviceType::eDiscreteGpu);
+    deviceRequirements.samplerAnisotropy.require(true);
+    auto physDevice = hardwareMGR.selectBestSuitableDevice(deviceRequirements);
     device = std::make_unique<LogicalDevice>(physDevice);
+
     loadScene();
     vertexBuffer = device->createVertexBuffer(vertices);
     indexBuffer = device->createIndexBuffer(indices);
