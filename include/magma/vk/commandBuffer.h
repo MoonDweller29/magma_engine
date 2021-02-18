@@ -15,7 +15,7 @@ public:
     void allocate(VkDevice device, VkCommandPool commandPool, uint32_t count);
     VkCommandBuffer beginCmdBuf(uint32_t i);
     void endCmdBuf(uint32_t i);
-    void _syncEndAndSubmitCmdBuf(uint32_t i, VkQueue queue);
+    void endAndSubmitCmdBuf_sync(uint32_t i, VkQueue queue);
     void resetCmdBuf(uint32_t i, VkCommandBufferResetFlags flag=VK_NULL_HANDLE);
     void freeCmdBuf(VkDevice device, VkCommandPool commandPool);
 //    void record(

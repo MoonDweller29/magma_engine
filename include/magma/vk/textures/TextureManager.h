@@ -1,6 +1,6 @@
 /**
  * @file TextureManager.h
- * @brief Create and control textures
+ * @brief Tool for texture creation and control
  * @version 0.1
  * @date 2021-02-12
  */
@@ -24,8 +24,6 @@ public:
     Texture& loadTexture(const std::string &texName, const std::string &path);
 
     Texture& createTexture2D(const std::string &name, VkFormat format, VkExtent2D extent,
-        VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
-    Texture& createTexture2D(const std::string &name, VkFormat format, uint width, uint height,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
 
     void setLayout(Texture &texture, VkImageLayout newLayout);

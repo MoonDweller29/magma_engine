@@ -1,9 +1,3 @@
-/**
- * @file CustomImageView.cpp
- * @brief Class contain custom image view
- * @version 0.1
- * @date 2021-02-13
- */
 #include "magma/vk/textures/CustomImageView.h"
 
 #include "magma/vk/vulkan_common.h"

@@ -1,6 +1,6 @@
 /**
  * @file ImageView.h
- * @brief Class contain image view
+ * @brief Class containing image view
  * @version 0.1
  * @date 2021-02-12
  */

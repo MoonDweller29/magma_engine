@@ -1,9 +1,3 @@
-/**
- * @file TextureManager.cpp
- * @brief Create and control textures
- * @version 0.1
- * @date 2021-02-12
- */
 #include "magma/vk/textures/TextureManager.h"
 
 #include <stdexcept>
@@ -126,11 +120,6 @@ Texture& TextureManager::createTexture2D(const std::string &name, VkFormat forma
     return _textures.at(name);
 }
 
-Texture &TextureManager::createTexture2D(const std::string &name, VkFormat format, uint width, uint height,
-        VkImageUsageFlags usage, VkImageAspectFlags aspectMask) {
-    return createTexture2D(name, format, VkExtent2D{width, height}, usage, aspectMask);
-}
-
 static bool hasStencilComponent(VkFormat format) {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
@@ -205,7 +194,7 @@ void TextureManager::setLayout(Texture &texture, VkImageLayout newLayout) {
                 1, &barrier
         );
     }
-    _commandBuffers._syncEndAndSubmitCmdBuf(0, _device.getGraphicsQueue());
+    _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
     texture.getInfo()->curLayout = newLayout;
 }
 
@@ -234,7 +223,7 @@ void TextureManager::copyBufToTex(Texture &texture, VkBuffer buffer) {
                 1, &region
         );
     }
-    _commandBuffers._syncEndAndSubmitCmdBuf(0, _device.getGraphicsQueue());
+    _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
 }
 
 void TextureManager::deleteTexture(Texture &texture) {

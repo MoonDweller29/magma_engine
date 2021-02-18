@@ -1,6 +1,6 @@
 /**
  * @file Texture.h
- * @brief Class contain all information about texture
+ * @brief Class containig all information about texture
  * @version 0.1
  * @date 2021-02-12
  */
@@ -21,6 +21,8 @@ struct TextureInfo
 };
 
 class Texture {
+friend class TextureManager;
+
 public:
     Texture();
     const VkImage           &getImage()     const { return _image;                      }
@@ -29,7 +31,6 @@ public:
     const ImageView         &getImageView() const { return _defaultImageView;           }
     TextureInfo*             getInfo()      const { return _info;                       }
 
-    friend class TextureManager;
 private:
     Texture(VkImage img, VkDeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
 

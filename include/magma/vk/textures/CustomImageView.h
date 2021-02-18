@@ -1,6 +1,6 @@
 /**
  * @file CustomImageView.h
- * @brief Class contain custom image view
+ * @brief RAII Class containing image view
  * @version 0.1
  * @date 2021-02-13
  */
