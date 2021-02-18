@@ -28,6 +28,7 @@ public:
     QueueFamilyIndices getQueueFamilyInds() const { return _inds; }
     void initInds(vk::SurfaceKHR surface);
 
+    const std::string &getName() const { return _name; }
     vk::PhysicalDeviceProperties getProperties() const { return _physicalDevice.getProperties(); }
     vk::PhysicalDeviceFeatures   getFeatures()   const { return _physicalDevice.getFeatures();   }
     bool checkExtensionSupport(const std::vector<const char*> &extensions) const;
@@ -35,6 +36,7 @@ public:
 private:
     QueueFamilyIndices _inds;
     vk::PhysicalDevice _physicalDevice;
+    std::string _name;
 
     static QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface);
 };

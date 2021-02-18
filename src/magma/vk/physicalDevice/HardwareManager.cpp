@@ -154,7 +154,10 @@ PhysicalDevice HardwareManager::selectBestSuitableDevice(const DeviceRequirement
     if (candidates.empty() || candidates.rbegin()->first == 0) {
         VK_ERROR("failed to find a suitable GPU!");
     }
-    candidates.rbegin()->second.initInds(requirements.surface.getValue()); //deprecated
+    PhysicalDevice &selectedDevice = candidates.rbegin()->second;
+    selectedDevice.initInds(requirements.surface.getValue()); //deprecated
 
-    return candidates.rbegin()->second;
+    LOG_INFO("Selected device: ", selectedDevice.getName());
+
+    return selectedDevice;
 }

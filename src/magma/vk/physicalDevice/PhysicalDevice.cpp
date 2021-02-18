@@ -69,7 +69,8 @@ QueueFamilyIndices PhysicalDevice::findQueueFamilies(
 
 
 PhysicalDevice::PhysicalDevice(vk::PhysicalDevice physDevice) :
-    _physicalDevice(physDevice)
+    _physicalDevice(physDevice),
+    _name(physDevice.getProperties().deviceName)
 {}
 
 bool PhysicalDevice::checkExtensionSupport(const std::vector<const char*> &extensions) const {
