@@ -40,17 +40,19 @@ Texture& TextureManager::getTexture(const std::string &name) {
     }
 };
 
-Texture &TextureManager::createTexture2D(const std::string &name, VkFormat format, VkExtent3D extent,
+Texture &TextureManager::createTexture2D(const std::string &name, VkFormat format, VkExtent2D extent,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask) {
     if (textureExists(name)) {
         throw std::invalid_argument("TextureManager::createTexture2D texture exist");
     }
-    
+
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = format;
-    imageInfo.extent = extent;
+    imageInfo.extent.width = extent.width;
+    imageInfo.extent.height = extent.height;
+    imageInfo.extent.depth = 1;
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -96,6 +98,11 @@ Texture &TextureManager::createTexture2D(const std::string &name, VkFormat forma
     return _textures.at(name);
 }
 
+Texture &TextureManager::createTexture2D(const std::string &name, VkFormat format, uint width, uint height,
+        VkImageUsageFlags usage, VkImageAspectFlags aspectMask) {
+    return createTexture2D(name, format, VkExtent2D{width, height}, usage, aspectMask);
+}
+
 static bool hasStencilComponent(VkFormat format) {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
@@ -131,34 +138,34 @@ void TextureManager::setLayout(Texture &texture, VkImageLayout newLayout) {
         }
 
         switch (oldLayout) {
-        case VK_IMAGE_LAYOUT_UNDEFINED:
-            barrier.srcAccessMask = 0;
-            srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            break;
-        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            break;
-        default:
-            LOG_WARNING("Unsuported old image layout");
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                barrier.srcAccessMask = 0;
+                srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                break;
+            default:
+                LOG_WARNING("Unsupported old image layout");
         }
 
         switch (newLayout) {
-        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            break;
-        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-            break;
-        case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-            barrier.dstAccessMask =
-                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-            break;
-        default:
-            LOG_WARNING("Unsuported old image layout");
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                barrier.dstAccessMask =
+                        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                break;
+            default:
+                LOG_WARNING("Unsupported new image layout");
         }
 
         vkCmdPipelineBarrier(

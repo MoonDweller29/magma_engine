@@ -152,7 +152,7 @@ void App::createTexture()
     TextureManager& textureManager = device->getTextureManager();
     texture = textureManager.createTexture2D("input_texture",
         VK_FORMAT_R8G8B8A8_SRGB,
-        VkExtent3D{(uint)img.getWidth(), (uint)img.getHeight(), 1},
+        VkExtent2D{(uint)img.getWidth(), (uint)img.getHeight()},
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         VK_IMAGE_ASPECT_COLOR_BIT);
     textureManager.setLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -219,7 +219,7 @@ void App::createShadowMapTex()
 {
     shadowMap = device->getTextureManager().createTexture2D("shadowMap_texture", 
         VK_FORMAT_D32_SFLOAT,
-        VkExtent3D{2048, 2048, 1},
+        VkExtent2D{2048, 2048},
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         VK_IMAGE_ASPECT_DEPTH_BIT);
     createShadowMapSampler();
@@ -242,7 +242,7 @@ void App::createDepthResources()
     VkFormat depthFormat = findDepthFormat(physicalDevice->device());
     depthTex = device->getTextureManager().createTexture2D("depth_texture", 
         depthFormat, 
-        VkExtent3D{WIN_WIDTH, WIN_HEIGHT, 1}, 
+        VkExtent2D{WIN_WIDTH, WIN_HEIGHT}, 
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
         VK_IMAGE_ASPECT_DEPTH_BIT);
 }
