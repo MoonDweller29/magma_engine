@@ -10,9 +10,14 @@ class CommandBufferArr
 public:
     CommandBufferArr() = default;
     CommandBufferArr(VkDevice device, VkCommandPool commandPool, uint32_t count);
+    ~CommandBufferArr();
+
     void allocate(VkDevice device, VkCommandPool commandPool, uint32_t count);
     VkCommandBuffer beginCmdBuf(uint32_t i);
     void endCmdBuf(uint32_t i);
+    void endAndSubmitCmdBuf_sync(uint32_t i, VkQueue queue);
+    void resetCmdBuf(uint32_t i, VkCommandBufferResetFlags flag=VK_NULL_HANDLE);
+    void freeCmdBuf(VkDevice device, VkCommandPool commandPool);
 //    void record(
 //            VkBuffer indexBuffer,
 //            VkBuffer vertexBuffer,
@@ -22,7 +27,7 @@ public:
 //            VkExtent2D extent,
 //            const std::vector<VkFramebuffer> &frameBuffers,
 //            const GraphicsPipeline &graphicsPipeline);
-    ~CommandBufferArr();
+
 
     const uint32_t size() const { return commandBuffers.size(); }
     const VkCommandBuffer *data() const { return commandBuffers.data(); }
@@ -43,6 +48,7 @@ public:
 
     const VkCommandBuffer &startRecording();
     void endRecordingAndSubmit();
+    
 
     ~SingleTimeCommandBuffer();
 };

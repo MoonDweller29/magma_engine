@@ -8,7 +8,7 @@ VkCommandPool CommandPool::createPool(VkDevice device, uint32_t queueFamilyIndex
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndex;
-    poolInfo.flags = 0; // Optional
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
     VkResult result = vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
     VK_CHECK_ERR(result, "failed to create command pool!");

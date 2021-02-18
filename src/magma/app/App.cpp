@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "magma/app/App.h"
+#include "magma/vk/textures/TextureManager.h"
 #include "magma/vk/vulkan_common.h"
 #include "magma/glm_inc.h"
 #include "magma/app/image.h"
@@ -135,39 +136,7 @@ void App::loadScene()
 
 void App::createTexture()
 {
-    Image img(texturePath.c_str(), 4);
-
-    int imageSize = img.size();
-
-    Buffer stagingBuffer = device->createBuffer(
-            imageSize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    );
-
-    void* data;
-    vkMapMemory(device->handler(), stagingBuffer.mem, 0, imageSize, 0, &data);
-        memcpy(data, img.data(), static_cast<size_t>(imageSize));
-    vkUnmapMemory(device->handler(), stagingBuffer.mem);
-
-    texture = device->createTexture2D(
-            img.getWidth(), img.getHeight(),
-            VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            VK_IMAGE_ASPECT_COLOR_BIT
-    );
-    device->transitionImageLayout(
-            texture.img(), VK_FORMAT_R8G8B8A8_SRGB,
-            VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    device->copyBufferToImage(
-            stagingBuffer.buf, texture.img(),
-            static_cast<uint32_t>(img.getWidth()), static_cast<uint32_t>(img.getHeight()));
-    device->transitionImageLayout(
-            texture.img(), VK_FORMAT_R8G8B8A8_SRGB,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    device->deleteBuffer(stagingBuffer);
+    texture = device->getTextureManager().loadTexture("input_texture", texturePath);
 }
 
 void App::createTextureSampler()
@@ -225,13 +194,11 @@ void App::createShadowMapSampler()
 
 void App::createShadowMapTex()
 {
-    shadowMap = device->createTexture2D(
-            2048, 2048,
-            VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            VK_IMAGE_ASPECT_DEPTH_BIT
-    );
+    shadowMap = device->getTextureManager().createTexture2D("shadowMap_texture", 
+        VK_FORMAT_D32_SFLOAT,
+        VkExtent2D{2048, 2048},
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_IMAGE_ASPECT_DEPTH_BIT);
     createShadowMapSampler();
 }
 
@@ -250,11 +217,11 @@ void App::createShadowMapResources()
 void App::createDepthResources()
 {
     VkFormat depthFormat = findDepthFormat(physicalDevice->device());
-    depthTex = device->createTexture2D(
-            WIN_WIDTH, WIN_HEIGHT, depthFormat,
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            VK_IMAGE_ASPECT_DEPTH_BIT);
+    depthTex = device->getTextureManager().createTexture2D("depth_texture", 
+        depthFormat, 
+        VkExtent2D{WIN_WIDTH, WIN_HEIGHT}, 
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+        VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 
@@ -283,10 +250,10 @@ void App::initVulkan() {
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                    fragmentUniform, sizeof(FragmentUniform),
-                                   texture.view(), textureSampler,
+                                   texture.getView(), textureSampler,
                                    lightSpaceUniform, sizeof(LightSpaceUniform),
-                                   shadowMap.view(), shadowMapSampler);
-    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.view());
+                                   shadowMap.getView(), shadowMapSampler);
+    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
     colorPass->recordCmdBuffers(
             indexBuffer.buf,
             vertexBuffer.buf,
@@ -302,7 +269,7 @@ void App::cleanupSwapChain()
     device->deleteBuffer(uniformBuffer);
     device->deleteBuffer(fragmentUniform);
 
-    device->deleteTexture(depthTex);
+    device->getTextureManager().deleteTexture(depthTex);
 
     swapChain->clearFrameBuffers();
     colorPass.reset();
@@ -333,10 +300,10 @@ void App::recreateSwapChain()
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                    fragmentUniform, sizeof(FragmentUniform),
-                                   texture.view(), textureSampler,
+                                   texture.getView(), textureSampler,
                                    lightSpaceUniform, sizeof(LightSpaceUniform),
-                                   shadowMap.view(), shadowMapSampler);
-    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.view());
+                                   shadowMap.getView(), shadowMapSampler);
+    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
     colorPass->recordCmdBuffers(
             indexBuffer.buf, vertexBuffer.buf, indices.size(),
             swapChain->getVkFrameBuffers()
@@ -525,8 +492,8 @@ void App::cleanUp()
     renderShadow.reset();
     vkDestroySampler(device->handler(), textureSampler, nullptr);
     vkDestroySampler(device->handler(), shadowMapSampler, nullptr);
-    device->deleteTexture(shadowMap);
-    device->deleteTexture(texture);
+    device->getTextureManager().deleteTexture(shadowMap);
+    device->getTextureManager().deleteTexture(texture);
     device->deleteBuffer(indexBuffer);
     device->deleteBuffer(vertexBuffer);
     device.reset();
