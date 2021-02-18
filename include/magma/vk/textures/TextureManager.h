@@ -19,13 +19,13 @@ public:
     ~TextureManager();
 
     bool textureExists(const std::string &name) const;
-    Texture &getTexture(const std::string &name);
+    Texture& getTexture(const std::string &name);
 
-    Texture loadTexture(const std::string &texName, const std::string &path);
+    Texture& loadTexture(const std::string &texName, const std::string &path);
 
-    Texture &createTexture2D(const std::string &name, VkFormat format, VkExtent2D extent,
+    Texture& createTexture2D(const std::string &name, VkFormat format, VkExtent2D extent,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
-    Texture &createTexture2D(const std::string &name, VkFormat format, uint width, uint height,
+    Texture& createTexture2D(const std::string &name, VkFormat format, uint width, uint height,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
 
     void setLayout(Texture &texture, VkImageLayout newLayout);

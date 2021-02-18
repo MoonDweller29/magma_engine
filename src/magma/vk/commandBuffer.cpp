@@ -43,7 +43,7 @@ void CommandBufferArr::endCmdBuf(uint32_t i)
     VK_CHECK_ERR(result, "failed to record command buffer!");
 }
 
-void CommandBufferArr::endAndSubmitCmdBuf(uint32_t i, VkQueue queue) {
+void CommandBufferArr::_syncEndAndSubmitCmdBuf(uint32_t i, VkQueue queue) {
     VkResult result = vkEndCommandBuffer(commandBuffers[i]);
     VK_CHECK_ERR(result, "failed to record command buffer!");
 

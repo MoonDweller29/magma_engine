@@ -10,6 +10,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "magma/app/log.hpp"
+#include "magma/app/image.h"
 #include "magma/vk/logicalDevice.h"
 #include "magma/vk/vulkan_common.h"
 
@@ -32,6 +33,33 @@ bool TextureManager::textureExists(const std::string &name) const {
     return _textures.find(name) != _textures.end();
 }
 
+Texture &TextureManager::loadTexture(const std::string &texName, const std::string &path) {
+    Image img(path.c_str(), 4);
+
+    int imageSize = img.size();
+
+    Buffer stagingBuffer = _device.createBuffer(imageSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    void* data;
+    vkMapMemory(_device.handler(), stagingBuffer.mem, 0, imageSize, 0, &data);
+        memcpy(data, img.data(), static_cast<size_t>(imageSize));
+    vkUnmapMemory(_device.handler(), stagingBuffer.mem);
+
+    Texture& texture = createTexture2D(texName,
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VkExtent2D{(uint)img.getWidth(), (uint)img.getHeight()},
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_IMAGE_ASPECT_COLOR_BIT);
+    setLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    copyBufToTex(texture, stagingBuffer.buf);
+    setLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    _device.deleteBuffer(stagingBuffer);
+    return texture;
+}
+
 Texture& TextureManager::getTexture(const std::string &name) {
     if (textureExists(name)) {
         return _textures.at(name);
@@ -40,7 +68,7 @@ Texture& TextureManager::getTexture(const std::string &name) {
     }
 };
 
-Texture &TextureManager::createTexture2D(const std::string &name, VkFormat format, VkExtent2D extent,
+Texture& TextureManager::createTexture2D(const std::string &name, VkFormat format, VkExtent2D extent,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask) {
     if (textureExists(name)) {
         throw std::invalid_argument("TextureManager::createTexture2D texture exist");
@@ -177,7 +205,7 @@ void TextureManager::setLayout(Texture &texture, VkImageLayout newLayout) {
                 1, &barrier
         );
     }
-    _commandBuffers.endAndSubmitCmdBuf(0, _device.getGraphicsQueue());
+    _commandBuffers._syncEndAndSubmitCmdBuf(0, _device.getGraphicsQueue());
     texture.getInfo()->curLayout = newLayout;
 }
 
@@ -206,7 +234,7 @@ void TextureManager::copyBufToTex(Texture &texture, VkBuffer buffer) {
                 1, &region
         );
     }
-    _commandBuffers.endAndSubmitCmdBuf(0, _device.getGraphicsQueue());
+    _commandBuffers._syncEndAndSubmitCmdBuf(0, _device.getGraphicsQueue());
 }
 
 void TextureManager::deleteTexture(Texture &texture) {

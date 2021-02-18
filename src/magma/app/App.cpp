@@ -134,32 +134,7 @@ void App::loadScene()
 
 void App::createTexture()
 {
-    Image img(texturePath.c_str(), 4);
-
-    int imageSize = img.size();
-
-    Buffer stagingBuffer = device->createBuffer(
-            imageSize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    );
-
-    void* data;
-    vkMapMemory(device->handler(), stagingBuffer.mem, 0, imageSize, 0, &data);
-        memcpy(data, img.data(), static_cast<size_t>(imageSize));
-    vkUnmapMemory(device->handler(), stagingBuffer.mem);
-
-    TextureManager& textureManager = device->getTextureManager();
-    texture = textureManager.createTexture2D("input_texture",
-        VK_FORMAT_R8G8B8A8_SRGB,
-        VkExtent2D{(uint)img.getWidth(), (uint)img.getHeight()},
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-        VK_IMAGE_ASPECT_COLOR_BIT);
-    textureManager.setLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    textureManager.copyBufToTex(texture, stagingBuffer.buf);
-    textureManager.setLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    device->deleteBuffer(stagingBuffer);
+    texture = device->getTextureManager().loadTexture("input_texture", texturePath);
 }
 
 void App::createTextureSampler()
