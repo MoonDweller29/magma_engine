@@ -1,11 +1,11 @@
 #include "magma/vk/logicalDevice.h"
 
-#include "magma/vk/buffer.h"
 #include "magma/vk/commandPool.h"
 #include "magma/vk/vulkan_common.h"
 #include "magma/vk/validationLayers/ValidationLayers.h"
 #include "magma/vk/commandBuffer.h"
 #include <iostream>
+#include <memory>
 #include <set>
 
 LogicalDevice::LogicalDevice(
@@ -58,6 +58,7 @@ LogicalDevice::LogicalDevice(
     graphicsCmdPool = CommandPool::createPool(device, indices.graphicsFamily.value());
 
     _textureManager = std::make_unique<TextureManager>(*this);
+    _bufferManager = std::make_unique<BufferManager>(this);
 }
 
 void LogicalDevice::acquireQueues(QueueFamilyIndices indices)
