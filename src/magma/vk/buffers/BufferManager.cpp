@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
 
-#include "magma/app/log.hpp"
 #include "magma/vk/logicalDevice.h"
 #include "magma/vk/vulkan_common.h"
 #include "magma/vk/buffers/Buffer.h"
@@ -59,44 +58,87 @@ Buffer& BufferManager::createBuffer(const std::string &name, VkDeviceSize size,
 
     BufferInfo* info = new BufferInfo;
     info->device = _device.handler();
-    info->name = name;
     info->bufferInfo = bufferInfo;
+    info->memoryProperty = properties;
+    info->name = name;
 
     _buffers.emplace(name, Buffer(buffer, bufferMemory, info));
     return getBuffer(name);
 }
 
-template<class T>
-Buffer& BufferManager::createBufferWithData(const std::string &name, const std::vector<T> &data, 
+Buffer& BufferManager::createHostBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage) {
+    return createBuffer(name, size, usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+}
+
+Buffer& BufferManager::createDeviceBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage) {
+    return createBuffer(name, size, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+}
+
+Buffer& BufferManager::createUniformBuffer(const std::string &name, VkDeviceSize size) {
+    return createHostBuffer(name, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+}
+
+Buffer& BufferManager::createBufferWithData(const std::string &name, const void* data, VkDeviceSize dataSize, 
         VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
     if (bufferExists(name)) {
         throw std::invalid_argument("BufferManager::createBufferWithData buffer exist");
     }
 
-    VkDeviceSize bufferSize = sizeof(data[0]) * data.size();
-    Buffer& buffer = createBuffer(name, bufferSize, usage, properties);
-    copyDataToBuffer(buffer, data);
+    bool isDeviceBuffer = properties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    if (isDeviceBuffer) {
+        usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    }
+    Buffer& buffer = createBuffer(name, dataSize, usage, properties);
+    copyDataToBuffer(buffer, data, dataSize);
     return buffer;
 }
 
-template<class T>
-void BufferManager::copyDataToBuffer(Buffer &buffer, const std::vector<T> &data) {
-    VkDeviceSize dataSize = sizeof(data[0]) * data.size();
+void BufferManager::copyDataToBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
+    BufferInfo* info = buffer.getInfo();
+    VkDeviceSize bufferSize = info->bufferInfo.size;
+    if (dataSize != bufferSize) {
+        LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
+    }
+    bufferSize = std::min(bufferSize, dataSize);
+
+    bool isDeviceBuffer = info->memoryProperty & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+    if (isDeviceBuffer) {
+        copyDataToDeviceBuffer(buffer, data, dataSize);
+    } else {
+        copyDataToHostBuffer(buffer, data, dataSize);
+    }
+}
+
+void BufferManager::copyDataToHostBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
     VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
     if (dataSize != bufferSize) {
         LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
     }
     bufferSize = std::min(bufferSize, dataSize);
 
-    Buffer& stagingBuffer = createBuffer("stagingBuffer", 
-        bufferSize,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    void* mapped_data_p;
+    vkMapMemory(_device.handler(), buffer.getMemory(), 0, bufferSize, 0, &mapped_data_p);
+    {
+        memcpy(mapped_data_p, data, (size_t)bufferSize);
+    }
+    vkUnmapMemory(_device.handler(), buffer.getMemory());
+}
+
+void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
+    VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
+    if (dataSize != bufferSize) {
+        LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
+    }
+    bufferSize = std::min(bufferSize, dataSize);
+
+    Buffer& stagingBuffer = createHostBuffer("stagingBuffer", bufferSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
     void* mapped_data_p;
     vkMapMemory(_device.handler(), stagingBuffer.getMemory(), 0, bufferSize, 0, &mapped_data_p);
     {
-        memcpy(mapped_data_p, data.data(), (size_t) bufferSize);
+        memcpy(mapped_data_p, data, (size_t)bufferSize);
     }
     vkUnmapMemory(_device.handler(), stagingBuffer.getMemory());
 

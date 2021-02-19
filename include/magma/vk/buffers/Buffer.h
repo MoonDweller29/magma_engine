@@ -4,9 +4,10 @@
 #include <vulkan/vulkan_core.h>
 
 struct BufferInfo {
-    VkDevice            device;
-    VkBufferCreateInfo  bufferInfo;
-    std::string         name;
+    VkDevice                device;
+    VkBufferCreateInfo      bufferInfo;
+    VkMemoryPropertyFlags   memoryProperty;
+    std::string             name;
 };
 
 class Buffer {

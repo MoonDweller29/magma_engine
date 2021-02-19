@@ -29,17 +29,10 @@ bool TextureManager::textureExists(const std::string &name) const {
 
 Texture &TextureManager::loadTexture(const std::string &texName, const std::string &path) {
     Image img(path.c_str(), 4);
-
     int imageSize = img.size();
 
-    Buffer stagingBuffer = _device.createBuffer(imageSize,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    void* data;
-    vkMapMemory(_device.handler(), stagingBuffer.getMemory(), 0, imageSize, 0, &data);
-        memcpy(data, img.data(), static_cast<size_t>(imageSize));
-    vkUnmapMemory(_device.handler(), stagingBuffer.getMemory());
+    Buffer& stagingBuffer = _device.getBufferManager().createBufferWithData("stagingBuffer", img.data(), imageSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     Texture& texture = createTexture2D(texName,
         VK_FORMAT_R8G8B8A8_SRGB,
@@ -50,7 +43,7 @@ Texture &TextureManager::loadTexture(const std::string &texName, const std::stri
     copyBufToTex(texture, stagingBuffer.getBuffer());
     setLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    _device.getBufferManager()->deleteBuffer(stagingBuffer);
+    _device.getBufferManager().deleteBuffer(stagingBuffer);
     return texture;
 }
 
