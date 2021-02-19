@@ -1,3 +1,9 @@
+/**
+ * @file Buffer.h
+ * @brief Class containig all information about buffer
+ * @version 0.1
+ * @date 2021-02-19
+ */
 #pragma once
 #include <string>
 #include <vulkan/vulkan.h>

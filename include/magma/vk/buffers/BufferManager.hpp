@@ -1,3 +1,9 @@
+/**
+ * @file BufferManager.hpp
+ * @brief Template methods implementation BufferManager
+ * @version 0.1
+ * @date 2021-02-19
+ */
 #pragma once
 
 template<class T>
