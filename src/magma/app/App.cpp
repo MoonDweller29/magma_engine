@@ -213,7 +213,7 @@ void App::createShadowMapResources()
     renderShadow = std::make_unique<DepthPass>(*device, shadowMap, VkExtent2D{2048, 2048},
                                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     renderShadow->writeDescriptorSets(shadowUniform, sizeof(UniformBufferObject));
-    renderShadow->recordCmdBuffers(indexBuffer.getBuffer(), vertexBuffer.getBuffer(), indices.size());
+    renderShadow->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 }
 
 
@@ -257,7 +257,7 @@ void App::initVulkan() {
     depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
-    depthPass->recordCmdBuffers(indexBuffer.getBuffer(), vertexBuffer.getBuffer(), indices.size());
+    depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
@@ -267,8 +267,8 @@ void App::initVulkan() {
                                    shadowMap.getView(), shadowMapSampler);
     swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
     colorPass->recordCmdBuffers(
-            indexBuffer.getBuffer(),
-            vertexBuffer.getBuffer(),
+            indexBuffer.getBuf(),
+            vertexBuffer.getBuf(),
             indices.size(),
             swapChain->getVkFrameBuffers()
     );
@@ -308,7 +308,7 @@ void App::recreateSwapChain()
     depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
-    depthPass->recordCmdBuffers(indexBuffer.getBuffer(), vertexBuffer.getBuffer(), indices.size());
+    depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
@@ -318,7 +318,7 @@ void App::recreateSwapChain()
                                    shadowMap.getView(), shadowMapSampler);
     swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
     colorPass->recordCmdBuffers(
-            indexBuffer.getBuffer(), vertexBuffer.getBuffer(), indices.size(),
+            indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size(),
             swapChain->getVkFrameBuffers()
     );
     mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);

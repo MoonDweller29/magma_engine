@@ -40,7 +40,7 @@ Texture &TextureManager::loadTexture(const std::string &texName, const std::stri
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         VK_IMAGE_ASPECT_COLOR_BIT);
     setLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    copyBufToTex(texture, stagingBuffer.getBuffer());
+    copyBufToTex(texture, stagingBuffer.getBuf());
     setLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     _device.getBufferManager().deleteBuffer(stagingBuffer);

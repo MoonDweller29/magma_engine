@@ -15,9 +15,9 @@ friend class BufferManager;
 
 public:
     Buffer() = default;
-    const VkBuffer          &getBuffer()    const { return _buffer;         }
-    const VkDeviceMemory    &getMemory()    const { return _bufferMemory;   }
-    BufferInfo*             getInfo()       const { return _info;           }
+    const VkBuffer          &getBuf()   const { return _buffer;         }
+    const VkDeviceMemory    &getMem()   const { return _bufferMemory;   }
+    BufferInfo*             getInfo()   const { return _info;           }
 private:
     Buffer(VkBuffer buffer, VkDeviceMemory memory, BufferInfo* info);
 

@@ -66,7 +66,7 @@ Buffer& BufferManager::createBuffer(const std::string &name, VkDeviceSize size,
     return getBuffer(name);
 }
 
-Buffer& BufferManager::createHostBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage) {
+Buffer& BufferManager::createStagingBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage) {
     return createBuffer(name, size, usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 }
 
@@ -75,15 +75,11 @@ Buffer& BufferManager::createDeviceBuffer(const std::string &name, VkDeviceSize 
 }
 
 Buffer& BufferManager::createUniformBuffer(const std::string &name, VkDeviceSize size) {
-    return createHostBuffer(name, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    return createStagingBuffer(name, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 }
 
 Buffer& BufferManager::createBufferWithData(const std::string &name, const void* data, VkDeviceSize dataSize, 
         VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
-    if (bufferExists(name)) {
-        throw std::invalid_argument("BufferManager::createBufferWithData buffer exist");
-    }
-
     bool isDeviceBuffer = properties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     if (isDeviceBuffer) {
         usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
@@ -104,13 +100,13 @@ void BufferManager::copyDataToBuffer(Buffer &buffer, const void* data, VkDeviceS
     bool isDeviceBuffer = info->memoryProperty & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
     if (isDeviceBuffer) {
-        copyDataToDeviceBuffer(buffer, data, dataSize);
+        copyDataToDeviceBuffer(buffer, data, bufferSize);
     } else {
-        copyDataToHostBuffer(buffer, data, dataSize);
+        copyDataToStagingBuffer(buffer, data, bufferSize);
     }
 }
 
-void BufferManager::copyDataToHostBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
+void BufferManager::copyDataToStagingBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
     VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
     if (dataSize != bufferSize) {
         LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
@@ -118,11 +114,11 @@ void BufferManager::copyDataToHostBuffer(Buffer &buffer, const void* data, VkDev
     bufferSize = std::min(bufferSize, dataSize);
 
     void* mapped_data_p;
-    vkMapMemory(_device.handler(), buffer.getMemory(), 0, bufferSize, 0, &mapped_data_p);
+    vkMapMemory(_device.handler(), buffer.getMem(), 0, bufferSize, 0, &mapped_data_p);
     {
         memcpy(mapped_data_p, data, (size_t)bufferSize);
     }
-    vkUnmapMemory(_device.handler(), buffer.getMemory());
+    vkUnmapMemory(_device.handler(), buffer.getMem());
 }
 
 void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
@@ -132,15 +128,15 @@ void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkD
     }
     bufferSize = std::min(bufferSize, dataSize);
 
-    Buffer& stagingBuffer = createHostBuffer("stagingBuffer", bufferSize,
+    Buffer& stagingBuffer = createStagingBuffer("stagingBuffer", bufferSize,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
     void* mapped_data_p;
-    vkMapMemory(_device.handler(), stagingBuffer.getMemory(), 0, bufferSize, 0, &mapped_data_p);
+    vkMapMemory(_device.handler(), stagingBuffer.getMem(), 0, bufferSize, 0, &mapped_data_p);
     {
         memcpy(mapped_data_p, data, (size_t)bufferSize);
     }
-    vkUnmapMemory(_device.handler(), stagingBuffer.getMemory());
+    vkUnmapMemory(_device.handler(), stagingBuffer.getMem());
 
     copyBufferToBuffer(stagingBuffer, buffer);
 
@@ -150,16 +146,16 @@ void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkD
 void BufferManager::deleteBuffer(Buffer &buffer) {
     _buffers.erase(buffer.getInfo()->name);
     delete buffer.getInfo();
-    vkDestroyBuffer(_device.handler(), buffer.getBuffer(), nullptr);
-    vkFreeMemory(_device.handler(), buffer.getMemory(), nullptr);
+    vkDestroyBuffer(_device.handler(), buffer.getBuf(), nullptr);
+    vkFreeMemory(_device.handler(), buffer.getMem(), nullptr);
 }
 
 void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {
     if ((srcBuffer.getInfo()->bufferInfo.usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT) == 0) {
-        throw std::invalid_argument("BufferManager::srcBuffer have unvalid usage");
+        throw std::invalid_argument("BufferManager::copyBufferToBuffer srcBuffer has invalid usage");
     }
     if ((dstBuffer.getInfo()->bufferInfo.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0) {
-        throw std::invalid_argument("BufferManager::dstBuffer have unvalid usage");
+        throw std::invalid_argument("BufferManager::copyBufferToBuffer dstBuffer has invalid usage");
     }
     VkDeviceSize bufferSize = std::min(srcBuffer.getInfo()->bufferInfo.size,
         dstBuffer.getInfo()->bufferInfo.size);
@@ -171,7 +167,7 @@ void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {
         copyRegion.srcOffset = 0;
         copyRegion.dstOffset = 0;
         copyRegion.size = bufferSize;
-        vkCmdCopyBuffer(cmdBuf, srcBuffer.getBuffer(), dstBuffer.getBuffer(), 1, &copyRegion);
+        vkCmdCopyBuffer(cmdBuf, srcBuffer.getBuf(), dstBuffer.getBuf(), 1, &copyRegion);
     }
     _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
 }

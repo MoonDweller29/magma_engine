@@ -24,7 +24,7 @@ public:
 
     Buffer& createBuffer(const std::string &name, VkDeviceSize size,
         VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-    Buffer& createHostBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage);
+    Buffer& createStagingBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage);
     Buffer& createDeviceBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage);
     Buffer& createUniformBuffer(const std::string &name, VkDeviceSize size);
     template<class T>
@@ -41,7 +41,7 @@ public:
     template<class T>
     void copyDataToBuffer(Buffer &buffer, const std::vector<T> &data);
     void copyDataToBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
-    void copyDataToHostBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
+    void copyDataToStagingBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
     void copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
 
     void deleteBuffer(Buffer &buffer);
