@@ -58,7 +58,7 @@ LogicalDevice::LogicalDevice(
     graphicsCmdPool = CommandPool::createPool(device, indices.graphicsFamily.value());
 
     _textureManager = std::make_unique<TextureManager>(*this);
-    _bufferManager = std::make_unique<BufferManager>(this);
+    _bufferManager = std::make_unique<BufferManager>(*this);
 }
 
 void LogicalDevice::acquireQueues(QueueFamilyIndices indices)
@@ -102,64 +102,64 @@ VkDeviceMemory LogicalDevice::createDeviceMemory(VkMemoryRequirements memRequire
     return deviceMemory;
 }
 
-Buffer LogicalDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
-{
-    Buffer buffer;
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+// Buffer LogicalDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+// {
+//     Buffer buffer;
+//     VkBufferCreateInfo bufferInfo{};
+//     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+//     bufferInfo.size = size;
+//     bufferInfo.usage = usage;
+//     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VkResult result = vkCreateBuffer(device, &bufferInfo, nullptr, &buffer.buf);
-    VK_CHECK_ERR(result, "failed to create vertex buffer!");
+//     VkResult result = vkCreateBuffer(device, &bufferInfo, nullptr, &buffer.buf);
+//     VK_CHECK_ERR(result, "failed to create vertex buffer!");
 
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device, buffer.buf, &memRequirements);
+//     VkMemoryRequirements memRequirements;
+//     vkGetBufferMemoryRequirements(device, buffer.buf, &memRequirements);
 
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(_physDevice.c_device(), memRequirements.memoryTypeBits, properties);
+//     VkMemoryAllocateInfo allocInfo{};
+//     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+//     allocInfo.allocationSize = memRequirements.size;
+//     allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
 
-    result = vkAllocateMemory(device, &allocInfo, nullptr, &buffer.mem);
-    VK_CHECK_ERR(result, "failed to allocate vertex buffer memory!");
+//     result = vkAllocateMemory(device, &allocInfo, nullptr, &buffer.mem);
+//     VK_CHECK_ERR(result, "failed to allocate vertex buffer memory!");
 
-    vkBindBufferMemory(device, buffer.buf, buffer.mem, 0);
+//     vkBindBufferMemory(device, buffer.buf, buffer.mem, 0);
 
-    return buffer;
-}
+//     return buffer;
+// }
 
-Buffer LogicalDevice::createUniformBuffer(VkDeviceSize size)
-{
-    return createBuffer(
-            size,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-}
+// Buffer LogicalDevice::createUniformBuffer(VkDeviceSize size)
+// {
+//     return createBuffer(
+//             size,
+//             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+//             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+// }
 
-void LogicalDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
-{
-    SingleTimeCommandBuffer tmpCmdBuffer(device, graphicsCmdPool, graphicsQueue);
-    VkCommandBuffer commandBuffer = tmpCmdBuffer.startRecording();
-    {
-        VkBufferCopy copyRegion{}; //may be an array
-        copyRegion.srcOffset = 0; // Optional
-        copyRegion.dstOffset = 0; // Optional
-        copyRegion.size = size;
-        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-    }
-    tmpCmdBuffer.endRecordingAndSubmit();
-}
+// void LogicalDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+// {
+//     SingleTimeCommandBuffer tmpCmdBuffer(device, graphicsCmdPool, graphicsQueue);
+//     VkCommandBuffer commandBuffer = tmpCmdBuffer.startRecording();
+//     {
+//         VkBufferCopy copyRegion{}; //may be an array
+//         copyRegion.srcOffset = 0; // Optional
+//         copyRegion.dstOffset = 0; // Optional
+//         copyRegion.size = size;
+//         vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+//     }
+//     tmpCmdBuffer.endRecordingAndSubmit();
+// }
 
-void LogicalDevice::deleteBuffer(Buffer &buffer)
-{
-    vkDestroyBuffer(device, buffer.buf, nullptr);
-    vkFreeMemory(device, buffer.mem, nullptr);
+// void LogicalDevice::deleteBuffer(Buffer &buffer)
+// {
+//     vkDestroyBuffer(device, buffer.buf, nullptr);
+//     vkFreeMemory(device, buffer.mem, nullptr);
 
-    buffer.buf = VK_NULL_HANDLE;
-    buffer.mem = VK_NULL_HANDLE;
-}
+//     buffer.buf = VK_NULL_HANDLE;
+//     buffer.mem = VK_NULL_HANDLE;
+// }
 
 LogicalDevice::~LogicalDevice()
 {

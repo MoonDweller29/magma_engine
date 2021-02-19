@@ -1,5 +1,4 @@
 #pragma once
-#include "magma/vk/buffers/BufferManager.h"
 #include <string>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
