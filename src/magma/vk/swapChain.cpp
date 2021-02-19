@@ -114,7 +114,7 @@ uint32_t chooseImageCount(const SwapChainSupportInfo &swapChainSupport)
 SwapChain::SwapChain(LogicalDevice &device, const Window &window):
     device(device)
 {
-    SwapChainSupportInfo swapChainSupport = device.physDevice().getSwapChainSupportInfo(window.getSurface());
+    SwapChainSupportInfo swapChainSupport = device.getPhysDevice().getSwapChainSupportInfo(window.getSurface());
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -133,7 +133,7 @@ SwapChain::SwapChain(LogicalDevice &device, const Window &window):
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 
-    QueueFamilyIndices indices = device.physDevice().getQueueFamilyInds();
+    QueueFamilyIndices indices = device.getPhysDevice().getQueueFamilyInds();
     uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
     if (indices.graphicsFamily != indices.presentFamily) {

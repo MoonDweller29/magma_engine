@@ -29,9 +29,7 @@ static std::string to_string(const vk::QueueFamilyProperties& queueFamily, int i
     return ss.str();
 }
 
-QueueFamilyIndices findQueueFamilies(
-        vk::PhysicalDevice device, vk::SurfaceKHR surface
-) {
+QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface) {
     QueueFamilyIndices indices;
 
     std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();

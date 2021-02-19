@@ -27,7 +27,7 @@ public:
     LogicalDevice(const PhysicalDevice &physicalDevice, const std::vector<const char*> &deviceExtensions);
     VkDevice handler() const { return device; }
     VkPhysicalDevice getVkPhysDevice() const { return _physDevice.c_device(); }
-    const PhysicalDevice &physDevice() const { return _physDevice; }
+    const PhysicalDevice &getPhysDevice() const { return _physDevice; }
     VkQueue getGraphicsQueue() const { return graphicsQueue; }
     VkQueue getPresentQueue() const { return presentQueue; }
     const VkCommandPool &getGraphicsCmdPool() const { return graphicsCmdPool; }
