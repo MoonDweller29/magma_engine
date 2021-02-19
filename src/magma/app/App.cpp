@@ -115,11 +115,10 @@ void App::createSyncObjects()
 }
 
 void App::createUniformBuffers() {
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
     uint32_t imgCount = swapChain->imgCount();
 
     BufferManager& bufferManager = device->getBufferManager();
-    uniformBuffer = bufferManager.createUniformBuffer("uniformBuffer", bufferSize);
+    uniformBuffer = bufferManager.createUniformBuffer("uniformBuffer", sizeof(UniformBufferObject));
     fragmentUniform = bufferManager.createUniformBuffer("fragmentUniform", sizeof(FragmentUniform));
 }
 
@@ -245,14 +244,8 @@ void App::initVulkan() {
     loadScene();
     
     BufferManager& bufferManager = device->getBufferManager();
-    vertexBuffer = bufferManager.createBufferWithData("vertexBuffer", 
-        vertices, 
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    indexBuffer = bufferManager.createBufferWithData("indexBuffer", 
-        indices, 
-        VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vertexBuffer = bufferManager.createVertexBuffer("vertexBuffer", vertices);
+    indexBuffer = bufferManager.createIndexBuffer("indexBuffer", indices);
 
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();

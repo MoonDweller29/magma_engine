@@ -27,6 +27,10 @@ public:
     Buffer& createHostBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage);
     Buffer& createDeviceBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage);
     Buffer& createUniformBuffer(const std::string &name, VkDeviceSize size);
+    template<class T>
+    Buffer& createVertexBuffer(const std::string &name, const std::vector<T> &data);
+    template<class T>
+    Buffer& createIndexBuffer(const std::string &name, const std::vector<T> &data);
 
     template<class T>
     Buffer& createBufferWithData(const std::string &name, const std::vector<T> &data, 
@@ -49,24 +53,4 @@ private:
     void copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer);
 };
 
-template<class T>
-Buffer& BufferManager::createBufferWithData(const std::string &name, const std::vector<T> &data, 
-        VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
-    if (bufferExists(name)) {
-        throw std::invalid_argument("BufferManager::createBufferWithData buffer exist");
-    }
-
-    VkDeviceSize dataSize = sizeof(data[0]) * data.size();
-    createBufferWithData(name, data.data(), dataSize, usage, properties);
-}
-
-template<class T>
-void BufferManager::copyDataToBuffer(Buffer &buffer, const std::vector<T> &data) {
-    VkDeviceSize dataSize = sizeof(data[0]) * data.size();
-    VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
-    if (dataSize != bufferSize) {
-        LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
-    }
-    bufferSize = std::min(bufferSize, dataSize);
-    copyDataToBuffer(buffer, data.data(), bufferSize);
-}
+#include "BufferManager.hpp"

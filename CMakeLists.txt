@@ -100,6 +100,7 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/textures/Texture.cpp
 
 		include/magma/vk/buffers/BufferManager.h
+		include/magma/vk/buffers/BufferManager.hpp
 		src/magma/vk/buffers/BufferManager.cpp
 		include/magma/vk/buffers/Buffer.h
 		src/magma/vk/buffers/Buffer.cpp
