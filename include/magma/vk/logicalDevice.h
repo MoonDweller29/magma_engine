@@ -1,17 +1,16 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include "physicalDevice.h"
-#include "buffer.h"
 
 #include <vector>
 #include <cstring>
 #include <memory>
 
 #include "magma/vk/textures/TextureManager.h"
+#include "magma/vk/physicalDevice/PhysicalDevice.h"
+#include "magma/vk/buffer.h"
 
-class LogicalDevice
-{
-    VkPhysicalDevice physicalDevice;
+class LogicalDevice {
+    PhysicalDevice _physDevice;
     VkDevice device;
     VkQueue graphicsQueue;
     VkQueue presentQueue;
@@ -25,9 +24,10 @@ class LogicalDevice
 public:
 
 
-    LogicalDevice(const PhysicalDevice &physicalDevice);
+    LogicalDevice(const PhysicalDevice &physicalDevice, const std::vector<const char*> &deviceExtensions);
     VkDevice handler() const { return device; }
-    const VkPhysicalDevice &physDevice() const { return physicalDevice; }
+    VkPhysicalDevice getVkPhysDevice() const { return _physDevice.c_device(); }
+    const PhysicalDevice &getPhysDevice() const { return _physDevice; }
     VkQueue getGraphicsQueue() const { return graphicsQueue; }
     VkQueue getPresentQueue() const { return presentQueue; }
     const VkCommandPool &getGraphicsCmdPool() const { return graphicsCmdPool; }

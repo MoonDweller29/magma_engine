@@ -5,6 +5,7 @@
 #include "magma/app/App.h"
 #include "magma/vk/textures/TextureManager.h"
 #include "magma/vk/vulkan_common.h"
+#include "magma/vk/physicalDevice/HardwareManager.h"
 #include "magma/glm_inc.h"
 #include "magma/app/image.h"
 #include "magma/app/config/JSON.h"
@@ -216,7 +217,7 @@ void App::createShadowMapResources()
 
 void App::createDepthResources()
 {
-    VkFormat depthFormat = findDepthFormat(physicalDevice->device());
+    VkFormat depthFormat = findDepthFormat(device->getVkPhysDevice());
     depthTex = device->getTextureManager().createTexture2D("depth_texture", 
         depthFormat, 
         VkExtent2D{WIN_WIDTH, WIN_HEIGHT}, 
@@ -229,13 +230,20 @@ void App::initVulkan() {
     instance = std::make_unique<Context>();
     debugMessenger = std::make_unique<DebugMessenger>(instance->c_instance());
     initWindow();
-    physicalDevice = std::make_unique<PhysicalDevice>(instance->c_instance(), window->getSurface());
-    device = std::make_unique<LogicalDevice>(*physicalDevice);
+
+    HardwareManager hardwareMGR(instance->instance());
+    DeviceRequirements deviceRequirements;
+    deviceRequirements.surface.require(window->getSurface());
+    deviceRequirements.deviceType.recommend(vk::PhysicalDeviceType::eDiscreteGpu);
+    deviceRequirements.samplerAnisotropy.require(true);
+    auto physDevice = hardwareMGR.selectBestSuitableDevice(deviceRequirements);
+    device = std::make_unique<LogicalDevice>(physDevice, deviceRequirements.requiredExtensions());
+
     loadScene();
     vertexBuffer = device->createVertexBuffer(vertices);
     indexBuffer = device->createIndexBuffer(indices);
 
-    swapChain = std::make_unique<SwapChain>(*device, *physicalDevice, *window);
+    swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
     createTexture();
     createDepthResources();
@@ -288,7 +296,7 @@ void App::recreateSwapChain()
     WIN_WIDTH = res.width;
     WIN_HEIGHT = res.height;
 
-    swapChain = std::make_unique<SwapChain>(*device, *physicalDevice, *window);
+    swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
     createDepthResources();
 
@@ -497,7 +505,6 @@ void App::cleanUp()
     device->deleteBuffer(indexBuffer);
     device->deleteBuffer(vertexBuffer);
     device.reset();
-    physicalDevice.reset();
     window.reset();
     debugMessenger.reset();
     instance.reset();

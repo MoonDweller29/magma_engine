@@ -1,5 +1,5 @@
 #pragma once
-#include "physicalDevice.h"
+#include "magma/vk/physicalDevice/PhysicalDevice.h"
 #include "logicalDevice.h"
 #include "Window.h"
 #include "frameBuffer.h"
@@ -21,11 +21,11 @@ class SwapChain
     void acquireImages();
     void createImageViews();
 public:
-    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-    static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
+    static VkPresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
     static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, VkExtent2D actualExtent);
 
-    SwapChain(LogicalDevice &device, const PhysicalDevice &physicalDevice, const Window &window);
+    SwapChain(LogicalDevice &device, const Window &window);
     ~SwapChain();
 
     VkSwapchainKHR getSwapChain() const { return swapChain; }

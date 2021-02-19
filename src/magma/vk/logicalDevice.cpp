@@ -8,10 +8,11 @@
 #include <iostream>
 #include <set>
 
-LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice)
+LogicalDevice::LogicalDevice(
+        const PhysicalDevice &physicalDevice, const std::vector<const char*> &deviceExtensions
+) : _physDevice(physicalDevice)
 {
-    this->physicalDevice = physicalDevice.device();
-    QueueFamilyIndices indices = physicalDevice.getQueueFamilyInds();
+    QueueFamilyIndices indices = _physDevice.getQueueFamilyInds();
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {
@@ -38,8 +39,8 @@ LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice)
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(PhysicalDevice::extensions.size());
-    createInfo.ppEnabledExtensionNames = PhysicalDevice::extensions.data();
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     if (ValidationLayers::ENABLED)
     {
@@ -49,7 +50,7 @@ LogicalDevice::LogicalDevice(const PhysicalDevice &physicalDevice)
         createInfo.enabledLayerCount = 0;
     }
 
-    VkResult result = vkCreateDevice(physicalDevice.device(), &createInfo, nullptr, &device);
+    VkResult result = vkCreateDevice(_physDevice.c_device(), &createInfo, nullptr, &device);
     VK_CHECK_ERR(result, "failed to create logical device!");
 
     std::cout << "Logical Device is created\n";
@@ -92,7 +93,7 @@ VkDeviceMemory LogicalDevice::createDeviceMemory(VkMemoryRequirements memRequire
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = findMemoryType(_physDevice.c_device(), memRequirements.memoryTypeBits, properties);
 
     VkDeviceMemory deviceMemory;
     VkResult result = vkAllocateMemory(device, &allocInfo, nullptr, &deviceMemory);
@@ -118,7 +119,7 @@ Buffer LogicalDevice::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = findMemoryType(_physDevice.c_device(), memRequirements.memoryTypeBits, properties);
 
     result = vkAllocateMemory(device, &allocInfo, nullptr, &buffer.mem);
     VK_CHECK_ERR(result, "failed to allocate vertex buffer memory!");

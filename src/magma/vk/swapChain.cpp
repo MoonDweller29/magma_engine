@@ -1,39 +1,77 @@
 #include "magma/vk/swapChain.h"
-#include "magma/vk/vulkan_common.h"
+
 #include <cstdint> // Necessary for UINT32_MAX
 #include <algorithm>//for clamp
 #include <iostream>
+#include <sstream>
 
-VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
-{
-    for (const auto& availableFormat : availableFormats)
-    {
-        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
-            availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-        {
+#include "magma/vk/vulkan_common.h"
+
+static std::string to_string(const vk::SurfaceFormatKHR format) {
+    return to_string(format.format) + " | " + to_string(format.colorSpace);
+}
+
+static std::string formatsToStr(const std::vector<vk::SurfaceFormatKHR> formats) {
+    std::stringstream ss;
+    ss << "format count: " << formats.size();
+
+    int i = 0;
+    for (const auto &format : formats) {
+        ss << std::endl << "\t" << i << ": " << to_string(format);
+        ++i;
+    }
+
+    return ss.str();
+}
+
+VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats) {
+
+    LOG_INFO("Available ", formatsToStr(availableFormats));
+
+    for (const auto& availableFormat : availableFormats) {
+        if (availableFormat.format == vk::Format::eB8G8R8A8Srgb &&
+            availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+            LOG_INFO("Selected Format: ", to_string(availableFormat));
             return availableFormat;
         }
     }
 
-    return availableFormats[0]; //not the best choice. But it's ok for now.
+    VkSurfaceFormatKHR defaultFormat = availableFormats[0]; //not the best choice. But it's ok for now.
+    LOG_INFO("Required format not found, fallback to default: ", to_string(defaultFormat));
+
+    return defaultFormat;
+}
+
+static std::string presentModesToStr(const std::vector<vk::PresentModeKHR> &presentModes) {
+    std::stringstream ss;
+    ss << "present modes count: " << presentModes.size();
+
+    int i = 0;
+    for (const auto &mode : presentModes) {
+        ss << std::endl << "\t" << i << ": " << to_string(mode);
+        ++i;
+    }
+
+    return ss.str();
 }
 
 // should be changed to turn on vertical sync
-VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
-{
-    VkPresentModeKHR requiredMode = VK_PRESENT_MODE_MAILBOX_KHR;
-//    VkPresentModeKHR required_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes) {
+    LOG_INFO("Available ", presentModesToStr(availablePresentModes));
 
-    for (const auto& availablePresentMode : availablePresentModes)
-    {
+    vk::PresentModeKHR requiredMode = vk::PresentModeKHR::eMailbox;
+
+    for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == requiredMode) {
-            return availablePresentMode;
+            LOG_INFO("Selected present mode: ", to_string(availablePresentMode));
+            return (VkPresentModeKHR) availablePresentMode;
         }
     }
 
-    std::cout << "Failed to find required present mode\n";
+    vk::PresentModeKHR defaultMode = vk::PresentModeKHR::eFifo;
+    LOG_INFO("Failed to find required present mode, fallback present mode: ", to_string(defaultMode));
 
-    return VK_PRESENT_MODE_FIFO_KHR;
+    return (VkPresentModeKHR) defaultMode;
 }
 
 VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, VkExtent2D actualExtent)
@@ -59,7 +97,7 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
     }
 }
 
-uint32_t chooseImageCount(const SwapChainSupportDetails &swapChainSupport)
+uint32_t chooseImageCount(const SwapChainSupportInfo &swapChainSupport)
 {
 //    std::cout << "swap_chain minImageCount : " << swapChainSupport.capabilities.minImageCount << std::endl;
 //    std::cout << "swap_chain maxImageCount : " << swapChainSupport.capabilities.maxImageCount << std::endl;
@@ -73,10 +111,10 @@ uint32_t chooseImageCount(const SwapChainSupportDetails &swapChainSupport)
     return imageCount;
 }
 
-SwapChain::SwapChain(LogicalDevice &device, const PhysicalDevice &physicalDevice, const Window &window):
+SwapChain::SwapChain(LogicalDevice &device, const Window &window):
     device(device)
 {
-    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice.device(), window.getSurface());
+    SwapChainSupportInfo swapChainSupport = device.getPhysDevice().getSwapChainSupportInfo(window.getSurface());
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -95,7 +133,7 @@ SwapChain::SwapChain(LogicalDevice &device, const PhysicalDevice &physicalDevice
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 
-    QueueFamilyIndices indices = physicalDevice.getQueueFamilyInds();
+    QueueFamilyIndices indices = device.getPhysDevice().getQueueFamilyInds();
     uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
     if (indices.graphicsFamily != indices.presentFamily) {
@@ -108,7 +146,7 @@ SwapChain::SwapChain(LogicalDevice &device, const PhysicalDevice &physicalDevice
         createInfo.pQueueFamilyIndices = nullptr; // Optional
     }
 
-    createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+    createInfo.preTransform = (VkSurfaceTransformFlagBitsKHR) swapChainSupport.capabilities.currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE; //should be turned off to enable reading from backbuffer
