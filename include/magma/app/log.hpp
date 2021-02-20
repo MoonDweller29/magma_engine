@@ -148,3 +148,24 @@ void Log::print(std::ostream &stream, const T &object) {
         stream << &object;
     }
 }
+
+class ExceptionLogger {
+public:
+    ExceptionLogger(const char *filename, int line)
+        : _filename(filename)
+        , _line(line) {
+    }
+
+    template <typename E>
+    void operator<<(E exception) {
+        Log::error("[", _filename, ":", _line, "] ", exception.what());
+        throw exception;
+    }
+
+private:
+    const char *_filename;
+    int _line;
+
+};
+
+#define LOG_AND_THROW ExceptionLogger(__FILENAME__, __LINE__) <<

@@ -23,8 +23,8 @@ void test_logger() {
     LOG_ERROR("An error!");
     LOG_CRITICAL("A critical error!!!");
 
-    TRY_CATCH(LOGIC_ERR("test: logic err"));
-    TRY_CATCH(INVALID_ARG("test: invalid arg"));
-    TRY_CATCH(OUT_OF_RANGE_ERR("test: out of range"));
-    TRY_CATCH(RUNTIME_ERR("test: runtime err"));
+    TRY_CATCH(LOG_AND_THROW std::logic_error("test: logic err"));
+    TRY_CATCH(LOG_AND_THROW std::invalid_argument("test: invalid arg"));
+    TRY_CATCH(LOG_AND_THROW std::out_of_range("test: out of range"));
+    TRY_CATCH(LOG_AND_THROW std::runtime_error("test: runtime err"));
 }
