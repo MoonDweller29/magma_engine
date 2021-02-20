@@ -2,7 +2,9 @@
 #include <vulkan/vulkan.hpp>
 #include <stdexcept>
 #include <vector>
+
 #include "magma/app/log.hpp"
+#include "magma/app/errors.h"
 
 #define VK_CHECK_ERR(result, message)      \
 {                                          \
@@ -20,11 +22,6 @@
     }                                      \
 }
 
-#define VK_ERROR(message)               \
-{                                       \
-    LOG_ERROR(message);                 \
-    throw std::runtime_error(message);  \
-}
 
 VkFormat findSupportedFormat(
         VkPhysicalDevice physicalDevice,

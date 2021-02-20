@@ -120,7 +120,7 @@ int HardwareManager::rateSuitability(
 std::vector<PhysicalDevice> HardwareManager::acquirePhysicalDevicesList() {
     auto [result, vkDevices] = _instance.enumeratePhysicalDevices();
     if (vkDevices.empty()) {
-        VK_ERROR("failed to find GPUs with Vulkan support!");
+        RUNTIME_ERR("failed to find GPUs with Vulkan support!");
     }
     std::vector<PhysicalDevice> devices;
     devices.reserve(vkDevices.size());
@@ -150,7 +150,7 @@ std::multimap<int, PhysicalDevice> HardwareManager::findSuitableDevices(const De
 PhysicalDevice HardwareManager::selectBestSuitableDevice(const DeviceRequirements &requirements) {
     std::multimap<int, PhysicalDevice> candidates = findSuitableDevices(requirements);
     if (candidates.empty() || candidates.rbegin()->first == 0) {
-        VK_ERROR("failed to find a suitable GPU!");
+        RUNTIME_ERR("failed to find a suitable GPU!");
     }
     PhysicalDevice &selectedDevice = candidates.rbegin()->second;
     selectedDevice.initInds(requirements.surface.getValue()); //deprecated
