@@ -2,6 +2,8 @@
 
 struct NonPrintable {};
 
+#define TRY_CATCH(code) try { code; } catch (...) {}
+
 void test_logger() {
     Log::Config config {
         "default.log",
@@ -19,4 +21,9 @@ void test_logger() {
     LOG_WARNING("A warning");
     LOG_ERROR("An error!");
     LOG_CRITICAL("A critical error!!!");
+
+    TRY_CATCH(LOG_AND_THROW std::logic_error("test: logic err"));
+    TRY_CATCH(LOG_AND_THROW std::invalid_argument("test: invalid arg"));
+    TRY_CATCH(LOG_AND_THROW std::out_of_range("test: out of range"));
+    TRY_CATCH(LOG_AND_THROW std::runtime_error("test: runtime err"));
 }

@@ -37,3 +37,9 @@ bool operator<(Log::Level l1, Log::Level l2) {
 bool operator>(Log::Level l1, Log::Level l2) {
     return static_cast<int>(l1) > static_cast<int>(l2);
 }
+
+
+Log::ExceptionLogger::ExceptionLogger(const char *filename, int line)
+    : _filename(filename)
+    , _line(line) {
+}
