@@ -114,7 +114,7 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/app/config/JSON.cpp
 		include/magma/app/log.hpp
 		src/magma/app/log.cpp
-        include/magma/app/Option.hpp
+		include/magma/app/Option.hpp
 )
 
 target_include_directories(${LIBRARY_NAME}
