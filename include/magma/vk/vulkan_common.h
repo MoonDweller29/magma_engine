@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "magma/app/log.hpp"
-#include "magma/app/errors.h"
 
 #define VK_CHECK_ERR(result, message)      \
 {                                          \
