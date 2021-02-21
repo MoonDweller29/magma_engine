@@ -5,7 +5,6 @@
 #include "magma/vk/validationLayers/ValidationLayers.h"
 #include "magma/vk/commandBuffer.h"
 #include <iostream>
-#include <memory>
 #include <set>
 
 LogicalDevice::LogicalDevice(

@@ -41,8 +41,6 @@ public:
     template<class T>
     void copyDataToBuffer(Buffer &buffer, const std::vector<T> &data);
     void copyDataToBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
-    void copyDataToStagingBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
-    void copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
 
     void deleteBuffer(Buffer &buffer);
 private:
@@ -50,6 +48,8 @@ private:
     CommandBufferArr _commandBuffers;
     std::unordered_map<std::string, Buffer> _buffers;
 
+    void copyDataToStagingBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
+    void copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
     void copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer);
 };
 
