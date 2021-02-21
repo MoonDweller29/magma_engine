@@ -30,14 +30,14 @@ Buffer& BufferManager::getBuffer(const std::string &name) {
     if (bufferExists(name)) {
         return _buffers.at(name);
     } else {
-        LOG_AND_THROW std::invalid_argument("BufferManager::getBuffer buffer not exist");
+        LOG_AND_THROW std::invalid_argument(name + " buffer exist");
     }
 };
 
 Buffer& BufferManager::createBuffer(const std::string &name, VkDeviceSize size, 
         VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
     if (bufferExists(name)) {
-        LOG_AND_THROW std::invalid_argument("BufferManager::createBuffer buffer exist");
+        LOG_AND_THROW std::invalid_argument(name + " buffer exist");
     }
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -151,10 +151,10 @@ void BufferManager::deleteBuffer(Buffer &buffer) {
 
 void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {
     if ((srcBuffer.getInfo()->bufferInfo.usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT) == 0) {
-        LOG_AND_THROW std::invalid_argument("BufferManager::copyBufferToBuffer srcBuffer has invalid usage");
+        LOG_AND_THROW std::invalid_argument("srcBuffer has invalid usage");
     }
     if ((dstBuffer.getInfo()->bufferInfo.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0) {
-        LOG_AND_THROW std::invalid_argument("BufferManager::copyBufferToBuffer dstBuffer has invalid usage");
+        LOG_AND_THROW std::invalid_argument("dstBuffer has invalid usage");
     }
     VkDeviceSize bufferSize = std::min(srcBuffer.getInfo()->bufferInfo.size,
         dstBuffer.getInfo()->bufferInfo.size);
