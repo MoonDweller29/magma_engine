@@ -54,8 +54,7 @@ static std::string joinPath(const std::string &s1, const std::string &s2) {
 }
 
 
-bool App::isClosed()
-{
+bool App::isClosed() {
 	return keyBoard->wasPressed(GLFW_KEY_ESCAPE);
 }
 
@@ -93,22 +92,19 @@ void App::initFromConfig() {
     LOG_INFO("Inited from config file");
 }
 
-void App::initWindow()
-{
+void App::initWindow() {
     window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT, instance->instance());
     keyBoard = window->getKeyboard();
     mouse = window->getMouse();
 }
 
-void App::createSyncObjects()
-{
+void App::createSyncObjects() {
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         VkResult result = vkCreateSemaphore(device->c_getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
         VK_CHECK_ERR(result, "failed to create semaphores!");
     }
@@ -122,8 +118,8 @@ void App::createUniformBuffers() {
     fragmentUniform = bufferManager.createUniformBuffer("fragmentUniform", sizeof(FragmentUniform));
 }
 
-void App::loadScene()
-{
+void App::loadScene() {
+    texture = device->getTextureManager().loadTexture("input_texture", texturePath);
     scene = meshReader.load_scene(modelPath);
     vertices = scene[0].getVertices();
     indices = scene[0].getIndices();
@@ -133,14 +129,7 @@ void App::loadScene()
             0.1f, 20.f);
 }
 
-
-void App::createTexture()
-{
-    texture = device->getTextureManager().loadTexture("input_texture", texturePath);
-}
-
-void App::createTextureSampler()
-{
+void App::createTextureSampler() {
     VkSamplerCreateInfo samplerInfo{};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -165,8 +154,7 @@ void App::createTextureSampler()
     VK_CHECK_ERR(result, "failed to create texture sampler!");
 }
 
-void App::createShadowMapSampler()
-{
+void App::createShadowMapSampler() {
     VkSamplerCreateInfo samplerInfo{};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_NEAREST;
@@ -192,8 +180,7 @@ void App::createShadowMapSampler()
 }
 
 
-void App::createShadowMapTex()
-{
+void App::createShadowMapTex() {
     shadowMap = device->getTextureManager().createTexture2D("shadowMap_texture",
         vk::Format::eD32Sfloat,
         vk::Extent2D{2048, 2048},
@@ -202,8 +189,7 @@ void App::createShadowMapTex()
     createShadowMapSampler();
 }
 
-void App::createShadowMapResources()
-{
+void App::createShadowMapResources() {
     createShadowMapTex();
 
     BufferManager& bufferManager = device->getBufferManager();
@@ -217,8 +203,7 @@ void App::createShadowMapResources()
 }
 
 
-void App::createDepthResources()
-{
+void App::createDepthResources() {
     VkFormat depthFormat = findDepthFormat(device->getVkPhysDevice());
     depthTex = device->getTextureManager().createTexture2D("depth_texture", 
         vk::Format(depthFormat),
@@ -260,7 +245,6 @@ void App::initVulkan() {
 
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
-    createTexture();
     createDepthResources();
     createTextureSampler();
     createShadowMapResources();
@@ -287,8 +271,7 @@ void App::initVulkan() {
     createSyncObjects();
 }
 
-void App::cleanupSwapChain()
-{
+void App::cleanupSwapChain() {
     BufferManager& bufferManager = device->getBufferManager();
     bufferManager.deleteBuffer(uniformBuffer);
     bufferManager.deleteBuffer(fragmentUniform);
@@ -333,8 +316,7 @@ void App::recreateSwapChain() {
     mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
 }
 
-void App::drawFrame()
-{
+void App::drawFrame() {
     vkWaitForFences(device->c_getDevice(), 1, &colorPass->getSync().fence, VK_TRUE, UINT64_MAX);
 
     if (window->wasResized())
@@ -345,13 +327,10 @@ void App::drawFrame()
             device->c_getDevice(), swapChain->getSwapChain(),
             UINT64_MAX/*timeout off*/, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
-    {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         recreateSwapChain();
         return;
-    }
-    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-    {
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
@@ -380,11 +359,9 @@ void App::drawFrame()
     presentInfo.pResults = nullptr; // Optional
 
     result = vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->wasResized())
-    {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->wasResized()) {
         recreateSwapChain();
-    } else if (result != VK_SUCCESS)
-    {
+    } else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
@@ -392,8 +369,7 @@ void App::drawFrame()
 }
 
 
-void App::updateUniformBuffer(uint32_t currentImage)
-{
+void App::updateUniformBuffer(uint32_t currentImage) {
     float time = global_clock.getTime();
     static bool light_view = false;
 
@@ -405,8 +381,7 @@ void App::updateUniformBuffer(uint32_t currentImage)
     ubo.model = glm::mat4x4( 1.0f );
     ubo.view = mainCamera->getViewMat();
     ubo.proj = mainCamera->getProjMat();
-    if (light_view)
-    {
+    if (light_view) {
         ubo.view = light->getView();
         ubo.proj = light->getProj();
     }
@@ -421,8 +396,7 @@ void App::updateUniformBuffer(uint32_t currentImage)
     bufferManager.copyDataToBuffer(fragmentUniform, &fu, sizeof(fu));
 }
 
-void App::updateShadowUniform()
-{
+void App::updateShadowUniform() {
     UniformBufferObject ubo{};
     ubo.model = glm::mat4x4( 1.0f );
     ubo.view = light->getView();
@@ -436,19 +410,16 @@ void App::updateShadowUniform()
     bufferManager.copyDataToBuffer(lightSpaceUniform, &lu, sizeof(lu));
 }
 
-void App::mainLoop()
-{
+void App::mainLoop() {
     float prev_time = global_clock.restart();
     int frames_count = 0;
 
-    while (!glfwWindowShouldClose(window->getGLFWp()))
-    {
+    while (!glfwWindowShouldClose(window->getGLFWp())) {
         float time = global_clock.getTime();
         float frameTime = time-prev_time;
         prev_time = time;
 
-        if(frames_count % 100 == 0)
-        {
+        if(frames_count % 100 == 0) {
             std::stringstream ss;
 
             ss << "VULKAN ENGINE | FPS: " << 1 / frameTime << std::endl;
@@ -470,19 +441,16 @@ void App::mainLoop()
 
         // @TODO Add window focus handling
         if (mouse->isLocked()) {
-          if (isLeftMouseButtonReleased)
-          {
-            mouse->unlock();
-          }
+            if (isLeftMouseButtonReleased) {
+                mouse->unlock();
+            }
         } else {
-          if (isLeftMouseButtonPressed)
-          {
-            mouse->lock();
-          }
+            if (isLeftMouseButtonPressed) {
+                mouse->lock();
+            }
         }
 
-        if (isClosed())
-        {
+        if (isClosed()) {
           break;
         }
 
@@ -492,8 +460,7 @@ void App::mainLoop()
     device->waitIdle();
 }
 
-void App::cleanUp()
-{
+void App::cleanUp() {
     std::cout << "CLEAN UP\n";
     BufferManager& bufferManager = device->getBufferManager();
 

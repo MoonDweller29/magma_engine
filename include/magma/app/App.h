@@ -72,7 +72,6 @@ private:
     void initDevice();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
-    void createTexture();
     void createTextureSampler();
     void createShadowMapSampler();
     void createShadowMapTex();
