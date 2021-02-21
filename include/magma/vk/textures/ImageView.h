@@ -5,14 +5,16 @@
  * @date 2021-02-12
  */
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_core.h>
 
 class ImageView {
 public:
-    ImageView();
-    ImageView(VkImageView imageView);
+    ImageView() = default;
+    ImageView(vk::ImageView imageView);
 
-    const VkImageView &getView() const { return _imageView; }
+    const vk::ImageView getView() const { return _imageView; }
+    [[depricated]] const VkImageView c_getView() const { return (VkImageView)_imageView; }
 protected:
-    VkImageView _imageView;
+    vk::ImageView _imageView;
 };

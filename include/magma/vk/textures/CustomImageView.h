@@ -12,12 +12,15 @@
 
 class CustomImageView final : public ImageView {
 public:
-    CustomImageView(Texture &texture, VkImageAspectFlags aspectMask);
-    CustomImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
+    CustomImageView(Texture &texture, vk::ImageAspectFlags aspectMask);
+    CustomImageView(vk::Device device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectMask);
     CustomImageView(CustomImageView &&other);
     ~CustomImageView();
 
+    [[depricated]] CustomImageView(Texture &texture, VkImageAspectFlags c_aspectMask);
+    [[depricated]] CustomImageView(VkDevice c_device, VkImage c_image, VkFormat c_format, VkImageAspectFlags c_aspectMask);
+
     CustomImageView(const CustomImageView &) = delete;
 private:
-    VkDevice _device;
+    vk::Device _device;
 };

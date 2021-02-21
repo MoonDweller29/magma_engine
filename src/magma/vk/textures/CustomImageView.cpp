@@ -1,46 +1,33 @@
 #include "magma/vk/textures/CustomImageView.h"
 
 #include "magma/vk/vulkan_common.h"
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.hpp>
 
-CustomImageView::CustomImageView(Texture &texture, VkImageAspectFlags aspectMask) 
+CustomImageView::CustomImageView(Texture &texture, vk::ImageAspectFlags aspectMask) 
         : _device(texture.getInfo()->device) {
-    VkImageCreateInfo info = texture.getInfo()->imageInfo;
-    VkImageViewCreateInfo viewInfo{};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = texture.getImage();
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = info.format;
-    viewInfo.subresourceRange.aspectMask = aspectMask;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
+    vk::ImageCreateInfo info = texture.getInfo()->imageInfo;
 
-    VkResult result = vkCreateImageView(_device, &viewInfo, nullptr, &_imageView);
-    VK_CHECK_ERR(result, "CustomImageView: failed to create image view!");
+    vk::ImageViewCreateInfo viewInfo({}, texture.getImage(), vk::ImageViewType::e2D, info.format, 
+        {}, {aspectMask, 0, 1, 0, 1});
+
+    vk::Result result;
+    std::tie(result, _imageView) = _device.createImageView(viewInfo);
+    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
 }
 
-CustomImageView::CustomImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectMask)
+CustomImageView::CustomImageView(vk::Device device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectMask)
         : _device(device) {
-    VkImageViewCreateInfo viewInfo{};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = image;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = format;
-    viewInfo.subresourceRange.aspectMask = aspectMask;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
+    vk::ImageViewCreateInfo viewInfo({}, image, vk::ImageViewType::e2D, format,
+        {}, {aspectMask, 0, 1, 0, 1});
 
-    VkResult result = vkCreateImageView(device, &viewInfo, nullptr, &_imageView);
-    VK_CHECK_ERR(result, "CustomImageView: failed to create image view!");
+    vk::Result result;
+    std::tie(result, _imageView) = _device.createImageView(viewInfo);
+    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
 }
 
 CustomImageView::~CustomImageView() {
-    if (_device != VK_NULL_HANDLE && _imageView != VK_NULL_HANDLE) {
-        vkDestroyImageView(_device, _imageView, nullptr);
+    if (_device && _imageView) {
+        _device.destroyImageView(_imageView);
     }
 }
 
@@ -48,6 +35,34 @@ CustomImageView::CustomImageView(CustomImageView &&other)
         : _device(other._device),
         ImageView(other._imageView)
 {
-    other._device = VK_NULL_HANDLE;
-    other._imageView = VK_NULL_HANDLE;
+    other._device = vk::Device();
+    other._imageView = vk::ImageView();
+}
+
+[[depricated]] CustomImageView::CustomImageView(Texture &texture, VkImageAspectFlags c_aspectMask)
+        : _device(texture.getInfo()->device) {
+    vk::ImageCreateInfo info = texture.getInfo()->imageInfo;
+    vk::ImageAspectFlags aspectMask(c_aspectMask);
+
+    vk::ImageViewCreateInfo viewInfo({}, texture.getImage(), vk::ImageViewType::e2D, info.format, 
+        {}, {aspectMask, 0, 1, 0, 1});
+
+    vk::Result result;
+    std::tie(result, _imageView) = _device.createImageView(viewInfo);
+    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
+}
+
+[[depricated]] CustomImageView::CustomImageView(VkDevice c_device, VkImage c_image, VkFormat c_format, VkImageAspectFlags c_aspectMask)
+        : _device(c_device) {
+    vk::Device device(c_device);
+    vk::Image image(c_image);
+    vk::Format format(c_format);
+    vk::ImageAspectFlags aspectMask(c_aspectMask);
+
+    vk::ImageViewCreateInfo viewInfo({}, image, vk::ImageViewType::e2D, format,
+        {}, {aspectMask, 0, 1, 0, 1});
+
+    vk::Result result;
+    std::tie(result, _imageView) = _device.createImageView(viewInfo);
+    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
 }

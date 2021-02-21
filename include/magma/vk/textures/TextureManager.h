@@ -23,11 +23,16 @@ public:
 
     Texture& loadTexture(const std::string &texName, const std::string &path);
 
-    Texture& createTexture2D(const std::string &name, VkFormat format, VkExtent2D extent,
-        VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
+    Texture& createTexture2D(const std::string &name, vk::Format format, vk::Extent2D extent,
+        vk::ImageUsageFlags usage, vk::ImageAspectFlags aspectMask);
+    [[depricated]] Texture& createTexture2D(const std::string &name, VkFormat c_format, VkExtent2D c_extent,
+        VkImageUsageFlags c_usage, VkImageAspectFlags c_aspectMask);
 
-    void setLayout(Texture &texture, VkImageLayout newLayout);
-    void copyBufToTex(Texture &texture, VkBuffer buffer);
+    void setLayout(Texture &texture, vk::ImageLayout newLayout);
+    void copyBufToTex(Texture &texture, vk::Buffer buffer);
+
+    [[depricated]] void setLayout(Texture &texture, VkImageLayout c_newLayout);
+    [[depricated]] void copyBufToTex(Texture &texture, VkBuffer c_buffer);
 
     void deleteTexture(Texture &texture);
 private:
