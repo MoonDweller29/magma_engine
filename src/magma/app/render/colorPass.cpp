@@ -51,10 +51,10 @@ void ColorPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_si
     for (uint32_t i = 0; i < descriptorSetCount; ++i)
     {
         descriptorSetLayout.beginSet(i);
-        descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.buf, 0, ubo_size);
+        descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.getBuf(), 0, ubo_size);
         descriptorSetLayout.bindCombinedImageSampler(1, tex_view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        descriptorSetLayout.bindUniformBuffer(2, fragmentUniform.buf, 0, fu_size);
-        descriptorSetLayout.bindUniformBuffer(3, lightSpaceUniform.buf, 0, lu_size);
+        descriptorSetLayout.bindUniformBuffer(2, fragmentUniform.getBuf(), 0, fu_size);
+        descriptorSetLayout.bindUniformBuffer(3, lightSpaceUniform.getBuf(), 0, lu_size);
         descriptorSetLayout.bindCombinedImageSampler(4, shadow_map_view, shadow_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
     descriptorSets = descriptorSetLayout.recordAndReturnSets();

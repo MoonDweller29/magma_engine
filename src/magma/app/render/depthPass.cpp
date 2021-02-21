@@ -39,7 +39,7 @@ void DepthPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_si
 {
     descriptorSetLayout.allocateSets(1);
     descriptorSetLayout.beginSet(0);
-    descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.buf, 0, ubo_size);
+    descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.getBuf(), 0, ubo_size);
     descriptorSet = descriptorSetLayout.recordAndReturnSets()[0];
 }
 

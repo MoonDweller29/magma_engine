@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "magma/app/App.h"
+#include "magma/vk/buffers/BufferManager.h"
 #include "magma/vk/textures/TextureManager.h"
 #include "magma/vk/vulkan_common.h"
 #include "magma/vk/physicalDevice/HardwareManager.h"
@@ -113,14 +114,12 @@ void App::createSyncObjects()
     }
 }
 
-void App::createUniformBuffers()
-{
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+void App::createUniformBuffers() {
     uint32_t imgCount = swapChain->imgCount();
 
-    uniformBuffer = device->createUniformBuffer(bufferSize);
-
-    fragmentUniform = device->createUniformBuffer(bufferSize);
+    BufferManager& bufferManager = device->getBufferManager();
+    uniformBuffer = bufferManager.createUniformBuffer("uniformBuffer", sizeof(UniformBufferObject));
+    fragmentUniform = bufferManager.createUniformBuffer("fragmentUniform", sizeof(FragmentUniform));
 }
 
 void App::loadScene()
@@ -206,12 +205,15 @@ void App::createShadowMapTex()
 void App::createShadowMapResources()
 {
     createShadowMapTex();
-    shadowUniform = device->createUniformBuffer(sizeof(UniformBufferObject));
-    lightSpaceUniform = device->createUniformBuffer(sizeof(LightSpaceUniform));
+
+    BufferManager& bufferManager = device->getBufferManager();
+    shadowUniform = bufferManager.createUniformBuffer("shadowUniform", sizeof(UniformBufferObject));
+    lightSpaceUniform = bufferManager.createUniformBuffer("lightSpaceUniform", sizeof(LightSpaceUniform));
+
     renderShadow = std::make_unique<DepthPass>(*device, shadowMap, VkExtent2D{2048, 2048},
                                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     renderShadow->writeDescriptorSets(shadowUniform, sizeof(UniformBufferObject));
-    renderShadow->recordCmdBuffers(indexBuffer.buf, vertexBuffer.buf, indices.size());
+    renderShadow->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 }
 
 
@@ -240,8 +242,10 @@ void App::initVulkan() {
     device = std::make_unique<LogicalDevice>(physDevice, deviceRequirements.requiredExtensions());
 
     loadScene();
-    vertexBuffer = device->createVertexBuffer(vertices);
-    indexBuffer = device->createIndexBuffer(indices);
+    
+    BufferManager& bufferManager = device->getBufferManager();
+    vertexBuffer = bufferManager.createVertexBuffer("vertexBuffer", vertices);
+    indexBuffer = bufferManager.createIndexBuffer("indexBuffer", indices);
 
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
@@ -253,7 +257,7 @@ void App::initVulkan() {
     depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
-    depthPass->recordCmdBuffers(indexBuffer.buf, vertexBuffer.buf, indices.size());
+    depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
@@ -263,8 +267,8 @@ void App::initVulkan() {
                                    shadowMap.getView(), shadowMapSampler);
     swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
     colorPass->recordCmdBuffers(
-            indexBuffer.buf,
-            vertexBuffer.buf,
+            indexBuffer.getBuf(),
+            vertexBuffer.getBuf(),
             indices.size(),
             swapChain->getVkFrameBuffers()
     );
@@ -274,8 +278,9 @@ void App::initVulkan() {
 
 void App::cleanupSwapChain()
 {
-    device->deleteBuffer(uniformBuffer);
-    device->deleteBuffer(fragmentUniform);
+    BufferManager& bufferManager = device->getBufferManager();
+    bufferManager.deleteBuffer(uniformBuffer);
+    bufferManager.deleteBuffer(fragmentUniform);
 
     device->getTextureManager().deleteTexture(depthTex);
 
@@ -303,7 +308,7 @@ void App::recreateSwapChain()
     depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
-    depthPass->recordCmdBuffers(indexBuffer.buf, vertexBuffer.buf, indices.size());
+    depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 
     colorPass = std::make_unique<ColorPass>(*device, *swapChain);
     colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
@@ -313,7 +318,7 @@ void App::recreateSwapChain()
                                    shadowMap.getView(), shadowMapSampler);
     swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
     colorPass->recordCmdBuffers(
-            indexBuffer.buf, vertexBuffer.buf, indices.size(),
+            indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size(),
             swapChain->getVkFrameBuffers()
     );
     mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
@@ -397,17 +402,14 @@ void App::updateUniformBuffer(uint32_t currentImage)
         ubo.proj = light->getProj();
     }
 
-    void* data_p;
-    vkMapMemory(device->handler(), uniformBuffer.mem, 0, sizeof(ubo), 0, &data_p);
-    memcpy(data_p, &ubo, sizeof(ubo));
-    vkUnmapMemory(device->handler(), uniformBuffer.mem);
 
     FragmentUniform fu{};
     fu.cameraPos = mainCamera->getPos();
     fu.lightPos = light->getPos();
-    vkMapMemory(device->handler(), fragmentUniform.mem, 0, sizeof(ubo), 0, &data_p);
-    memcpy(data_p, &fu, sizeof(fu));
-    vkUnmapMemory(device->handler(), fragmentUniform.mem);
+
+    BufferManager& bufferManager = device->getBufferManager();
+    bufferManager.copyDataToBuffer(uniformBuffer, &ubo, sizeof(ubo));
+    bufferManager.copyDataToBuffer(fragmentUniform, &fu, sizeof(fu));
 }
 
 void App::updateShadowUniform()
@@ -417,16 +419,12 @@ void App::updateShadowUniform()
     ubo.view = light->getView();
     ubo.proj = light->getProj();
 
-    void* data_p;
-    vkMapMemory(device->handler(), shadowUniform.mem, 0, sizeof(ubo), 0, &data_p);
-    memcpy(data_p, &ubo, sizeof(ubo));
-    vkUnmapMemory(device->handler(), shadowUniform.mem);
-
     LightSpaceUniform lu{};
     lu.lightSpaceMat = ubo.proj * ubo.view;
-    vkMapMemory(device->handler(), lightSpaceUniform.mem, 0, sizeof(lu), 0, &data_p);
-    memcpy(data_p, &lu, sizeof(lu));
-    vkUnmapMemory(device->handler(), lightSpaceUniform.mem);
+
+    BufferManager& bufferManager = device->getBufferManager();
+    bufferManager.copyDataToBuffer(shadowUniform, &ubo, sizeof(ubo));
+    bufferManager.copyDataToBuffer(lightSpaceUniform, &lu, sizeof(lu));
 }
 
 void App::mainLoop()
@@ -488,6 +486,7 @@ void App::mainLoop()
 void App::cleanUp()
 {
     std::cout << "CLEAN UP\n";
+    BufferManager& bufferManager = device->getBufferManager();
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -495,15 +494,15 @@ void App::cleanUp()
     }
 
     cleanupSwapChain();
-    device->deleteBuffer(shadowUniform);
-    device->deleteBuffer(lightSpaceUniform);
+    bufferManager.deleteBuffer(shadowUniform);
+    bufferManager.deleteBuffer(lightSpaceUniform);
     renderShadow.reset();
     vkDestroySampler(device->handler(), textureSampler, nullptr);
     vkDestroySampler(device->handler(), shadowMapSampler, nullptr);
     device->getTextureManager().deleteTexture(shadowMap);
     device->getTextureManager().deleteTexture(texture);
-    device->deleteBuffer(indexBuffer);
-    device->deleteBuffer(vertexBuffer);
+    bufferManager.deleteBuffer(indexBuffer);
+    bufferManager.deleteBuffer(vertexBuffer);
     device.reset();
     window.reset();
     debugMessenger.reset();

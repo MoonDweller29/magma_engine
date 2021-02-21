@@ -7,7 +7,7 @@
 
 #include "magma/vk/textures/TextureManager.h"
 #include "magma/vk/physicalDevice/PhysicalDevice.h"
-#include "magma/vk/buffer.h"
+#include "magma/vk/buffers/BufferManager.h"
 
 class LogicalDevice {
     PhysicalDevice _physDevice;
@@ -16,6 +16,7 @@ class LogicalDevice {
     VkQueue presentQueue;
     VkCommandPool graphicsCmdPool;
     std::unique_ptr<TextureManager> _textureManager;
+    std::unique_ptr<BufferManager>  _bufferManager;
 
     void acquireQueues(QueueFamilyIndices indices);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -31,26 +32,10 @@ public:
     VkQueue getGraphicsQueue() const { return graphicsQueue; }
     VkQueue getPresentQueue() const { return presentQueue; }
     const VkCommandPool &getGraphicsCmdPool() const { return graphicsCmdPool; }
-    TextureManager &getTextureManager() const { return *_textureManager; }
+    TextureManager  &getTextureManager()    const { return *_textureManager;    }
+    BufferManager   &getBufferManager()     const { return *_bufferManager;     }
 
     VkDeviceMemory createDeviceMemory(VkMemoryRequirements memRequirements, VkMemoryPropertyFlags properties);
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    // buffer management
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    Buffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-    template<class T>
-    Buffer createVertexBuffer(const std::vector<T> &data);
-    template<class T>
-    Buffer createIndexBuffer(const std::vector<T> &data);
-    Buffer createUniformBuffer(VkDeviceSize size);
-
-    void deleteBuffer(Buffer &buffer);
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-
     ~LogicalDevice();
 };
-
-#include "logicalDevice.hpp"

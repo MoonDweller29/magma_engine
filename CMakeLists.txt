@@ -71,7 +71,6 @@ add_library(${LIBRARY_NAME} STATIC
 
 		include/magma/vk/logicalDevice.h
 		src/magma/vk/logicalDevice.cpp
-		include/magma/vk/logicalDevice.hpp
 		include/magma/vk/Window.h
 		src/magma/vk/Window.cpp
 		include/magma/vk/swapChain.h
@@ -90,8 +89,6 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/commandPool.cpp
 		include/magma/vk/commandBuffer.h
 		src/magma/vk/commandBuffer.cpp
-		include/magma/vk/buffer.h
-		src/magma/vk/buffer.cpp
 
 		include/magma/vk/textures/TextureManager.h
 		src/magma/vk/textures/TextureManager.cpp
@@ -101,6 +98,12 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/textures/ImageView.cpp
 		include/magma/vk/textures/Texture.h
 		src/magma/vk/textures/Texture.cpp
+
+		include/magma/vk/buffers/BufferManager.h
+		include/magma/vk/buffers/BufferManager.hpp
+		src/magma/vk/buffers/BufferManager.cpp
+		include/magma/vk/buffers/Buffer.h
+		src/magma/vk/buffers/Buffer.cpp
 
 		include/magma/vk/descriptors/descriptorSetLayout.h
 		src/magma/vk/descriptors/descriptorSetLayout.cpp
