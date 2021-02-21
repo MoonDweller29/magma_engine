@@ -1,4 +1,4 @@
-#include "magma/vk/commandPool.h"
+#include "magma/vk/commands/CommandPool.h"
 #include "magma/vk/vulkan_common.h"
 
 VkCommandPool CommandPool::createPool(VkDevice device, uint32_t queueFamilyIndex)
