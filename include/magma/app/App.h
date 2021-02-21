@@ -72,8 +72,7 @@ private:
     void initDevice();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
-    void createTextureSampler();
-    void createShadowMapSampler();
+    vk::Sampler createDefaultTextureSampler();
     void createShadowMapTex();
     void createShadowMapResources();
     void updateShadowUniform();

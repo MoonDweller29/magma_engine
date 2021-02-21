@@ -129,56 +129,31 @@ void App::loadScene() {
             0.1f, 20.f);
 }
 
-void App::createTextureSampler() {
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+vk::Sampler App::createDefaultTextureSampler() {
+    vk::SamplerCreateInfo samplerInfo;
+    samplerInfo.magFilter = vk::Filter::eLinear;
+    samplerInfo.minFilter = vk::Filter::eLinear;
+    samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
+    samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
+    samplerInfo.addressModeW = vk::SamplerAddressMode::eRepeat;
     samplerInfo.anisotropyEnable = VK_TRUE;
     samplerInfo.maxAnisotropy = 16.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+    samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueBlack;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
     samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+    samplerInfo.compareOp = vk::CompareOp::eAlways;
 
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
 
-    VkResult result = vkCreateSampler(device->c_getDevice(), &samplerInfo, nullptr, &textureSampler);
-    VK_CHECK_ERR(result, "failed to create texture sampler!");
+    auto[result, sampler] = device->getDevice().createSampler(samplerInfo);
+    VK_HPP_CHECK_ERR(result, "failed to create texture sampler!");
+
+    return sampler;
 }
-
-void App::createShadowMapSampler() {
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_NEAREST;
-    samplerInfo.minFilter = VK_FILTER_NEAREST;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.anisotropyEnable = VK_TRUE;
-    samplerInfo.maxAnisotropy = 16.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
-
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 0.0f;
-
-    VkResult result = vkCreateSampler(device->c_getDevice(), &samplerInfo, nullptr, &shadowMapSampler);
-    VK_CHECK_ERR(result, "failed to create texture sampler!");
-}
-
 
 void App::createShadowMapTex() {
     shadowMap = device->getTextureManager().createTexture2D("shadowMap_texture",
@@ -186,7 +161,7 @@ void App::createShadowMapTex() {
         vk::Extent2D{2048, 2048},
         vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled,
         vk::ImageAspectFlagBits::eDepth);
-    createShadowMapSampler();
+    shadowMapSampler = createDefaultTextureSampler();
 }
 
 void App::createShadowMapResources() {
@@ -246,7 +221,8 @@ void App::initVulkan() {
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
     createDepthResources();
-    createTextureSampler();
+    textureSampler = createDefaultTextureSampler();
+
     createShadowMapResources();
 
     depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
