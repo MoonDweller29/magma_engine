@@ -27,11 +27,10 @@ bool BufferManager::bufferExists(const std::string &name) const {
 }
 
 Buffer& BufferManager::getBuffer(const std::string &name) {
-    if (bufferExists(name)) {
-        return _buffers.at(name);
-    } else {
+    if (!bufferExists(name)) {
         LOG_AND_THROW std::invalid_argument(name + " buffer exist");
     }
+    return _buffers.at(name);
 };
 
 Buffer& BufferManager::createBuffer(const std::string &name, VkDeviceSize size, 

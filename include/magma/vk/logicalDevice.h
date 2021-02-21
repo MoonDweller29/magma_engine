@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 #include <vector>
 #include <cstring>
@@ -19,11 +19,7 @@ class LogicalDevice {
     std::unique_ptr<BufferManager>  _bufferManager;
 
     void acquireQueues(QueueFamilyIndices indices);
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    template<class T>
-    Buffer createStagedBuffer(const std::vector<T> &data, VkBufferUsageFlags usageFlags);
 public:
-
 
     LogicalDevice(const PhysicalDevice &physicalDevice, const std::vector<const char*> &deviceExtensions);
     VkDevice handler() const { return device; }
