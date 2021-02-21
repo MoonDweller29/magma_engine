@@ -301,10 +301,8 @@ void App::cleanupSwapChain()
     swapChain.reset();
 }
 
-void App::recreateSwapChain()
-{
-    vkDeviceWaitIdle(device->c_getDevice());
-
+void App::recreateSwapChain() {
+    device->waitIdle();
     cleanupSwapChain();
 
     window->updateResolution();
@@ -491,7 +489,7 @@ void App::mainLoop()
         drawFrame();
     }
 
-    vkDeviceWaitIdle(device->c_getDevice());
+    device->waitIdle();
 }
 
 void App::cleanUp()
