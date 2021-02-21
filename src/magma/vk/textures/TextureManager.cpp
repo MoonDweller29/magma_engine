@@ -5,7 +5,7 @@
 
 #include "magma/app/log.hpp"
 #include "magma/app/image.h"
-#include "magma/vk/logicalDevice.h"
+#include "magma/vk/LogicalDevice.h"
 #include "magma/vk/vulkan_common.h"
 
 TextureManager::TextureManager(LogicalDevice &device) 

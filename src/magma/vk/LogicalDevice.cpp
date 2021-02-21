@@ -1,4 +1,4 @@
-#include "magma/vk/logicalDevice.h"
+#include "magma/vk/LogicalDevice.h"
 
 #include "magma/vk/commandPool.h"
 #include "magma/vk/vulkan_common.h"

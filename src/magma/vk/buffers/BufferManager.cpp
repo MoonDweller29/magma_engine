@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
 
-#include "magma/vk/logicalDevice.h"
+#include "magma/vk/LogicalDevice.h"
 #include "magma/vk/vulkan_common.h"
 #include "magma/vk/buffers/Buffer.h"
 
