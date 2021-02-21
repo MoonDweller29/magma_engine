@@ -1,7 +1,8 @@
 #include "magma/vk/textures/CustomImageView.h"
 
-#include "magma/vk/vulkan_common.h"
 #include <vulkan/vulkan.hpp>
+
+#include "magma/vk/vulkan_common.h"
 
 CustomImageView::CustomImageView(Texture &texture, vk::ImageAspectFlags aspectMask) 
         : _device(texture.getInfo()->device) {
