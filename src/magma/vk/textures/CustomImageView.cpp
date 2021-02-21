@@ -7,8 +7,15 @@ CustomImageView::CustomImageView(Texture &texture, vk::ImageAspectFlags aspectMa
         : _device(texture.getInfo()->device) {
     vk::ImageCreateInfo info = texture.getInfo()->imageInfo;
 
-    vk::ImageViewCreateInfo viewInfo({}, texture.getImage(), vk::ImageViewType::e2D, info.format, 
-        {}, {aspectMask, 0, 1, 0, 1});
+    vk::ImageViewCreateInfo viewInfo;
+    viewInfo.image = texture.getImage();
+    viewInfo.viewType = vk::ImageViewType::e2D;
+    viewInfo.format = info.format;
+    viewInfo.subresourceRange.aspectMask = aspectMask;
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = 1;
 
     vk::Result result;
     std::tie(result, _imageView) = _device.createImageView(viewInfo);
@@ -17,8 +24,16 @@ CustomImageView::CustomImageView(Texture &texture, vk::ImageAspectFlags aspectMa
 
 CustomImageView::CustomImageView(vk::Device device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectMask)
         : _device(device) {
-    vk::ImageViewCreateInfo viewInfo({}, image, vk::ImageViewType::e2D, format,
-        {}, {aspectMask, 0, 1, 0, 1});
+
+    vk::ImageViewCreateInfo viewInfo;
+    viewInfo.image = image;
+    viewInfo.viewType = vk::ImageViewType::e2D;
+    viewInfo.format = format;
+    viewInfo.subresourceRange.aspectMask = aspectMask;
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = 1;
 
     vk::Result result;
     std::tie(result, _imageView) = _device.createImageView(viewInfo);
@@ -39,30 +54,10 @@ CustomImageView::CustomImageView(CustomImageView &&other)
     other._imageView = vk::ImageView();
 }
 
-[[depricated]] CustomImageView::CustomImageView(Texture &texture, VkImageAspectFlags c_aspectMask)
-        : _device(texture.getInfo()->device) {
-    vk::ImageCreateInfo info = texture.getInfo()->imageInfo;
-    vk::ImageAspectFlags aspectMask(c_aspectMask);
+[[deprecated]] CustomImageView::CustomImageView(Texture &texture, VkImageAspectFlags c_aspectMask)
+        : CustomImageView(texture, vk::ImageAspectFlags(c_aspectMask))
+{}
 
-    vk::ImageViewCreateInfo viewInfo({}, texture.getImage(), vk::ImageViewType::e2D, info.format, 
-        {}, {aspectMask, 0, 1, 0, 1});
-
-    vk::Result result;
-    std::tie(result, _imageView) = _device.createImageView(viewInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
-}
-
-[[depricated]] CustomImageView::CustomImageView(VkDevice c_device, VkImage c_image, VkFormat c_format, VkImageAspectFlags c_aspectMask)
-        : _device(c_device) {
-    vk::Device device(c_device);
-    vk::Image image(c_image);
-    vk::Format format(c_format);
-    vk::ImageAspectFlags aspectMask(c_aspectMask);
-
-    vk::ImageViewCreateInfo viewInfo({}, image, vk::ImageViewType::e2D, format,
-        {}, {aspectMask, 0, 1, 0, 1});
-
-    vk::Result result;
-    std::tie(result, _imageView) = _device.createImageView(viewInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
-}
+[[deprecated]] CustomImageView::CustomImageView(VkDevice c_device, VkImage c_image, VkFormat c_format, VkImageAspectFlags c_aspectMask)
+        : CustomImageView(vk::Device(c_device), vk::Image(c_image), vk::Format(c_format), vk::ImageAspectFlags(c_aspectMask))
+{}

@@ -35,13 +35,13 @@ Texture &TextureManager::loadTexture(const std::string &texName, const std::stri
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     Texture& texture = createTexture2D(texName,
-        VK_FORMAT_R8G8B8A8_SRGB,
-        VkExtent2D{(uint)img.getWidth(), (uint)img.getHeight()},
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-        VK_IMAGE_ASPECT_COLOR_BIT);
-    setLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vk::Format::eR8G8B8A8Srgb,
+        vk::Extent2D{(uint)img.getWidth(), (uint)img.getHeight()},
+        vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+        vk::ImageAspectFlagBits::eColor);
+    setLayout(texture, vk::ImageLayout::eTransferDstOptimal);
     copyBufToTex(texture, stagingBuffer.getBuf());
-    setLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    setLayout(texture, vk::ImageLayout::eShaderReadOnlyOptimal);
 
     _device.getBufferManager().deleteBuffer(stagingBuffer);
     return texture;
@@ -57,10 +57,10 @@ Texture& TextureManager::getTexture(const std::string &name) {
 Texture& TextureManager::createTexture2D(const std::string &name, vk::Format format, vk::Extent2D extent,
         vk::ImageUsageFlags usage, vk::ImageAspectFlags aspectMask) {
     if (textureExists(name)) {
-        throw std::invalid_argument("texture " + name + " exist");
+        LOG_AND_THROW std::invalid_argument("texture " + name + " exist");
     }
 
-    vk::ImageCreateInfo imageInfo{};
+    vk::ImageCreateInfo imageInfo;
     imageInfo.imageType = vk::ImageType::e2D;
     imageInfo.format = format;
     imageInfo.extent.width = extent.width;
@@ -76,16 +76,16 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
 
     vk::Image textureImage;
     vk::Result result;
-    std::tie(result, textureImage) = _device.getDevice().createImage(imageInfo, &textureImage);
+    std::tie(result, textureImage) = _device.getDevice().createImage(imageInfo);
     VK_HPP_CHECK_ERR(result, "Failed to create image!");
 
-    vk::MemoryRequirements memRequirements;
-    std::tie(result, memRequirements) = _device.getDevice().getImageMemoryRequirements(textureImage);
-    vk::DeviceMemory textureMemory = _device.createDeviceMemory(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vk::MemoryRequirements memRequirements = _device.getDevice().getImageMemoryRequirements(textureImage);
+    vk::DeviceMemory textureMemory = _device.memAlloc(memRequirements, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-    _device.getDevice().bindImageMemory(textureImage, textureMemory);
+    result = _device.getDevice().bindImageMemory(textureImage, textureMemory, 0);
+    VK_HPP_CHECK_ERR(result, "Failed to bind image memory!");
 
-    vk::ImageViewCreateInfo viewInfo{};
+    vk::ImageViewCreateInfo viewInfo;
     viewInfo.image = textureImage;
     viewInfo.viewType = vk::ImageViewType::e2D;
     viewInfo.format = format;
@@ -95,15 +95,9 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-<<<<<<< HEAD
-    VkImageView textureView;
-    result = vkCreateImageView(_device.c_getDevice(), &viewInfo, nullptr, &textureView);
-    VK_CHECK_ERR(result, "TextureManager::failed to create image view!");
-=======
     vk::ImageView textureView;
     std::tie(result, textureView) = _device.getDevice().createImageView(viewInfo);
     VK_HPP_CHECK_ERR(result, "Failed to create image view!");
->>>>>>> Init TextureManagerHpp
 
     TextureInfo* textureInfo = new TextureInfo;
     textureInfo->device = _device.c_getDevice();
@@ -117,9 +111,9 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
 
 }
 
-[[depricated]] Texture& TextureManager::createTexture2D(const std::string &name, VkFormat c_format, VkExtent2D c_extent,
+[[deprecated]] Texture& TextureManager::createTexture2D(const std::string &name, VkFormat c_format, VkExtent2D c_extent,
         VkImageUsageFlags c_usage, VkImageAspectFlags c_aspectMask) {
-    vk::Format format(c_format);
+    vk::Format format = vk::Format(c_format);
     vk::Extent2D extent(c_extent);
     vk::ImageUsageFlags usage(c_usage);
     vk::ImageAspectFlags aspectMask(c_aspectMask);
@@ -131,186 +125,108 @@ static bool hasStencilComponent(vk::Format format) {
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
 }
 
+/** @todo remove c comand Buffer **/
 void TextureManager::setLayout(Texture &texture, vk::ImageLayout newLayout) {
     vk::ImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
     _commandBuffers.resetCmdBuf(0);
-    VkCommandBuffer cmdBuf = _commandBuffers.beginCmdBuf(0);
+    vk::CommandBuffer cmdBuf = vk::CommandBuffer(_commandBuffers.beginCmdBuf(0));
     {
-        VkImageLayout oldLayout = texture.getInfo()->curLayout;
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        vk::ImageLayout oldLayout = texture.getInfo()->curLayout;
+
+        vk::ImageMemoryBarrier barrier;
         barrier.oldLayout = oldLayout;
         barrier.newLayout = newLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = texture.getImage();
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = imageInfo.mipLevels;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = imageInfo.arrayLayers;
 
-        VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-        VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+        vk::PipelineStageFlags srcStage = vk::PipelineStageFlagBits::eAllCommands;
+        vk::PipelineStageFlags dstStage = vk::PipelineStageFlagBits::eAllCommands;
 
-        if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        if (newLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal) {
+            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 
             if (hasStencilComponent(imageInfo.format))
-                barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                barrier.subresourceRange.aspectMask |= vk::ImageAspectFlagBits::eStencil;
         } else {
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
         }
 
         switch (oldLayout) {
-            case VK_IMAGE_LAYOUT_UNDEFINED:
-                barrier.srcAccessMask = 0;
-                srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            case vk::ImageLayout::eUndefined:
+                srcStage = vk::PipelineStageFlagBits::eTopOfPipe;
                 break;
-            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            case vk::ImageLayout::eTransferDstOptimal:
+                barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+                srcStage = vk::PipelineStageFlagBits::eTransfer;
                 break;
             default:
                 LOG_WARNING("Unsupported old image layout");
         }
 
         switch (newLayout) {
-            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            case vk::ImageLayout::eTransferDstOptimal:
+                barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+                dstStage = vk::PipelineStageFlagBits::eTransfer;
                 break;
-            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            case vk::ImageLayout::eShaderReadOnlyOptimal:
+                barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+                dstStage = vk::PipelineStageFlagBits::eFragmentShader;
                 break;
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+            case vk::ImageLayout::eDepthStencilAttachmentOptimal:
                 barrier.dstAccessMask =
-                        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                        vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+                dstStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
                 break;
             default:
                 LOG_WARNING("Unsupported new image layout");
         }
 
-        vkCmdPipelineBarrier(
-                cmdBuf,
-                srcStage, dstStage,
-                0,
-                0, nullptr,
-                0, nullptr,
-                1, &barrier
-        );
+        cmdBuf.pipelineBarrier(srcStage, dstStage, {}, nullptr, nullptr, barrier);
     }
     _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
     texture.getInfo()->curLayout = newLayout;
 }
 
-[[depricated]] void TextureManager::setLayout(Texture &texture, VkImageLayout newLayout) {
-    VkImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
-    _commandBuffers.resetCmdBuf(0);
-    VkCommandBuffer cmdBuf = _commandBuffers.beginCmdBuf(0);
-    {
-        VkImageLayout oldLayout = texture.getInfo()->curLayout;
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = oldLayout;
-        barrier.newLayout = newLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = texture.getImage();
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = imageInfo.mipLevels;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = imageInfo.arrayLayers;
-
-        VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-        VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-
-        if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-            if (hasStencilComponent(imageInfo.format))
-                barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-        } else {
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        }
-
-        switch (oldLayout) {
-            case VK_IMAGE_LAYOUT_UNDEFINED:
-                barrier.srcAccessMask = 0;
-                srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-                break;
-            default:
-                LOG_WARNING("Unsupported old image layout");
-        }
-
-        switch (newLayout) {
-            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-                barrier.dstAccessMask =
-                        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-                break;
-            default:
-                LOG_WARNING("Unsupported new image layout");
-        }
-
-        vkCmdPipelineBarrier(
-                cmdBuf,
-                srcStage, dstStage,
-                0,
-                0, nullptr,
-                0, nullptr,
-                1, &barrier
-        );
-    }
-    _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
-    texture.getInfo()->curLayout = newLayout;
+[[deprecated]] void TextureManager::setLayout(Texture &texture, VkImageLayout c_newLayout) {
+    setLayout(texture, vk::ImageLayout(c_newLayout));
 }
 
-void TextureManager::copyBufToTex(Texture &texture, VkBuffer buffer) {
-    VkImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
+/** @todo remove c comand Buffer **/
+void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
+    vk::ImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
     _commandBuffers.resetCmdBuf(0);
-    VkCommandBuffer cmdBuf = _commandBuffers.beginCmdBuf(0);
+    vk::CommandBuffer cmdBuf = vk::CommandBuffer(_commandBuffers.beginCmdBuf(0));
     {
-        VkBufferImageCopy region{};
+        vk::BufferImageCopy region;
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;
 
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
         region.imageSubresource.mipLevel = 0;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = imageInfo.arrayLayers;
 
-        region.imageOffset = {0, 0, 0};
+        region.imageOffset = vk::Offset3D{0, 0, 0};
         region.imageExtent = imageInfo.extent;
 
-        vkCmdCopyBufferToImage(
-                cmdBuf,
-                buffer, texture.getImage(),
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                1, &region
-        );
+        cmdBuf.copyBufferToImage(buffer, texture.getImage(), vk::ImageLayout::eTransferDstOptimal, region);
     }
     _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
+}
+
+[[deprecated]] void TextureManager::copyBufToTex(Texture &texture, VkBuffer c_buffer) {
+    copyBufToTex(texture, vk::Buffer(c_buffer));
 }
 
 void TextureManager::deleteTexture(Texture &texture) {
      _textures.erase(texture.getInfo()->name);
     delete texture.getInfo();
-    vkDestroyImageView(_device.c_getDevice(), texture.getView(), nullptr);
-    vkDestroyImage(_device.c_getDevice(), texture.getImage(), nullptr);
-    vkFreeMemory(_device.c_getDevice(), texture.getMemory(), nullptr);
+    vk::Device device = _device.getDevice();
+    device.destroyImageView(texture.getView());
+    device.destroyImage(texture.getImage());
+    device.freeMemory(texture.getMemory());
 }

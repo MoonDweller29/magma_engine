@@ -14,7 +14,7 @@ public:
     ImageView(vk::ImageView imageView);
 
     const vk::ImageView getView() const { return _imageView; }
-    [[depricated]] const VkImageView c_getView() const { return (VkImageView)_imageView; }
+    [[deprecated]] const VkImageView c_getView() const { return (VkImageView)_imageView; }
 protected:
     vk::ImageView _imageView;
 };

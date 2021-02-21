@@ -25,14 +25,14 @@ public:
 
     Texture& createTexture2D(const std::string &name, vk::Format format, vk::Extent2D extent,
         vk::ImageUsageFlags usage, vk::ImageAspectFlags aspectMask);
-    [[depricated]] Texture& createTexture2D(const std::string &name, VkFormat c_format, VkExtent2D c_extent,
+    [[deprecated]] Texture& createTexture2D(const std::string &name, VkFormat c_format, VkExtent2D c_extent,
         VkImageUsageFlags c_usage, VkImageAspectFlags c_aspectMask);
 
     void setLayout(Texture &texture, vk::ImageLayout newLayout);
     void copyBufToTex(Texture &texture, vk::Buffer buffer);
 
-    [[depricated]] void setLayout(Texture &texture, VkImageLayout c_newLayout);
-    [[depricated]] void copyBufToTex(Texture &texture, VkBuffer c_buffer);
+    [[deprecated]] void setLayout(Texture &texture, VkImageLayout c_newLayout);
+    [[deprecated]] void copyBufToTex(Texture &texture, VkBuffer c_buffer);
 
     void deleteTexture(Texture &texture);
 private:

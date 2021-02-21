@@ -17,8 +17,8 @@ public:
     CustomImageView(CustomImageView &&other);
     ~CustomImageView();
 
-    [[depricated]] CustomImageView(Texture &texture, VkImageAspectFlags c_aspectMask);
-    [[depricated]] CustomImageView(VkDevice c_device, VkImage c_image, VkFormat c_format, VkImageAspectFlags c_aspectMask);
+    [[deprecated]] CustomImageView(Texture &texture, VkImageAspectFlags c_aspectMask);
+    [[deprecated]] CustomImageView(VkDevice c_device, VkImage c_image, VkFormat c_format, VkImageAspectFlags c_aspectMask);
 
     CustomImageView(const CustomImageView &) = delete;
 private:

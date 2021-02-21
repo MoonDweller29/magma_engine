@@ -26,19 +26,19 @@ friend class TextureManager;
 public:
     Texture() = default;
 
-    const vk::Image         getImage()      const { return _image;                      }
-    const vk::DeviceMemory  getMemory()     const { return _imageMemory;                }
-    const vk::ImageView     getView()       const { return _defaultImageView.getView(); }
-    const ImageView         &getImageView() const { return _defaultImageView;           }
-    TextureInfo*            getInfo()       const { return _info;                       }
+    vk::Image           getImage()      const { return _image;                      }
+    vk::DeviceMemory    getMemory()     const { return _imageMemory;                }
+    vk::ImageView       getView()       const { return _defaultImageView.getView(); }
+    const ImageView     &getImageView() const { return _defaultImageView;           }
+    TextureInfo*        getInfo()       const { return _info;                       }
 
-    [[depricated]]  const VkImage           &c_getImage()     const { return (VkImage)_image;                           }
-    [[depricated]]  const VkDeviceMemory    &c_getMemory()    const { return (VkDeviceMemory)_imageMemory;              }
-    [[depricated]]  const VkImageView       &c_getView()      const { return (VkImageView)_defaultImageView.getView();  }
+    [[deprecated]]  VkImage         c_getImage()    const { return (VkImage)_image;                           }
+    [[deprecated]]  VkDeviceMemory  c_getMemory()   const { return (VkDeviceMemory)_imageMemory;              }
+    [[deprecated]]  VkImageView     c_getView()     const { return (VkImageView)_defaultImageView.getView();  }
 
 private:
     Texture(vk::Image img, vk::DeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
-    [[depricated]] Texture(VkImage img, VkDeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
+    [[deprecated]] Texture(VkImage img, VkDeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
 
     vk::Image           _image;
     vk::DeviceMemory    _imageMemory;

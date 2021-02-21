@@ -46,7 +46,7 @@ void DepthPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_si
 void DepthPass::createRenderPass()
 {
     VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = depthTex.getInfo()->imageInfo.format;
+    depthAttachment.format = (VkFormat)depthTex.getInfo()->imageInfo.format;
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
