@@ -90,14 +90,13 @@ Buffer& BufferManager::createBufferWithData(const std::string &name, const void*
 }
 
 void BufferManager::copyDataToBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
-    BufferInfo* info = buffer.getInfo();
-    VkDeviceSize bufferSize = info->bufferInfo.size;
+    VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
     if (dataSize != bufferSize) {
         LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
     }
     bufferSize = std::min(bufferSize, dataSize);
 
-    bool isDeviceBuffer = info->memoryProperty & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    bool isDeviceBuffer = buffer.getInfo()->memoryProperty & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
     if (isDeviceBuffer) {
         copyDataToDeviceBuffer(buffer, data, bufferSize);
