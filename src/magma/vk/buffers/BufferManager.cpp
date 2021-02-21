@@ -3,14 +3,14 @@
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
 
-#include "magma/vk/logicalDevice.h"
+#include "magma/vk/LogicalDevice.h"
 #include "magma/vk/vulkan_common.h"
 #include "magma/vk/buffers/Buffer.h"
 
 
 BufferManager::BufferManager(LogicalDevice &device) 
         : _device(device),
-        _commandBuffers(device.handler(), device.getGraphicsCmdPool(), 1)
+        _commandBuffers(device.c_getDevice(), device.getGraphicsCmdPool(), 1)
 {}
 
 BufferManager::~BufferManager() {
@@ -27,11 +27,10 @@ bool BufferManager::bufferExists(const std::string &name) const {
 }
 
 Buffer& BufferManager::getBuffer(const std::string &name) {
-    if (bufferExists(name)) {
-        return _buffers.at(name);
-    } else {
+    if (!bufferExists(name)) {
         LOG_AND_THROW std::invalid_argument(name + " buffer exist");
     }
+    return _buffers.at(name);
 };
 
 Buffer& BufferManager::createBuffer(const std::string &name, VkDeviceSize size, 
@@ -46,18 +45,18 @@ Buffer& BufferManager::createBuffer(const std::string &name, VkDeviceSize size,
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     VkBuffer buffer;
-    VkResult result = vkCreateBuffer(_device.handler(), &bufferInfo, nullptr, &buffer);
+    VkResult result = vkCreateBuffer(_device.c_getDevice(), &bufferInfo, nullptr, &buffer);
     VK_CHECK_ERR(result, "failed to create buffer!");
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(_device.handler(), buffer, &memRequirements);
+    vkGetBufferMemoryRequirements(_device.c_getDevice(), buffer, &memRequirements);
 
-    VkDeviceMemory bufferMemory  = _device.createDeviceMemory(memRequirements, properties);
+    VkDeviceMemory bufferMemory  = _device.memAlloc(memRequirements, vk::MemoryPropertyFlagBits(properties));
 
-    vkBindBufferMemory(_device.handler(), buffer, bufferMemory, 0);
+    vkBindBufferMemory(_device.c_getDevice(), buffer, bufferMemory, 0);
 
     BufferInfo* info = new BufferInfo;
-    info->device = _device.handler();
+    info->device = _device.c_getDevice();
     info->bufferInfo = bufferInfo;
     info->memoryProperty = properties;
     info->name = name;
@@ -113,11 +112,11 @@ void BufferManager::copyDataToStagingBuffer(Buffer &buffer, const void* data, Vk
     bufferSize = std::min(bufferSize, dataSize);
 
     void* mapped_data_p;
-    vkMapMemory(_device.handler(), buffer.getMem(), 0, bufferSize, 0, &mapped_data_p);
+    vkMapMemory(_device.c_getDevice(), buffer.getMem(), 0, bufferSize, 0, &mapped_data_p);
     {
         memcpy(mapped_data_p, data, (size_t)bufferSize);
     }
-    vkUnmapMemory(_device.handler(), buffer.getMem());
+    vkUnmapMemory(_device.c_getDevice(), buffer.getMem());
 }
 
 void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
@@ -131,11 +130,11 @@ void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkD
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
     void* mapped_data_p;
-    vkMapMemory(_device.handler(), stagingBuffer.getMem(), 0, bufferSize, 0, &mapped_data_p);
+    vkMapMemory(_device.c_getDevice(), stagingBuffer.getMem(), 0, bufferSize, 0, &mapped_data_p);
     {
         memcpy(mapped_data_p, data, (size_t)bufferSize);
     }
-    vkUnmapMemory(_device.handler(), stagingBuffer.getMem());
+    vkUnmapMemory(_device.c_getDevice(), stagingBuffer.getMem());
 
     copyBufferToBuffer(stagingBuffer, buffer);
 
@@ -145,8 +144,8 @@ void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkD
 void BufferManager::deleteBuffer(Buffer &buffer) {
     _buffers.erase(buffer.getInfo()->name);
     delete buffer.getInfo();
-    vkDestroyBuffer(_device.handler(), buffer.getBuf(), nullptr);
-    vkFreeMemory(_device.handler(), buffer.getMem(), nullptr);
+    vkDestroyBuffer(_device.c_getDevice(), buffer.getBuf(), nullptr);
+    vkFreeMemory(_device.c_getDevice(), buffer.getMem(), nullptr);
 }
 
 void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {

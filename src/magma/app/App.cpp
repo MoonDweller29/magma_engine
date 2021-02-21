@@ -109,7 +109,7 @@ void App::createSyncObjects()
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        VkResult result = vkCreateSemaphore(device->handler(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
+        VkResult result = vkCreateSemaphore(device->c_getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
         VK_CHECK_ERR(result, "failed to create semaphores!");
     }
 }
@@ -161,7 +161,7 @@ void App::createTextureSampler()
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
 
-    VkResult result = vkCreateSampler(device->handler(), &samplerInfo, nullptr, &textureSampler);
+    VkResult result = vkCreateSampler(device->c_getDevice(), &samplerInfo, nullptr, &textureSampler);
     VK_CHECK_ERR(result, "failed to create texture sampler!");
 }
 
@@ -187,7 +187,7 @@ void App::createShadowMapSampler()
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
 
-    VkResult result = vkCreateSampler(device->handler(), &samplerInfo, nullptr, &shadowMapSampler);
+    VkResult result = vkCreateSampler(device->c_getDevice(), &samplerInfo, nullptr, &shadowMapSampler);
     VK_CHECK_ERR(result, "failed to create texture sampler!");
 }
 
@@ -227,19 +227,30 @@ void App::createDepthResources()
         VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
+void App::initDevice() {
+    HardwareManager hardwareMGR(instance->instance());
+
+    DeviceRequirements deviceRequirements;
+    deviceRequirements.surface.require(window->getSurface());
+    deviceRequirements.deviceType.recommend(vk::PhysicalDeviceType::eDiscreteGpu);
+
+    vk::PhysicalDeviceFeatures physicalDeviceFeatures;
+    physicalDeviceFeatures.samplerAnisotropy = true;
+    deviceRequirements.features.require(physicalDeviceFeatures);
+
+    auto physDevice = hardwareMGR.selectBestSuitableDevice(deviceRequirements);
+
+    device = std::make_unique<LogicalDevice>(
+            physDevice,
+            deviceRequirements.features.getValue(),
+            deviceRequirements.requiredExtensions());
+}
 
 void App::initVulkan() {
     instance = std::make_unique<Context>();
     debugMessenger = std::make_unique<DebugMessenger>(instance->c_instance());
     initWindow();
-
-    HardwareManager hardwareMGR(instance->instance());
-    DeviceRequirements deviceRequirements;
-    deviceRequirements.surface.require(window->getSurface());
-    deviceRequirements.deviceType.recommend(vk::PhysicalDeviceType::eDiscreteGpu);
-    deviceRequirements.samplerAnisotropy.require(true);
-    auto physDevice = hardwareMGR.selectBestSuitableDevice(deviceRequirements);
-    device = std::make_unique<LogicalDevice>(physDevice, deviceRequirements.requiredExtensions());
+    initDevice();
 
     loadScene();
     
@@ -292,7 +303,7 @@ void App::cleanupSwapChain()
 
 void App::recreateSwapChain()
 {
-    vkDeviceWaitIdle(device->handler());
+    vkDeviceWaitIdle(device->c_getDevice());
 
     cleanupSwapChain();
 
@@ -326,14 +337,14 @@ void App::recreateSwapChain()
 
 void App::drawFrame()
 {
-    vkWaitForFences(device->handler(), 1, &colorPass->getSync().fence, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(device->c_getDevice(), 1, &colorPass->getSync().fence, VK_TRUE, UINT64_MAX);
 
     if (window->wasResized())
         recreateSwapChain();
 
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
-            device->handler(), swapChain->getSwapChain(),
+            device->c_getDevice(), swapChain->getSwapChain(),
             UINT64_MAX/*timeout off*/, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -480,7 +491,7 @@ void App::mainLoop()
         drawFrame();
     }
 
-    vkDeviceWaitIdle(device->handler());
+    vkDeviceWaitIdle(device->c_getDevice());
 }
 
 void App::cleanUp()
@@ -490,15 +501,15 @@ void App::cleanUp()
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroySemaphore(device->handler(), imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(device->c_getDevice(), imageAvailableSemaphores[i], nullptr);
     }
 
     cleanupSwapChain();
     bufferManager.deleteBuffer(shadowUniform);
     bufferManager.deleteBuffer(lightSpaceUniform);
     renderShadow.reset();
-    vkDestroySampler(device->handler(), textureSampler, nullptr);
-    vkDestroySampler(device->handler(), shadowMapSampler, nullptr);
+    vkDestroySampler(device->c_getDevice(), textureSampler, nullptr);
+    vkDestroySampler(device->c_getDevice(), shadowMapSampler, nullptr);
     device->getTextureManager().deleteTexture(shadowMap);
     device->getTextureManager().deleteTexture(texture);
     bufferManager.deleteBuffer(indexBuffer);

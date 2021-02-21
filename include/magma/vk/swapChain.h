@@ -1,6 +1,6 @@
 #pragma once
 #include "magma/vk/physicalDevice/PhysicalDevice.h"
-#include "logicalDevice.h"
+#include "LogicalDevice.h"
 #include "Window.h"
 #include "frameBuffer.h"
 #include <vulkan/vulkan.h>

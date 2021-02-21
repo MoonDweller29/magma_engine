@@ -17,17 +17,17 @@ ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     pipelineInfo.setLayout(descriptorSetLayout.getLayout());
     pipelineInfo.setDepthCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    Shader vertShader(device.handler(), "shaders/shader.vert.spv", Shader::VERT_SH);
-    Shader fragShader(device.handler(), "shaders/shader.frag.spv", Shader::FRAG_SH);
+    Shader vertShader(device.c_getDevice(), "shaders/shader.vert.spv", Shader::VERT_SH);
+    Shader fragShader(device.c_getDevice(), "shaders/shader.frag.spv", Shader::FRAG_SH);
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
             vertShader.getStageInfo(),
             fragShader.getStageInfo()
     };
-    graphicsPipeline = std::make_unique<GraphicsPipeline>(device.handler(), shaderStages, pipelineInfo, renderPass);
+    graphicsPipeline = std::make_unique<GraphicsPipeline>(device.c_getDevice(), shaderStages, pipelineInfo, renderPass);
 
-    commandBuffers.allocate(device.handler(), device.getGraphicsCmdPool(), swapChain.imgCount());
+    commandBuffers.allocate(device.c_getDevice(), device.getGraphicsCmdPool(), swapChain.imgCount());
 
-    renderFinished.create(device.handler());
+    renderFinished.create(device.c_getDevice());
 }
 
 void ColorPass::initDescriptorSetLayout()
@@ -37,7 +37,7 @@ void ColorPass::initDescriptorSetLayout()
     descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
     descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
     descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    descriptorSetLayout.createLayout(device.handler());
+    descriptorSetLayout.createLayout(device.c_getDevice());
 }
 
 void ColorPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size,
@@ -161,7 +161,7 @@ void ColorPass::createRenderPass()
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    VkResult result = vkCreateRenderPass(device.handler(), &renderPassInfo, nullptr, &renderPass);
+    VkResult result = vkCreateRenderPass(device.c_getDevice(), &renderPassInfo, nullptr, &renderPass);
     VK_CHECK_ERR(result, "failed to create render pass!");
 }
 
@@ -173,7 +173,7 @@ CmdSync ColorPass::draw(
 {
     if (waitFences.size() > 0)
     {
-        vkWaitForFences(device.handler(), waitFences.size(), waitFences.data(), VK_TRUE, UINT64_MAX);
+        vkWaitForFences(device.c_getDevice(), waitFences.size(), waitFences.data(), VK_TRUE, UINT64_MAX);
     }
 
     VkSubmitInfo submitInfo{};
@@ -198,7 +198,7 @@ CmdSync ColorPass::draw(
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &renderFinished.semaphore;
 
-    vkResetFences(device.handler(), 1, &renderFinished.fence);
+    vkResetFences(device.c_getDevice(), 1, &renderFinished.fence);
 
     VkResult result = vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, renderFinished.fence);
     VK_CHECK_ERR(result, "failed to submit draw command buffer!");
@@ -209,9 +209,9 @@ CmdSync ColorPass::draw(
 ColorPass::~ColorPass()
 {
     vkFreeCommandBuffers(
-            device.handler(), device.getGraphicsCmdPool(),
+            device.c_getDevice(), device.getGraphicsCmdPool(),
             commandBuffers.size(), commandBuffers.data());
-    vkDestroyRenderPass(device.handler(), renderPass, nullptr);
+    vkDestroyRenderPass(device.c_getDevice(), renderPass, nullptr);
     graphicsPipeline.reset();
     descriptorSetLayout.clear();
 }

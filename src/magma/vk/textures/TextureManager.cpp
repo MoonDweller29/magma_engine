@@ -5,16 +5,16 @@
 
 #include "magma/app/log.hpp"
 #include "magma/app/image.h"
-#include "magma/vk/logicalDevice.h"
+#include "magma/vk/LogicalDevice.h"
 #include "magma/vk/vulkan_common.h"
 
 TextureManager::TextureManager(LogicalDevice &device) 
         : _device(device),
-        _commandBuffers(device.handler(), device.getGraphicsCmdPool(), 1)
+        _commandBuffers(device.c_getDevice(), device.getGraphicsCmdPool(), 1)
 {}
 
 TextureManager::~TextureManager() {
-    _commandBuffers.freeCmdBuf(_device.handler(), _device.getGraphicsCmdPool());
+    _commandBuffers.freeCmdBuf(_device.c_getDevice(), _device.getGraphicsCmdPool());
     if (_textures.size() > 0) {
         LOG_WARNING(_textures.size(), " textures haven't been removed");
         while(_textures.size() > 0) {
@@ -78,14 +78,14 @@ Texture& TextureManager::createTexture2D(const std::string &name, VkFormat forma
     imageInfo.flags = 0;
 
     VkImage textureImage;
-    VkResult result = vkCreateImage(_device.handler(), &imageInfo, nullptr, &textureImage);
+    VkResult result = vkCreateImage(_device.c_getDevice(), &imageInfo, nullptr, &textureImage);
     VK_CHECK_ERR(result, "TextureManager::failed to create image!");
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(_device.handler(), textureImage, &memRequirements);
-    VkDeviceMemory textureMemory = _device.createDeviceMemory(memRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkGetImageMemoryRequirements(_device.c_getDevice(), textureImage, &memRequirements);
+    VkDeviceMemory textureMemory = _device.memAlloc(memRequirements, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-    vkBindImageMemory(_device.handler(), textureImage, textureMemory, 0);
+    vkBindImageMemory(_device.c_getDevice(), textureImage, textureMemory, 0);
 
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -99,11 +99,11 @@ Texture& TextureManager::createTexture2D(const std::string &name, VkFormat forma
     viewInfo.subresourceRange.layerCount = 1;
 
     VkImageView textureView;
-    result = vkCreateImageView(_device.handler(), &viewInfo, nullptr, &textureView);
+    result = vkCreateImageView(_device.c_getDevice(), &viewInfo, nullptr, &textureView);
     VK_CHECK_ERR(result, "TextureManager::failed to create image view!");
 
     TextureInfo* textureInfo = new TextureInfo;
-    textureInfo->device = _device.handler();
+    textureInfo->device = _device.c_getDevice();
     textureInfo->imageInfo = imageInfo;
     textureInfo->viewInfo = viewInfo;
     textureInfo->curLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -222,7 +222,7 @@ void TextureManager::copyBufToTex(Texture &texture, VkBuffer buffer) {
 void TextureManager::deleteTexture(Texture &texture) {
      _textures.erase(texture.getInfo()->name);
     delete texture.getInfo();
-    vkDestroyImageView(_device.handler(), texture.getView(), nullptr);
-    vkDestroyImage(_device.handler(), texture.getImage(), nullptr);
-    vkFreeMemory(_device.handler(), texture.getMemory(), nullptr);
+    vkDestroyImageView(_device.c_getDevice(), texture.getView(), nullptr);
+    vkDestroyImage(_device.c_getDevice(), texture.getImage(), nullptr);
+    vkFreeMemory(_device.c_getDevice(), texture.getMemory(), nullptr);
 }

@@ -152,7 +152,7 @@ SwapChain::SwapChain(LogicalDevice &device, const Window &window):
     createInfo.clipped = VK_TRUE; //should be turned off to enable reading from backbuffer
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    VkResult result = vkCreateSwapchainKHR(device.handler(), &createInfo, nullptr, &swapChain);
+    VkResult result = vkCreateSwapchainKHR(device.c_getDevice(), &createInfo, nullptr, &swapChain);
     VK_CHECK_ERR(result, "failed to create swap chain!");
 
     imageFormat = surfaceFormat.format;
@@ -164,16 +164,16 @@ SwapChain::SwapChain(LogicalDevice &device, const Window &window):
 void SwapChain::acquireImages()
 {
     uint32_t imageCount;
-    vkGetSwapchainImagesKHR(device.handler(), swapChain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(device.c_getDevice(), swapChain, &imageCount, nullptr);
     images.resize(imageCount);
-    vkGetSwapchainImagesKHR(device.handler(), swapChain, &imageCount, images.data());
+    vkGetSwapchainImagesKHR(device.c_getDevice(), swapChain, &imageCount, images.data());
 }
 
 void SwapChain::createImageViews()
 {
     for (uint32_t i = 0; i < images.size(); i++)
     {
-        imageViews.emplace_back(device.handler(), images[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+        imageViews.emplace_back(device.c_getDevice(), images[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 
@@ -182,7 +182,7 @@ void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthIma
     for (size_t i = 0; i < imageViews.size(); i++)
     {
         std::vector<VkImageView> currImage = { imageViews[i].getView(), depthImageView };
-        frameBuffers.emplace_back(currImage, extent, renderPass, device.handler());
+        frameBuffers.emplace_back(currImage, extent, renderPass, device.c_getDevice());
     }
 }
 void SwapChain::clearFrameBuffers()
@@ -203,5 +203,5 @@ std::vector<VkFramebuffer> SwapChain::getVkFrameBuffers() const
 
 SwapChain::~SwapChain()
 {
-    vkDestroySwapchainKHR(device.handler(), swapChain, nullptr);
+    vkDestroySwapchainKHR(device.c_getDevice(), swapChain, nullptr);
 }

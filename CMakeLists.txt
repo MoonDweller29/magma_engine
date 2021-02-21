@@ -69,8 +69,8 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/vk/physicalDevice/DeviceRequirements.h
 		src/magma/vk/physicalDevice/DeviceRequirements.cpp
 
-		include/magma/vk/logicalDevice.h
-		src/magma/vk/logicalDevice.cpp
+		include/magma/vk/LogicalDevice.h
+		src/magma/vk/LogicalDevice.cpp
 		include/magma/vk/Window.h
 		src/magma/vk/Window.cpp
 		include/magma/vk/swapChain.h

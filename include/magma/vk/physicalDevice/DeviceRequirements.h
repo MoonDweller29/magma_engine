@@ -11,7 +11,7 @@
 struct DeviceRequirements {
     Option<vk::SurfaceKHR> surface;
     Option<vk::PhysicalDeviceType> deviceType;
-    Option<bool> samplerAnisotropy;
+    Option<vk::PhysicalDeviceFeatures> features;
 
     std::vector<const char*> requiredExtensions() const;
     std::vector<const char*> recommendedExtensions() const;
