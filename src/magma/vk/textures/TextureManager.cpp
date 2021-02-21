@@ -74,9 +74,7 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
     imageInfo.initialLayout = vk::ImageLayout::eUndefined;
 
-    vk::Image textureImage;
-    vk::Result result;
-    std::tie(result, textureImage) = _device.getDevice().createImage(imageInfo);
+    auto [result, textureImage] = _device.getDevice().createImage(imageInfo);
     VK_HPP_CHECK_ERR(result, "Failed to create image!");
 
     vk::MemoryRequirements memRequirements = _device.getDevice().getImageMemoryRequirements(textureImage);
@@ -109,16 +107,6 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     _textures.emplace(name, Texture(textureImage, textureMemory, ImageView(textureView), textureInfo));
     return _textures.at(name);
 
-}
-
-[[deprecated]] Texture& TextureManager::createTexture2D(const std::string &name, VkFormat c_format, VkExtent2D c_extent,
-        VkImageUsageFlags c_usage, VkImageAspectFlags c_aspectMask) {
-    vk::Format format = vk::Format(c_format);
-    vk::Extent2D extent(c_extent);
-    vk::ImageUsageFlags usage(c_usage);
-    vk::ImageAspectFlags aspectMask(c_aspectMask);
-
-    return createTexture2D(name, format, extent, usage, aspectMask);
 }
 
 static bool hasStencilComponent(vk::Format format) {

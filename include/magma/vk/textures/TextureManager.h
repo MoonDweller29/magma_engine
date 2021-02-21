@@ -25,8 +25,6 @@ public:
 
     Texture& createTexture2D(const std::string &name, vk::Format format, vk::Extent2D extent,
         vk::ImageUsageFlags usage, vk::ImageAspectFlags aspectMask);
-    [[deprecated]] Texture& createTexture2D(const std::string &name, VkFormat c_format, VkExtent2D c_extent,
-        VkImageUsageFlags c_usage, VkImageAspectFlags c_aspectMask);
 
     void setLayout(Texture &texture, vk::ImageLayout newLayout);
     void copyBufToTex(Texture &texture, vk::Buffer buffer);

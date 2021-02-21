@@ -38,7 +38,6 @@ public:
 
 private:
     Texture(vk::Image img, vk::DeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
-    [[deprecated]] Texture(VkImage img, VkDeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
 
     vk::Image           _image;
     vk::DeviceMemory    _imageMemory;

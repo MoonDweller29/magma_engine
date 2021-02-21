@@ -6,7 +6,6 @@
  */
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_core.h>
 
 class ImageView {
 public:
