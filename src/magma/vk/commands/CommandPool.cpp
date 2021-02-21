@@ -1,29 +1,23 @@
 #include "magma/vk/commands/CommandPool.h"
+
 #include "magma/vk/vulkan_common.h"
 
-VkCommandPool CommandPool::createPool(VkDevice device, uint32_t queueFamilyIndex)
-{
-    VkCommandPool commandPool;
+vk::CommandPool CommandPool::createPool(vk::Device device, uint32_t queueFamilyIndex) {
+    vk::CommandPoolCreateInfo poolInfo(
+        vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+        queueFamilyIndex);
 
-    VkCommandPoolCreateInfo poolInfo = {};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = queueFamilyIndex;
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-    VkResult result = vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
-    VK_CHECK_ERR(result, "failed to create command pool!");
+    auto [result, commandPool] = device.createCommandPool(poolInfo);
+    VK_HPP_CHECK_ERR(result, "failed to create command pool!");
 
     return commandPool;
 }
 
+CommandPool::CommandPool(vk::Device device, uint32_t queueFamilyIndex) :
+    _device(device),
+    _commandPool(createPool(device, queueFamilyIndex))
+{}
 
-CommandPool::CommandPool(VkDevice device, uint32_t queueFamilyIndex)
-{
-    this->device = device;
-    commandPool = createPool(device, queueFamilyIndex);
-}
-
-CommandPool::~CommandPool()
-{
-    vkDestroyCommandPool(device, commandPool, nullptr);
+CommandPool::~CommandPool() {
+    _device.destroyCommandPool(_commandPool);
 }

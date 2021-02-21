@@ -1,14 +1,16 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
-class CommandPool
-{
-    VkCommandPool commandPool;
-    VkDevice device;
+class CommandPool {
 public:
-    CommandPool(VkDevice device, uint32_t queueFamilyIndex); //can be required from phys device
+    static vk::CommandPool createPool(vk::Device device, uint32_t queueFamilyIndex);
+
+    CommandPool(vk::Device device, uint32_t queueFamilyIndex);
     ~CommandPool();
 
-    static VkCommandPool createPool(VkDevice device, uint32_t queueFamilyIndex);
-    VkCommandPool getHandler() const { return commandPool; }
+    vk::CommandPool getPool() const { return _commandPool; }
+
+private:
+    vk::CommandPool _commandPool;
+    vk::Device      _device;
 };
