@@ -85,8 +85,8 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/renderPass.cpp
 		include/magma/vk/frameBuffer.h
 		src/magma/vk/frameBuffer.cpp
-		include/magma/vk/commandPool.h
-		src/magma/vk/commandPool.cpp
+		include/magma/vk/commands/CommandPool.h
+		src/magma/vk/commands/CommandPool.cpp
 		include/magma/vk/commandBuffer.h
 		src/magma/vk/commandBuffer.cpp
 
