@@ -1,9 +1,5 @@
 #include "magma/vk/textures/ImageView.h"
 
-ImageView::ImageView() 
-    : _imageView(VK_NULL_HANDLE)
-{}
-
-ImageView::ImageView(VkImageView imageView)
+ImageView::ImageView(vk::ImageView imageView)
     : _imageView(imageView)
 {}

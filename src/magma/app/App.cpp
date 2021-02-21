@@ -194,11 +194,11 @@ void App::createShadowMapSampler()
 
 void App::createShadowMapTex()
 {
-    shadowMap = device->getTextureManager().createTexture2D("shadowMap_texture", 
-        VK_FORMAT_D32_SFLOAT,
-        VkExtent2D{2048, 2048},
-        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-        VK_IMAGE_ASPECT_DEPTH_BIT);
+    shadowMap = device->getTextureManager().createTexture2D("shadowMap_texture",
+        vk::Format::eD32Sfloat,
+        vk::Extent2D{2048, 2048},
+        vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled,
+        vk::ImageAspectFlagBits::eDepth);
     createShadowMapSampler();
 }
 
@@ -221,10 +221,10 @@ void App::createDepthResources()
 {
     VkFormat depthFormat = findDepthFormat(device->getVkPhysDevice());
     depthTex = device->getTextureManager().createTexture2D("depth_texture", 
-        depthFormat, 
-        VkExtent2D{WIN_WIDTH, WIN_HEIGHT}, 
-        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
-        VK_IMAGE_ASPECT_DEPTH_BIT);
+        vk::Format(depthFormat),
+        vk::Extent2D{WIN_WIDTH, WIN_HEIGHT},
+        vk::ImageUsageFlagBits::eDepthStencilAttachment,
+        vk::ImageAspectFlagBits::eDepth);
 }
 
 void App::initDevice() {
