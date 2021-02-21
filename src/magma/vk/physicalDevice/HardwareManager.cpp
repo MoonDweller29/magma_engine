@@ -76,9 +76,11 @@ bool HardwareManager::isDeviceSuitable(
             (deviceProperties.deviceType != requirements.deviceType.getValue())) {
         return false;
     }
-    if (requirements.samplerAnisotropy.isRequired() &&
-            (deviceFeatures.samplerAnisotropy != requirements.samplerAnisotropy.getValue())) {
-        return false;
+    if (requirements.features.isRequired()) {
+        const vk::PhysicalDeviceFeatures& req_features = requirements.features.getValue();
+        if (req_features.samplerAnisotropy && !deviceFeatures.samplerAnisotropy) {
+            return false;
+        }
     }
 
     if (requirements.surface.isRequired()) {

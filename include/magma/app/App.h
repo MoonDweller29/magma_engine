@@ -69,6 +69,7 @@ private:
 
     void loadScene();
     void initVulkan();
+    void initDevice();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
     void createTexture();

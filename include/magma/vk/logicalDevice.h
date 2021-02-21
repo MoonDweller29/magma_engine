@@ -10,8 +10,28 @@
 #include "magma/vk/buffers/BufferManager.h"
 
 class LogicalDevice {
+public:
+    LogicalDevice(
+            const PhysicalDevice              &physicalDevice,
+            const vk::PhysicalDeviceFeatures  &physicalDeviceFeatures,
+            const std::vector<const char*>    &deviceExtensions);
+    ~LogicalDevice();
+
+    VkDevice              c_getDevice()        const { return VkDevice(_device); } //only for Vulkan C API
+    vk::Device            getDevice()          const { return _device; }
+    VkPhysicalDevice      getVkPhysDevice()    const { return _physDevice.c_device(); }
+    const PhysicalDevice &getPhysDevice()      const { return _physDevice; }
+    VkQueue               getGraphicsQueue()   const { return graphicsQueue; }
+    VkQueue               getPresentQueue()    const { return presentQueue; }
+    const VkCommandPool  &getGraphicsCmdPool() const { return graphicsCmdPool; }
+    TextureManager       &getTextureManager()  const { return *_textureManager; }
+    BufferManager        &getBufferManager()   const { return *_bufferManager; }
+
+    vk::DeviceMemory memAlloc(vk::MemoryRequirements memRequirements, vk::MemoryPropertyFlags properties);
+
+private:
     PhysicalDevice _physDevice;
-    VkDevice device;
+    vk::Device     _device;
     VkQueue graphicsQueue;
     VkQueue presentQueue;
     VkCommandPool graphicsCmdPool;
@@ -19,19 +39,4 @@ class LogicalDevice {
     std::unique_ptr<BufferManager>  _bufferManager;
 
     void acquireQueues(QueueFamilyIndices indices);
-public:
-
-    LogicalDevice(const PhysicalDevice &physicalDevice, const std::vector<const char*> &deviceExtensions);
-    VkDevice handler() const { return device; }
-    VkPhysicalDevice getVkPhysDevice() const { return _physDevice.c_device(); }
-    const PhysicalDevice &getPhysDevice() const { return _physDevice; }
-    VkQueue getGraphicsQueue() const { return graphicsQueue; }
-    VkQueue getPresentQueue() const { return presentQueue; }
-    const VkCommandPool &getGraphicsCmdPool() const { return graphicsCmdPool; }
-    TextureManager  &getTextureManager()    const { return *_textureManager;    }
-    BufferManager   &getBufferManager()     const { return *_bufferManager;     }
-
-    VkDeviceMemory createDeviceMemory(VkMemoryRequirements memRequirements, VkMemoryPropertyFlags properties);
-
-    ~LogicalDevice();
 };
