@@ -129,10 +129,10 @@ void App::loadScene() {
             0.1f, 20.f);
 }
 
-vk::Sampler App::createDefaultTextureSampler() {
+vk::Sampler App::createDefaultTextureSampler(vk::Filter minFilter, vk::Filter magFilter) {
     vk::SamplerCreateInfo samplerInfo;
-    samplerInfo.magFilter = vk::Filter::eLinear;
-    samplerInfo.minFilter = vk::Filter::eLinear;
+    samplerInfo.magFilter = magFilter;
+    samplerInfo.minFilter = minFilter;
     samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
     samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
     samplerInfo.addressModeW = vk::SamplerAddressMode::eRepeat;
@@ -161,7 +161,7 @@ void App::createShadowMapTex() {
         vk::Extent2D{2048, 2048},
         vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled,
         vk::ImageAspectFlagBits::eDepth);
-    shadowMapSampler = createDefaultTextureSampler();
+    shadowMapSampler = createDefaultTextureSampler(vk::Filter::eNearest, vk::Filter::eNearest);
 }
 
 void App::createShadowMapResources() {
@@ -221,7 +221,7 @@ void App::initVulkan() {
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
     createDepthResources();
-    textureSampler = createDefaultTextureSampler();
+    textureSampler = createDefaultTextureSampler(vk::Filter::eLinear, vk::Filter::eLinear);
 
     createShadowMapResources();
 
