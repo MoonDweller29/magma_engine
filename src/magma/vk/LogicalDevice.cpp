@@ -1,11 +1,13 @@
 #include "magma/vk/LogicalDevice.h"
 
-#include "magma/vk/commandPool.h"
-#include "magma/vk/vulkan_common.h"
-#include "magma/vk/validationLayers/ValidationLayers.h"
-#include "magma/vk/commandBuffer.h"
 #include <iostream>
 #include <set>
+
+#include "magma/vk/vulkan_common.h"
+#include "magma/vk/validationLayers/ValidationLayers.h"
+#include "magma/vk/commandPool.h"
+#include "magma/vk/commandBuffer.h"
+
 
 LogicalDevice::LogicalDevice(
         const PhysicalDevice              &physicalDevice,
@@ -47,46 +49,24 @@ LogicalDevice::LogicalDevice(
     LOG_INFO("Logical Device is created");
 
     acquireQueues(indices);
-    graphicsCmdPool = CommandPool::createPool(_device, indices.graphicsFamily.value());
+    _graphicsCmdPool = CommandPool::createPool(_device, indices.graphicsFamily.value());
 
     _textureManager = std::make_unique<TextureManager>(*this);
     _bufferManager = std::make_unique<BufferManager>(*this);
 }
 
 void LogicalDevice::acquireQueues(QueueFamilyIndices indices) {
-    graphicsQueue = _device.getQueue(indices.graphicsFamily.value(), 0);
-    presentQueue  = _device.getQueue(indices.presentFamily.value(), 0);
+    _graphicsQueue = _device.getQueue(indices.graphicsFamily.value(), 0);
+    _presentQueue  = _device.getQueue(indices.presentFamily.value(), 0);
 
     std::cout << "graphicsFamily ind : " << indices.graphicsFamily.value() << std::endl;
     std::cout << "presentFamily ind : " << indices.presentFamily.value() << std::endl;
-
-    std::cout << "graphicsFamily : " << graphicsQueue << std::endl;
-    std::cout << "presentFamily  : " << presentQueue << std::endl;
-}
-
-
-static uint32_t findMemoryType(vk::PhysicalDevice physicalDevice, uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
-    vk::PhysicalDeviceMemoryProperties memProperties = physicalDevice.getMemoryProperties();
-
-    uint32_t memTypeInd = -1;
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-            memTypeInd = i;
-            break;
-        }
-    }
-
-    if (memTypeInd == -1) {
-        LOG_AND_THROW std::runtime_error("failed to find suitable memory type!");
-    }
-
-    return memTypeInd;
 }
 
 vk::DeviceMemory LogicalDevice::memAlloc(vk::MemoryRequirements memRequirements, vk::MemoryPropertyFlags properties) {
     vk::MemoryAllocateInfo allocInfo(
             memRequirements.size,
-            findMemoryType(_physDevice.device(), memRequirements.memoryTypeBits, properties)
+            _physDevice.findMemoryTypeInd(memRequirements.memoryTypeBits, properties)
     );
 
     auto [result, deviceMemory] = _device.allocateMemory(allocInfo);
@@ -94,9 +74,14 @@ vk::DeviceMemory LogicalDevice::memAlloc(vk::MemoryRequirements memRequirements,
     return deviceMemory;
 }
 
+void LogicalDevice::waitIdle() {
+    vk::Result result = _device.waitIdle();
+}
+
+
 LogicalDevice::~LogicalDevice() {
     _textureManager.reset();
     _bufferManager.reset();
-    _device.destroyCommandPool(graphicsCmdPool);
+    _device.destroyCommandPool(_graphicsCmdPool);
     _device.destroy();
 }

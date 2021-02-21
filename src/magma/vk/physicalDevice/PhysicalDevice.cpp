@@ -71,6 +71,26 @@ PhysicalDevice::PhysicalDevice(vk::PhysicalDevice physDevice) :
     _name(physDevice.getProperties().deviceName)
 {}
 
+uint32_t PhysicalDevice::findMemoryTypeInd(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
+    vk::PhysicalDeviceMemoryProperties memProperties = _physicalDevice.getMemoryProperties();
+
+    uint32_t memTypeInd = -1;
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        bool isSuitableType = typeFilter & (1 << i);
+        bool areSuitableProperties = (memProperties.memoryTypes[i].propertyFlags & properties) == properties;
+        if (isSuitableType && areSuitableProperties) {
+            memTypeInd = i;
+            break;
+        }
+    }
+
+    if (memTypeInd == -1) {
+        LOG_AND_THROW std::runtime_error("failed to find suitable memory type!");
+    }
+
+    return memTypeInd;
+}
+
 bool PhysicalDevice::checkExtensionSupport(const std::vector<const char*> &extensions) const {
     auto [result, availableExtensions] = _physicalDevice.enumerateDeviceExtensionProperties();
     VK_HPP_CHECK_ERR(result, "failed to enumerate device extension properties");

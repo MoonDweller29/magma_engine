@@ -25,6 +25,8 @@ public:
     VkPhysicalDevice   c_device() const { return (VkPhysicalDevice)_physicalDevice; }
     vk::PhysicalDevice device()   const { return _physicalDevice; }
 
+    uint32_t findMemoryTypeInd(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
+
     QueueFamilyIndices getQueueFamilyInds() const { return _inds; }
     void initInds(vk::SurfaceKHR surface);
 
