@@ -8,25 +8,25 @@
 
 template<class T>
 Buffer& BufferManager::createBufferWithData(const std::string &name, const std::vector<T> &data, 
-        VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
-    VkDeviceSize dataSize = sizeof(data[0]) * data.size();
+        vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) {
+    vk::DeviceSize dataSize = sizeof(data[0]) * data.size();
     return createBufferWithData(name, data.data(), dataSize, usage, properties);
 }
 
 template<class T>
 Buffer& BufferManager::createVertexBuffer(const std::string &name, const std::vector<T> &data) {
-    return createBufferWithData(name, data, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    return createBufferWithData(name, data, vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 template<class T>
 Buffer& BufferManager::createIndexBuffer(const std::string &name, const std::vector<T> &data) {
-    return createBufferWithData(name, data, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    return createBufferWithData(name, data, vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 template<class T>
 void BufferManager::copyDataToBuffer(Buffer &buffer, const std::vector<T> &data) {
-    VkDeviceSize dataSize = sizeof(data[0]) * data.size();
-    VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
+    vk::DeviceSize dataSize = sizeof(data[0]) * data.size();
+    vk::DeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
     if (dataSize != bufferSize) {
         LOG_WARNING("Buffer size ", bufferSize, " and data size ", dataSize, " not equal");
     }

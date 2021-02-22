@@ -6,28 +6,31 @@
  */
 #pragma once
 #include <string>
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 struct BufferInfo {
-    VkDevice                device;
-    VkBufferCreateInfo      bufferInfo;
-    VkMemoryPropertyFlags   memoryProperty;
+    vk::Device              device;
+    vk::BufferCreateInfo    bufferInfo;
+    vk::MemoryPropertyFlags memoryProperty;
     std::string             name;
 };
 
 class Buffer {
-  friend class BufferManager;
+    friend class BufferManager;
 
 public:
     Buffer() = default;
-    const VkBuffer          &getBuf()   const { return _buffer;         }
-    const VkDeviceMemory    &getMem()   const { return _bufferMemory;   }
-    const BufferInfo*       getInfo()   const { return _info;           }
+    vk::Buffer          getBuf()    const { return _buffer;         }
+    vk::DeviceMemory    getMem()    const { return _bufferMemory;   }
+    const BufferInfo*   getInfo()   const { return _info;           }
+
+    [[deprecated]] VkBuffer         c_getBuf()  const { return (VkBuffer)_buffer;               }
+    [[deprecated]] VkDeviceMemory   c_getMem()  const { return (VkDeviceMemory)_bufferMemory;   }
 
 private:
-  Buffer(VkBuffer buffer, VkDeviceMemory memory, BufferInfo* info);
+    Buffer(vk::Buffer buffer, vk::DeviceMemory memory, BufferInfo* info);
 
-  VkBuffer _buffer;
-  VkDeviceMemory _bufferMemory;
-  BufferInfo* _info;
+    vk::Buffer        _buffer;
+    vk::DeviceMemory  _bufferMemory;
+    BufferInfo*       _info;
 };

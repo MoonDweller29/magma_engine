@@ -32,7 +32,7 @@ Texture &TextureManager::loadTexture(const std::string &texName, const std::stri
     int imageSize = img.size();
 
     Buffer& stagingBuffer = _device.getBufferManager().createBufferWithData("stagingBuffer", img.data(), imageSize,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
     Texture& texture = createTexture2D(texName,
         vk::Format::eR8G8B8A8Srgb,
