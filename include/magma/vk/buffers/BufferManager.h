@@ -22,11 +22,11 @@ public:
     bool bufferExists(const std::string &name) const;
     Buffer& getBuffer(const std::string &name);
 
-    Buffer& createBuffer(const std::string &name, VkDeviceSize size,
-        VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-    Buffer& createStagingBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage);
-    Buffer& createDeviceBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage);
-    Buffer& createUniformBuffer(const std::string &name, VkDeviceSize size);
+    Buffer& createBuffer(const std::string &name, vk::DeviceSize size,
+        vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
+    Buffer& createStagingBuffer(const std::string &name, vk::DeviceSize size, vk::BufferUsageFlags usage);
+    Buffer& createDeviceBuffer(const std::string &name, vk::DeviceSize size, vk::BufferUsageFlags usage);
+    Buffer& createUniformBuffer(const std::string &name, vk::DeviceSize size);
     template<class T>
     Buffer& createVertexBuffer(const std::string &name, const std::vector<T> &data);
     template<class T>
@@ -34,22 +34,23 @@ public:
 
     template<class T>
     Buffer& createBufferWithData(const std::string &name, const std::vector<T> &data, 
-        VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-    Buffer& createBufferWithData(const std::string &name, const void* data, VkDeviceSize dataSize, 
-        VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+        vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
+    Buffer& createBufferWithData(const std::string &name, const void* data, vk::DeviceSize dataSize, 
+        vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
     
     template<class T>
     void copyDataToBuffer(Buffer &buffer, const std::vector<T> &data);
-    void copyDataToBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
+    void copyDataToBuffer(Buffer &buffer, const void* data, vk::DeviceSize dataSize);
 
     void deleteBuffer(Buffer &buffer);
+
 private:
     LogicalDevice &_device;
     CommandBufferArr _commandBuffers;
     std::unordered_map<std::string, Buffer> _buffers;
 
-    void copyDataToStagingBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
-    void copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize);
+    void copyDataToStagingBuffer(Buffer &buffer, const void* data, vk::DeviceSize dataSize);
+    void copyDataToDeviceBuffer(Buffer &buffer, const void* data, vk::DeviceSize dataSize);
     void copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer);
 };
 

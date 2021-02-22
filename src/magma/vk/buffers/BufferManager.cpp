@@ -1,7 +1,6 @@
 #include "magma/vk/buffers/BufferManager.h"
 
 #include <stdexcept>
-#include <vulkan/vulkan_core.h>
 
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/vulkan_common.h"
@@ -33,27 +32,25 @@ Buffer& BufferManager::getBuffer(const std::string &name) {
     return _buffers.at(name);
 };
 
-Buffer& BufferManager::createBuffer(const std::string &name, VkDeviceSize size, 
-        VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size, 
+        vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) {
     if (bufferExists(name)) {
         LOG_AND_THROW std::invalid_argument(name + " buffer exist");
     }
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    vk::BufferCreateInfo bufferInfo;
     bufferInfo.size = size;
     bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
-    VkBuffer buffer;
-    VkResult result = vkCreateBuffer(_device.c_getDevice(), &bufferInfo, nullptr, &buffer);
-    VK_CHECK_ERR(result, "failed to create buffer!");
+    auto [result, buffer] = _device.getDevice().createBuffer(bufferInfo);
+    VK_HPP_CHECK_ERR(result, "Failed to create buffer!");
 
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(_device.c_getDevice(), buffer, &memRequirements);
+    vk::MemoryRequirements memRequirements = _device.getDevice().getBufferMemoryRequirements(buffer);
 
-    VkDeviceMemory bufferMemory  = _device.memAlloc(memRequirements, vk::MemoryPropertyFlagBits(properties));
+    VkDeviceMemory bufferMemory  = _device.memAlloc(memRequirements, properties);
 
-    vkBindBufferMemory(_device.c_getDevice(), buffer, bufferMemory, 0);
+    result = _device.getDevice().bindBufferMemory(buffer, bufferMemory, 0);
+    VK_HPP_CHECK_ERR(result, "Failed to bind buffer!");
 
     BufferInfo* info = new BufferInfo;
     info->device = _device.c_getDevice();
@@ -65,38 +62,37 @@ Buffer& BufferManager::createBuffer(const std::string &name, VkDeviceSize size,
     return getBuffer(name);
 }
 
-Buffer& BufferManager::createStagingBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage) {
-    return createBuffer(name, size, usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+Buffer& BufferManager::createStagingBuffer(const std::string &name, vk::DeviceSize size, vk::BufferUsageFlags usage) {
+    return createBuffer(name, size, usage, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 }
 
-Buffer& BufferManager::createDeviceBuffer(const std::string &name, VkDeviceSize size, VkBufferUsageFlags usage) {
-    return createBuffer(name, size, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+Buffer& BufferManager::createDeviceBuffer(const std::string &name, vk::DeviceSize size, vk::BufferUsageFlags usage) {
+    return createBuffer(name, size, usage, vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
-Buffer& BufferManager::createUniformBuffer(const std::string &name, VkDeviceSize size) {
-    return createStagingBuffer(name, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+Buffer& BufferManager::createUniformBuffer(const std::string &name, vk::DeviceSize size) {
+    return createStagingBuffer(name, size, vk::BufferUsageFlagBits::eUniformBuffer);
 }
 
-Buffer& BufferManager::createBufferWithData(const std::string &name, const void* data, VkDeviceSize dataSize, 
-        VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
-    bool isDeviceBuffer = properties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+Buffer& BufferManager::createBufferWithData(const std::string &name, const void* data, vk::DeviceSize dataSize, 
+        vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) {
+    auto isDeviceBuffer = properties & vk::MemoryPropertyFlagBits::eDeviceLocal;
     if (isDeviceBuffer) {
-        usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        usage |= vk::BufferUsageFlagBits::eTransferDst;
     }
     Buffer& buffer = createBuffer(name, dataSize, usage, properties);
     copyDataToBuffer(buffer, data, dataSize);
     return buffer;
 }
 
-void BufferManager::copyDataToBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
-    VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
+void BufferManager::copyDataToBuffer(Buffer &buffer, const void* data, vk::DeviceSize dataSize) {
+    vk::DeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
     if (dataSize != bufferSize) {
         LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
     }
     bufferSize = std::min(bufferSize, dataSize);
 
-    bool isDeviceBuffer = buffer.getInfo()->memoryProperty & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-
+    auto isDeviceBuffer = buffer.getInfo()->memoryProperty & vk::MemoryPropertyFlagBits::eDeviceLocal;
     if (isDeviceBuffer) {
         copyDataToDeviceBuffer(buffer, data, bufferSize);
     } else {
@@ -104,68 +100,66 @@ void BufferManager::copyDataToBuffer(Buffer &buffer, const void* data, VkDeviceS
     }
 }
 
-void BufferManager::copyDataToStagingBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
-    VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
+void BufferManager::copyDataToStagingBuffer(Buffer &buffer, const void* data, vk::DeviceSize dataSize) {
+    vk::DeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
     if (dataSize != bufferSize) {
         LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
     }
     bufferSize = std::min(bufferSize, dataSize);
 
-    void* mapped_data_p;
-    vkMapMemory(_device.c_getDevice(), buffer.getMem(), 0, bufferSize, 0, &mapped_data_p);
+    auto [result, data_ptr] = _device.getDevice().mapMemory(buffer.getMem(), 0, bufferSize, {});
     {
-        memcpy(mapped_data_p, data, (size_t)bufferSize);
+        memcpy(data_ptr, data, (size_t)bufferSize);
     }
-    vkUnmapMemory(_device.c_getDevice(), buffer.getMem());
+    _device.getDevice().unmapMemory(buffer.getMem());
 }
 
-void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, VkDeviceSize dataSize) {
-    VkDeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
+void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, vk::DeviceSize dataSize) {
+    vk::DeviceSize bufferSize = buffer.getInfo()->bufferInfo.size;
     if (dataSize != bufferSize) {
         LOG_WARNING("Buffers size ", bufferSize, " and data size ", dataSize, " not equal");
     }
     bufferSize = std::min(bufferSize, dataSize);
 
-    Buffer& stagingBuffer = createStagingBuffer("stagingBuffer", bufferSize,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    Buffer& stagingBuffer = createStagingBuffer(buffer.getInfo()->name + "_stagingBuffer",
+        bufferSize, vk::BufferUsageFlagBits::eTransferSrc);
 
-    void* mapped_data_p;
-    vkMapMemory(_device.c_getDevice(), stagingBuffer.getMem(), 0, bufferSize, 0, &mapped_data_p);
+    auto [result, data_ptr] = _device.getDevice().mapMemory(stagingBuffer.getMem(), 0, bufferSize, {});
     {
-        memcpy(mapped_data_p, data, (size_t)bufferSize);
+        memcpy(data_ptr, data, (size_t)bufferSize);
     }
-    vkUnmapMemory(_device.c_getDevice(), stagingBuffer.getMem());
+    _device.getDevice().unmapMemory(stagingBuffer.getMem());
 
     copyBufferToBuffer(stagingBuffer, buffer);
-
     deleteBuffer(stagingBuffer);
 }
 
 void BufferManager::deleteBuffer(Buffer &buffer) {
     _buffers.erase(buffer.getInfo()->name);
     delete buffer.getInfo();
-    vkDestroyBuffer(_device.c_getDevice(), buffer.getBuf(), nullptr);
-    vkFreeMemory(_device.c_getDevice(), buffer.getMem(), nullptr);
+    _device.getDevice().destroyBuffer(buffer.getBuf());
+    _device.getDevice().freeMemory(buffer.getMem());
 }
 
 void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {
-    if ((srcBuffer.getInfo()->bufferInfo.usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT) == 0) {
+    if (!(srcBuffer.getInfo()->bufferInfo.usage & vk::BufferUsageFlagBits::eTransferSrc)) {
         LOG_AND_THROW std::invalid_argument("srcBuffer has invalid usage");
     }
-    if ((dstBuffer.getInfo()->bufferInfo.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0) {
+    if (!(dstBuffer.getInfo()->bufferInfo.usage & vk::BufferUsageFlagBits::eTransferDst)) {
         LOG_AND_THROW std::invalid_argument("dstBuffer has invalid usage");
     }
-    VkDeviceSize bufferSize = std::min(srcBuffer.getInfo()->bufferInfo.size,
+    vk::DeviceSize bufferSize = std::min(srcBuffer.getInfo()->bufferInfo.size,
         dstBuffer.getInfo()->bufferInfo.size);
 
     _commandBuffers.resetCmdBuf(0);
-    VkCommandBuffer cmdBuf = _commandBuffers.beginCmdBuf(0);
+    vk::CommandBuffer cmdBuf = vk::CommandBuffer(_commandBuffers.beginCmdBuf(0));
     {
-        VkBufferCopy copyRegion{};
+        vk::BufferCopy copyRegion;
         copyRegion.srcOffset = 0;
         copyRegion.dstOffset = 0;
         copyRegion.size = bufferSize;
-        vkCmdCopyBuffer(cmdBuf, srcBuffer.getBuf(), dstBuffer.getBuf(), 1, &copyRegion);
+
+        cmdBuf.copyBuffer(srcBuffer.getBuf(), dstBuffer.getBuf(), copyRegion);
     }
     _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
 }
