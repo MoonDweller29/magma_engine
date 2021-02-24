@@ -22,9 +22,9 @@
 }
 
 
-VkFormat findSupportedFormat(
-        VkPhysicalDevice physicalDevice,
-        const std::vector<VkFormat>& candidates,
-        VkImageTiling tiling, VkFormatFeatureFlags features);
+vk::Format findSupportedFormat(
+        vk::PhysicalDevice physicalDevice,
+        const std::vector<vk::Format>& candidates,
+        vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 
-VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
+vk::Format findDepthFormat(vk::PhysicalDevice physicalDevice);

@@ -179,9 +179,8 @@ void App::createShadowMapResources() {
 
 
 void App::createDepthResources() {
-    VkFormat depthFormat = findDepthFormat(device->getVkPhysDevice());
-    depthTex = device->getTextureManager().createTexture2D("depth_texture", 
-        vk::Format(depthFormat),
+    depthTex = device->getTextureManager().createTexture2D("depth_texture",
+        findDepthFormat(device->getPhysDevice().device()),
         vk::Extent2D{WIN_WIDTH, WIN_HEIGHT},
         vk::ImageUsageFlagBits::eDepthStencilAttachment,
         vk::ImageAspectFlagBits::eDepth);

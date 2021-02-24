@@ -12,18 +12,14 @@ bool QueueFamilyIndices::isComplete() {
     return graphicsFamily.has_value() && computeFamily.has_value() && presentFamily.has_value();
 }
 
-static VkBool32 hasSurfaceSupportKHR(
-        vk::PhysicalDevice device,
-        uint32_t queueFamilyIndex,
-        vk::SurfaceKHR surface
-) {
-    return device.getSurfaceSupportKHR(queueFamilyIndex, surface).value;
+bool PhysicalDevice::queueFamilyHasSurfaceSupport(uint32_t queueFamilyIndex, vk::SurfaceKHR surface) {
+    return _physicalDevice.getSurfaceSupportKHR(queueFamilyIndex, surface).value;
 }
 
-static std::string to_string(const vk::QueueFamilyProperties& queueFamily, int i, vk::PhysicalDevice device, vk::SurfaceKHR surface) {
+static std::string to_string(const vk::QueueFamilyProperties& queueFamily, int i, PhysicalDevice &device, vk::SurfaceKHR surface) {
     std::stringstream ss;
     ss << i << " : " << to_string(queueFamily.queueFlags);
-    if (hasSurfaceSupportKHR(device, i, surface)) {
+    if (device.queueFamilyHasSurfaceSupport(i, surface)) {
         ss << " - Surface Support";
     }
     ss << " - " << queueFamily.queueCount;
@@ -31,18 +27,11 @@ static std::string to_string(const vk::QueueFamilyProperties& queueFamily, int i
     return ss.str();
 }
 
-QueueFamilyIndices PhysicalDevice::findQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface) {
+QueueFamilyIndices PhysicalDevice::findQueueFamilies(vk::SurfaceKHR surface) {
     QueueFamilyIndices indices;
 
-    std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
-
-    std::cout << "PHYS DEVICE FAMILIES " << device << std::endl;
-    int ind = 0;
-    for (const auto& queueFamily : queueFamilies) {
-        std::cout << to_string(queueFamily, ind, device, surface) << std::endl;
-        ++ind;
-    }
-
+    std::vector<vk::QueueFamilyProperties> queueFamilies = _physicalDevice.getQueueFamilyProperties();
+    printQueueFamilies(surface);
 
     int i = 0;
     for (const auto& queueFamily : queueFamilies) {
@@ -52,7 +41,7 @@ QueueFamilyIndices PhysicalDevice::findQueueFamilies(vk::PhysicalDevice device, 
         if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute) {
             indices.computeFamily = i;
         }
-        if (hasSurfaceSupportKHR(device, i, surface)) {
+        if (queueFamilyHasSurfaceSupport(i, surface)) {
             indices.presentFamily = i;
         }
 
@@ -114,6 +103,21 @@ SwapChainSupportInfo PhysicalDevice::getSwapChainSupportInfo(vk::SurfaceKHR surf
 }
 
 void PhysicalDevice::initInds(vk::SurfaceKHR surface) {
-    _inds = findQueueFamilies(_physicalDevice, surface);
+    _inds = findQueueFamilies(surface);
 }
+
+void PhysicalDevice::printQueueFamilies(vk::SurfaceKHR surface) {
+    std::vector<vk::QueueFamilyProperties> queueFamilies = _physicalDevice.getQueueFamilyProperties();
+
+    std::stringstream ss;
+    ss << _name << " : QUEUE FAMILIES - " << queueFamilies.size() << std::endl;
+    int ind = 0;
+    for (const auto& queueFamily : queueFamilies) {
+        ss << to_string(queueFamily, ind, *this, surface) << std::endl;
+        ++ind;
+    }
+
+    LOG_INFO(ss.str());
+}
+
 

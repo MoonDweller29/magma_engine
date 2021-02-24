@@ -19,7 +19,6 @@ public:
 
     VkDevice              c_getDevice()        const { return VkDevice(_device);      } //only for Vulkan C API
     vk::Device            getDevice()          const { return _device;                }
-    VkPhysicalDevice      getVkPhysDevice()    const { return _physDevice.c_device(); } //only for Vulkan C API
     const PhysicalDevice &getPhysDevice()      const { return _physDevice;            }
 
     vk::Queue             getGraphicsQueue()   const { return _graphicsQueue;         }
