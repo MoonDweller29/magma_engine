@@ -10,31 +10,32 @@
 
 class SwapChain {
 public:
-    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
-    static VkPresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
-    static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, VkExtent2D actualExtent);
-
     SwapChain(LogicalDevice &device, const Window &window);
     ~SwapChain();
 
-    VkSwapchainKHR getSwapChain()   const { return _swapChain;          }
-    VkFormat       getImageFormat() const { return _imageFormat;        }
-    VkExtent2D     getExtent()      const { return _extent;             }
-    size_t         imgCount()       const { return _imageViews.size();  }
+    vk::SwapchainKHR getSwapChain()   const { return _swapChain;          }
+    vk::Format       getImageFormat() const { return _imageFormat;        }
+    vk::Extent2D     getExtent()      const { return _extent;             }
+    size_t           imgCount()       const { return _imageViews.size();  }
 
     /// @todo remove framebuffers from swapChain
     std::vector<VkFramebuffer> getVkFrameBuffers() const;
-    void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
+    void createFrameBuffers(vk::RenderPass renderPass, vk::ImageView depthImageView);
     void clearFrameBuffers();
 
 private:
-    VkSwapchainKHR                _swapChain;
-    LogicalDevice                &_device;
-    std::vector<VkImage>          _images;
+    vk::SwapchainKHR              _swapChain;
+    vk::Device                    _device;
+    std::vector<vk::Image>        _images;
     std::vector<CustomImageView>  _imageViews;
     std::vector<FrameBuffer>      _frameBuffers;
-    VkFormat                      _imageFormat;
-    VkExtent2D                    _extent;
+    vk::Format                    _imageFormat;
+    vk::Extent2D                  _extent;
+
+    static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
+    static vk::PresentModeKHR   chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
+    static vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR &capabilities, vk::Extent2D actualExtent);
+    static uint32_t     chooseImageCount(const vk::SurfaceCapabilitiesKHR &capabilities);
 
     void acquireImages();
     void createImageViews();
