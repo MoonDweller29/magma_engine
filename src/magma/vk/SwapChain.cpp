@@ -1,4 +1,4 @@
-#include "magma/vk/swapChain.h"
+#include "magma/vk/SwapChain.h"
 
 #include <cstdint> // Necessary for UINT32_MAX
 #include <algorithm>//for clamp
