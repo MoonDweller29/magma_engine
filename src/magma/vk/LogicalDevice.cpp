@@ -47,16 +47,21 @@ LogicalDevice::LogicalDevice(
     VK_HPP_CHECK_ERR(result, "failed to create logical device!");
     LOG_INFO("Logical Device is created");
 
-    acquireQueues(indices);
     _graphicsCmdPool = CommandPool::createPool(_device, indices.graphicsFamily.value());
+    acquireQueues(indices);
 
     _textureManager = std::make_unique<TextureManager>(*this);
     _bufferManager = std::make_unique<BufferManager>(*this);
 }
 
 void LogicalDevice::acquireQueues(QueueFamilyIndices indices) {
-    _graphicsQueue = _device.getQueue(indices.graphicsFamily.value(), 0);
-    _presentQueue  = _device.getQueue(indices.presentFamily.value(), 0);
+    _graphicsQueue.queue = _device.getQueue(indices.graphicsFamily.value(), 0);
+    _graphicsQueue.queueFamily = indices.graphicsFamily.value();
+    _graphicsQueue.cmdPool = _graphicsCmdPool;
+
+    _presentQueue.queue  = _device.getQueue(indices.presentFamily.value(), 0);
+    _presentQueue.queueFamily = indices.presentFamily.value();
+
 
     std::cout << "graphicsFamily ind : " << indices.graphicsFamily.value() << std::endl;
     std::cout << "presentFamily ind : " << indices.presentFamily.value() << std::endl;

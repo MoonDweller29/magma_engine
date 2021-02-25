@@ -6,7 +6,7 @@
 ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     device(device), swapChain(swapChain),
     extent(swapChain.getExtent()),
-    _commandBuffers(device.getDevice(), device.getGraphicsCmdPool(), swapChain.imgCount())
+    _commandBuffers(device.getDevice(), device.getGraphicsQueue().cmdPool, swapChain.imgCount())
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -200,7 +200,7 @@ CmdSync ColorPass::draw(
 
     vkResetFences(device.c_getDevice(), 1, &renderFinished.fence);
 
-    VkResult result = vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, renderFinished.fence);
+    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.fence);
     VK_CHECK_ERR(result, "failed to submit draw command buffer!");
 
     return renderFinished;

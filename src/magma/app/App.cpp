@@ -335,7 +335,7 @@ void App::drawFrame() {
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    result = vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
+    result = vkQueuePresentKHR(device->getPresentQueue().queue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->wasResized()) {
         recreateSwapChain();
     } else if (result != VK_SUCCESS) {

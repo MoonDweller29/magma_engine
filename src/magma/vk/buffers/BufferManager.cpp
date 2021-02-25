@@ -9,7 +9,7 @@
 
 BufferManager::BufferManager(LogicalDevice &device) 
         : _device(device),
-        _commandBuffer(device.c_getDevice(), device.getGraphicsCmdPool())
+        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
 {}
 
 BufferManager::~BufferManager() {
@@ -161,5 +161,5 @@ void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {
 
         cmdBuf.copyBuffer(srcBuffer.getBuf(), dstBuffer.getBuf(), copyRegion);
     }
-    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue());
+    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue().queue);
 }
