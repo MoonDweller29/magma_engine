@@ -22,7 +22,7 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device.c_getDevice(), shaderStages, pipelineInfo, renderPass);
 
     std::vector<VkImageView> attachments = { depthTex.getView() };
-    frameBuffer = std::make_unique<FrameBuffer>(attachments, extent, renderPass, device.c_getDevice());
+    frameBuffer = std::make_unique<FrameBuffer>(device.c_getDevice(), attachments, renderPass, extent);
 
     commandBuffers.allocate(device.c_getDevice(), device.getGraphicsCmdPool(), 1);
 
@@ -99,7 +99,7 @@ void DepthPass::recordCmdBuffers(
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = renderPass;
-        renderPassInfo.framebuffer = frameBuffer->getHandler();
+        renderPassInfo.framebuffer = frameBuffer->getFrameBuf();
 
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = extent;

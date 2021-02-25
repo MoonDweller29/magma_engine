@@ -1,13 +1,14 @@
 #include "magma/vk/FrameBuffer.h"
+
 #include "magma/vk/vulkan_common.h"
 
 FrameBuffer::FrameBuffer(
+        VkDevice device,
         const std::vector<VkImageView> &attachments,
-        VkExtent2D extent,
         VkRenderPass renderPass,
-        VkDevice device)
+        VkExtent2D extent
+) : _device(device)
 {
-    this->device = device;
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferInfo.renderPass = renderPass;
@@ -17,19 +18,18 @@ FrameBuffer::FrameBuffer(
     framebufferInfo.height = extent.height;
     framebufferInfo.layers = 1;
 
-    VkResult result = vkCreateFramebuffer(device, &framebufferInfo, nullptr, &frameBuffer);
+    VkResult result = vkCreateFramebuffer(device, &framebufferInfo, nullptr, &_frameBuffer);
     VK_CHECK_ERR(result, "failed to create framebuffer!");
 }
 
-FrameBuffer::FrameBuffer(FrameBuffer&& other)
+FrameBuffer::FrameBuffer(FrameBuffer&& other) :
+    _frameBuffer(other._frameBuffer), _device(other._device)
 {
-    this->frameBuffer = other.frameBuffer;
-    this->device = other.device;
-    other.frameBuffer = VK_NULL_HANDLE;
+    other._device = VK_NULL_HANDLE;
 }
 
-FrameBuffer::~FrameBuffer()
-{
-    if (frameBuffer != VK_NULL_HANDLE)
-        vkDestroyFramebuffer(device, frameBuffer, nullptr);
+FrameBuffer::~FrameBuffer() {
+    if (_device != VK_NULL_HANDLE) {
+        vkDestroyFramebuffer(_device, _frameBuffer, nullptr);
+    }
 }
