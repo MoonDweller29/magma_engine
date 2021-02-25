@@ -60,7 +60,7 @@ public:
         ExceptionLogger(const char *filename, int line);
 
         template <typename E>
-        void operator<<(E exception) const;
+        [[ noreturn ]] void operator<<(E exception) const;
 
     private:
         const char *_filename;
