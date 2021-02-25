@@ -6,7 +6,7 @@
 #include "magma/vk/commandBuffer.h"
 #include "magma/vk/textures/Texture.h"
 #include "magma/vk/descriptors/descriptorSetLayout.h"
-#include "magma/vk/frameBuffer.h"
+#include "magma/vk/FrameBuffer.h"
 #include "magma/app/scene/mesh.h"
 #include <memory>
 

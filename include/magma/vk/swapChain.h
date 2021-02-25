@@ -2,7 +2,7 @@
 #include "magma/vk/physicalDevice/PhysicalDevice.h"
 #include "LogicalDevice.h"
 #include "Window.h"
-#include "frameBuffer.h"
+#include "FrameBuffer.h"
 #include <vulkan/vulkan.h>
 #include <vector>
 
