@@ -1,4 +1,4 @@
-#include "magma/vk/frameBuffer.h"
+#include "magma/vk/FrameBuffer.h"
 #include "magma/vk/vulkan_common.h"
 
 FrameBuffer::FrameBuffer(
