@@ -9,7 +9,7 @@
 
 BufferManager::BufferManager(LogicalDevice &device) 
         : _device(device),
-        _commandBuffers(device.c_getDevice(), device.getGraphicsCmdPool(), 1)
+        _commandBuffer(device.c_getDevice(), device.getGraphicsCmdPool())
 {}
 
 BufferManager::~BufferManager() {
@@ -151,8 +151,8 @@ void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {
     vk::DeviceSize bufferSize = std::min(srcBuffer.getInfo()->bufferInfo.size,
         dstBuffer.getInfo()->bufferInfo.size);
 
-    _commandBuffers.resetCmdBuf(0);
-    vk::CommandBuffer cmdBuf = vk::CommandBuffer(_commandBuffers.beginCmdBuf(0));
+    _commandBuffer.reset();
+    vk::CommandBuffer cmdBuf = _commandBuffer.begin();
     {
         vk::BufferCopy copyRegion;
         copyRegion.srcOffset = 0;
@@ -161,5 +161,5 @@ void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {
 
         cmdBuf.copyBuffer(srcBuffer.getBuf(), dstBuffer.getBuf(), copyRegion);
     }
-    _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
+    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue());
 }

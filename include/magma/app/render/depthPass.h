@@ -3,7 +3,7 @@
 #include "magma/vk/graphicsPipeline.h"
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/cmdSync.h"
-#include "magma/vk/commandBuffer.h"
+#include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/textures/Texture.h"
 #include "magma/vk/descriptors/descriptorSetLayout.h"
 #include "magma/vk/FrameBuffer.h"
@@ -21,7 +21,7 @@ class DepthPass
     VkDescriptorSet descriptorSet;
     VkRenderPass renderPass;
     std::unique_ptr<GraphicsPipeline> graphicsPipeline;
-    CommandBufferArr commandBuffers;
+    CommandBuffer _commandBuffer;
 
     const VkExtent2D extent;
     CmdSync renderFinished;

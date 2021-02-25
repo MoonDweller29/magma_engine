@@ -5,8 +5,12 @@
 
 #include <array>
 
-DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout):
-    device(device), depthTex(depthTex), extent(extent), depthFinalLayout(depthFinalLayout)
+DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout)
+        : device(device),
+        depthTex(depthTex),
+        extent(extent),
+        depthFinalLayout(depthFinalLayout), 
+        _commandBuffer(device.c_getDevice(), device.getGraphicsCmdPool())
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -23,8 +27,6 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
 
     std::vector<vk::ImageView> attachments = { depthTex.getView() };
     frameBuffer = std::make_unique<FrameBuffer>(device.c_getDevice(), attachments, renderPass, extent);
-
-    commandBuffers.allocate(device.c_getDevice(), device.getGraphicsCmdPool(), 1);
 
     renderFinished.create(device.c_getDevice());
 }
@@ -94,7 +96,7 @@ void DepthPass::recordCmdBuffers(
         VkBuffer vertexBuffer,
         uint32_t vertexCount)
 {
-    VkCommandBuffer cmdBuf = commandBuffers.beginCmdBuf(0);
+    VkCommandBuffer cmdBuf = _commandBuffer.begin();
     {
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -125,7 +127,7 @@ void DepthPass::recordCmdBuffers(
         }
         vkCmdEndRenderPass(cmdBuf);
     }
-    commandBuffers.endCmdBuf(0);
+    _commandBuffer.end();
 }
 
 CmdSync DepthPass::draw(
@@ -154,7 +156,8 @@ CmdSync DepthPass::draw(
     submitInfo.pWaitDstStageMask = waitStages.data();
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[0];
+    VkCommandBuffer commandBuffer = _commandBuffer.c_getCmdBuf();
+    submitInfo.pCommandBuffers = &commandBuffer;
 
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &renderFinished.semaphore;
@@ -169,9 +172,6 @@ CmdSync DepthPass::draw(
 
 DepthPass::~DepthPass()
 {
-    vkFreeCommandBuffers(
-            device.c_getDevice(), device.getGraphicsCmdPool(),
-            commandBuffers.size(), commandBuffers.data());
     vkDestroyRenderPass(device.c_getDevice(), renderPass, nullptr);
     graphicsPipeline.reset();
     descriptorSetLayout.clear();

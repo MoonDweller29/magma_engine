@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 #include "magma/app/log.hpp"
-#include "magma/vk/commandBuffer.h"
+#include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/buffers/Buffer.h"
 
 class LogicalDevice;
@@ -46,7 +46,7 @@ public:
 
 private:
     LogicalDevice &_device;
-    CommandBufferArr _commandBuffers;
+    CommandBuffer _commandBuffer;
     std::unordered_map<std::string, Buffer> _buffers;
 
     void copyDataToStagingBuffer(Buffer &buffer, const void* data, vk::DeviceSize dataSize);

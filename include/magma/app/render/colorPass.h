@@ -4,7 +4,7 @@
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/swapChain.h"
 #include "magma/vk/cmdSync.h"
-#include "magma/vk/commandBuffer.h"
+#include "magma/vk/commands/CommandBufferArr.h"
 #include "magma/vk/descriptors/descriptorSetLayout.h"
 #include "magma/app/scene/mesh.h"
 #include <memory>
@@ -18,7 +18,7 @@ class ColorPass
     std::vector<VkDescriptorSet> descriptorSets;
     VkRenderPass renderPass;
     std::unique_ptr<GraphicsPipeline> graphicsPipeline;
-    CommandBufferArr commandBuffers;
+    CommandBufferArr _commandBuffers;
 
     const VkExtent2D extent;
     CmdSync renderFinished;

@@ -5,7 +5,8 @@
 
 ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     device(device), swapChain(swapChain),
-    extent(swapChain.getExtent())
+    extent(swapChain.getExtent()),
+    _commandBuffers(device.getDevice(), device.getGraphicsCmdPool(), swapChain.imgCount())
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -24,8 +25,6 @@ ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
             fragShader.getStageInfo()
     };
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device.c_getDevice(), shaderStages, pipelineInfo, renderPass);
-
-    commandBuffers.allocate(device.c_getDevice(), device.getGraphicsCmdPool(), swapChain.imgCount());
 
     renderFinished.create(device.c_getDevice());
 }
@@ -69,7 +68,7 @@ void ColorPass::recordCmdBuffers(
 {
     for (size_t i = 0; i < swapChain.imgCount(); ++i)
     {
-        VkCommandBuffer cmdBuf = commandBuffers.beginCmdBuf(i);
+        VkCommandBuffer cmdBuf = _commandBuffers.begin(i);
         {
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -101,7 +100,7 @@ void ColorPass::recordCmdBuffers(
             }
             vkCmdEndRenderPass(cmdBuf);
         }
-        commandBuffers.endCmdBuf(i);
+        _commandBuffers.end(i);
     }
 }
 
@@ -193,7 +192,8 @@ CmdSync ColorPass::draw(
     submitInfo.pWaitDstStageMask = waitStages.data();
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[i];
+    VkCommandBuffer commandBuffer = (VkCommandBuffer)_commandBuffers[i];
+    submitInfo.pCommandBuffers = &commandBuffer;
 
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &renderFinished.semaphore;
@@ -208,9 +208,6 @@ CmdSync ColorPass::draw(
 
 ColorPass::~ColorPass()
 {
-    vkFreeCommandBuffers(
-            device.c_getDevice(), device.getGraphicsCmdPool(),
-            commandBuffers.size(), commandBuffers.data());
     vkDestroyRenderPass(device.c_getDevice(), renderPass, nullptr);
     graphicsPipeline.reset();
     descriptorSetLayout.clear();
