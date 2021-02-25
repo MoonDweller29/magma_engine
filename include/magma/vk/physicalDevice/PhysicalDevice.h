@@ -28,8 +28,8 @@ public:
 
     QueueFamilyIndices getQueueFamilyInds() const { return _inds; }
     void initInds(vk::SurfaceKHR surface);
-    void printQueueFamilies(vk::SurfaceKHR surface);
-    bool queueFamilyHasSurfaceSupport(uint32_t queueFamilyIndex, vk::SurfaceKHR surface);
+    void printQueueFamilies(vk::SurfaceKHR surface) const;
+    bool queueFamilyHasSurfaceSupport(uint32_t queueFamilyIndex, vk::SurfaceKHR surface) const;
 
 
     const std::string           &getName()       const { return _name; }

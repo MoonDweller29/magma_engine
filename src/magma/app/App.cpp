@@ -192,6 +192,8 @@ void App::initDevice() {
     DeviceRequirements deviceRequirements;
     deviceRequirements.surface.require(window->getSurface());
     deviceRequirements.deviceType.recommend(vk::PhysicalDeviceType::eDiscreteGpu);
+    deviceRequirements.graphicsSupport.require(true);
+    deviceRequirements.computeSupport.require(true);
 
     vk::PhysicalDeviceFeatures physicalDeviceFeatures;
     physicalDeviceFeatures.samplerAnisotropy = true;

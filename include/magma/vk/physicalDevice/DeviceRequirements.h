@@ -12,6 +12,8 @@ struct DeviceRequirements {
     Option<vk::SurfaceKHR> surface;
     Option<vk::PhysicalDeviceType> deviceType;
     Option<vk::PhysicalDeviceFeatures> features;
+    Option<bool> graphicsSupport;
+    Option<bool> computeSupport;
 
     std::vector<const char*> requiredExtensions() const;
     std::vector<const char*> recommendedExtensions() const;
