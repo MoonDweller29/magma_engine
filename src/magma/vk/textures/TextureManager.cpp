@@ -10,11 +10,10 @@
 
 TextureManager::TextureManager(LogicalDevice &device) 
         : _device(device),
-        _commandBuffers(device.c_getDevice(), device.getGraphicsCmdPool(), 1)
+        _commandBuffer(device.c_getDevice(), device.getGraphicsCmdPool())
 {}
 
 TextureManager::~TextureManager() {
-    _commandBuffers.freeCmdBuf(_device.c_getDevice(), _device.getGraphicsCmdPool());
     if (_textures.size() > 0) {
         LOG_WARNING(_textures.size(), " textures haven't been removed");
         while(_textures.size() > 0) {
@@ -113,11 +112,10 @@ static bool hasStencilComponent(vk::Format format) {
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
 }
 
-/** @todo remove c comand Buffer **/
 void TextureManager::setLayout(Texture &texture, vk::ImageLayout newLayout) {
     vk::ImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
-    _commandBuffers.resetCmdBuf(0);
-    vk::CommandBuffer cmdBuf = vk::CommandBuffer(_commandBuffers.beginCmdBuf(0));
+    _commandBuffer.reset();
+    vk::CommandBuffer cmdBuf = _commandBuffer.begin();
     {
         vk::ImageLayout oldLayout = texture.getInfo()->curLayout;
 
@@ -174,7 +172,7 @@ void TextureManager::setLayout(Texture &texture, vk::ImageLayout newLayout) {
 
         cmdBuf.pipelineBarrier(srcStage, dstStage, {}, nullptr, nullptr, barrier);
     }
-    _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
+    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue());
     texture.getInfo()->curLayout = newLayout;
 }
 
@@ -182,11 +180,10 @@ void TextureManager::setLayout(Texture &texture, vk::ImageLayout newLayout) {
     setLayout(texture, vk::ImageLayout(c_newLayout));
 }
 
-/** @todo remove c comand Buffer **/
 void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
     vk::ImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
-    _commandBuffers.resetCmdBuf(0);
-    vk::CommandBuffer cmdBuf = vk::CommandBuffer(_commandBuffers.beginCmdBuf(0));
+    _commandBuffer.reset();
+    vk::CommandBuffer cmdBuf = _commandBuffer.begin();
     {
         vk::BufferImageCopy region;
         region.bufferOffset = 0;
@@ -203,7 +200,7 @@ void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
 
         cmdBuf.copyBufferToImage(buffer, texture.getImage(), vk::ImageLayout::eTransferDstOptimal, region);
     }
-    _commandBuffers.endAndSubmitCmdBuf_sync(0, _device.getGraphicsQueue());
+    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue());
 }
 
 [[deprecated]] void TextureManager::copyBufToTex(Texture &texture, VkBuffer c_buffer) {

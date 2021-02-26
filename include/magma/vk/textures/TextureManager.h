@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "magma/vk/commandBuffer.h"
+#include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/textures/Texture.h"
 
 class LogicalDevice;
@@ -35,6 +35,6 @@ public:
     void deleteTexture(Texture &texture);
 private:
     LogicalDevice &_device;
-    CommandBufferArr _commandBuffers;
+    CommandBuffer _commandBuffer;
     std::unordered_map<std::string, Texture> _textures;
 };

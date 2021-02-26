@@ -6,7 +6,6 @@
 #include "magma/vk/vulkan_common.h"
 #include "magma/vk/validationLayers/ValidationLayers.h"
 #include "magma/vk/commands/CommandPool.h"
-#include "magma/vk/commandBuffer.h"
 
 
 LogicalDevice::LogicalDevice(
