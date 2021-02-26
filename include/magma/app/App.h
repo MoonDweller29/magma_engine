@@ -4,7 +4,7 @@
 #include "magma/vk/validationLayers/DebugMessenger.h"
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/Window.h"
-#include "magma/vk/swapChain.h"
+#include "magma/vk/SwapChain.h"
 #include "magma/vk/textures/Texture.h"
 #include "magma/app/scene/mesh.h"
 #include "magma/app/scene/meshReader.h"
