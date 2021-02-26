@@ -29,8 +29,7 @@ vk::SurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<vk::Su
 
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == vk::Format::eB8G8R8A8Srgb &&
-            availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear
-        ) {
+            availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
             LOG_INFO("Selected Format: ", to_string(availableFormat));
             return availableFormat;
         }
