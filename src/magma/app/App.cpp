@@ -391,17 +391,15 @@ void App::mainLoop() {
     float prev_time = global_clock.restart();
     int frames_count = 0;
 
-    while (!glfwWindowShouldClose(window->getGLFWp())) {
+    while (!glfwWindowShouldClose(window->getGlfwWindow())) {
         float time = global_clock.getTime();
         float frameTime = time-prev_time;
         prev_time = time;
 
         if(frames_count % 100 == 0) {
             std::stringstream ss;
-
-            ss << "VULKAN ENGINE | FPS: " << 1 / frameTime << std::endl;
-
-            glfwSetWindowTitle(window->getGLFWp(), ss.str().c_str());
+            ss << "MAGMA ENGINE | FPS: " << 1 / frameTime;
+            window->setTitle(ss.str());
         }
         frames_count++;
 
@@ -413,8 +411,8 @@ void App::mainLoop() {
         light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
 
         // @TODO Move this to input class
-        bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
-        bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
+        bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+        bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
 
         // @TODO Add window focus handling
         if (mouse->isLocked()) {

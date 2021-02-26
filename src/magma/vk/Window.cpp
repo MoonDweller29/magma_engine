@@ -69,6 +69,11 @@ void Window::updateResolution() {
     _wasResized = false;
 }
 
+void Window::setTitle(const std::string &title) {
+    glfwSetWindowTitle(_window, title.c_str());
+}
+
+
 Window::~Window() {
     _instance.destroySurfaceKHR(_surface);
     _keyboard.reset();

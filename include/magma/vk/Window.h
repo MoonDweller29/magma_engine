@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <vector>
+#include <string>
 #include <memory>
 
 #include "magma/app/keyboard.h"
@@ -21,7 +22,9 @@ public:
     VkExtent2D getResolution() const { return {_width, _height}; }
     void       updateResolution();
 
-    GLFWwindow *   getGLFWp()         { return _window;         }
+    void setTitle(const std::string &title);
+
+    GLFWwindow *   getGlfwWindow()    { return _window;         }
     vk::SurfaceKHR getSurface() const { return _surface;        }
     bool           wasResized() const { return _wasResized;     }
     Keyboard *     getKeyboard()      { return _keyboard.get(); }

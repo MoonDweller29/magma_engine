@@ -42,7 +42,6 @@ private:
 
     Queue       _graphicsQueue;
     Queue       _presentQueue;
-    vk::CommandPool _graphicsCmdPool;
 
     std::unique_ptr<TextureManager> _textureManager;
     std::unique_ptr<BufferManager>  _bufferManager;

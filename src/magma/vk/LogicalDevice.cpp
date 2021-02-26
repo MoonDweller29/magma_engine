@@ -47,7 +47,6 @@ LogicalDevice::LogicalDevice(
     VK_HPP_CHECK_ERR(result, "failed to create logical device!");
     LOG_INFO("Logical Device is created");
 
-    _graphicsCmdPool = CommandPool::createPool(_device, indices.graphicsFamily.value());
     acquireQueues(indices);
 
     _textureManager = std::make_unique<TextureManager>(*this);
@@ -57,7 +56,7 @@ LogicalDevice::LogicalDevice(
 void LogicalDevice::acquireQueues(QueueFamilyIndices indices) {
     _graphicsQueue.queue = _device.getQueue(indices.graphicsFamily.value(), 0);
     _graphicsQueue.queueFamily = indices.graphicsFamily.value();
-    _graphicsQueue.cmdPool = _graphicsCmdPool;
+    _graphicsQueue.cmdPool = CommandPool::createPool(_device, indices.graphicsFamily.value());
 
     _presentQueue.queue  = _device.getQueue(indices.presentFamily.value(), 0);
     _presentQueue.queueFamily = indices.presentFamily.value();
@@ -86,6 +85,6 @@ void LogicalDevice::waitIdle() {
 LogicalDevice::~LogicalDevice() {
     _textureManager.reset();
     _bufferManager.reset();
-    _device.destroyCommandPool(_graphicsCmdPool);
+    _device.destroyCommandPool(_graphicsQueue.cmdPool);
     _device.destroy();
 }
