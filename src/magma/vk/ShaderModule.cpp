@@ -1,7 +1,6 @@
 #include "magma/vk/ShaderModule.h"
 
 #include <fstream>
-#include <vulkan/vulkan_core.h>
 
 #include "magma/app/log.hpp"
 #include "magma/vk/vulkan_common.h"

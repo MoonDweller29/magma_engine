@@ -1,7 +1,6 @@
 #include "magma/vk/buffers/BufferManager.h"
 
 #include <stdexcept>
-#include <vulkan/vulkan_core.h>
 
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/vulkan_common.h"
