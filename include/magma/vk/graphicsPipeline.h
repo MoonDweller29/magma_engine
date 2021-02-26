@@ -1,7 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include "shaderModule.h"
 #include <vector>
+
+#include "magma/vk/ShaderModule.h"
 
 class PipelineInfo
 {

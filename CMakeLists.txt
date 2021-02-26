@@ -79,8 +79,8 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/ComputePipeline.cpp
 		include/magma/vk/graphicsPipeline.h
 		src/magma/vk/graphicsPipeline.cpp
-		include/magma/vk/shaderModule.h
-		src/magma/vk/shaderModule.cpp
+		include/magma/vk/ShaderModule.h
+		src/magma/vk/ShaderModule.cpp
 		include/magma/vk/FrameBuffer.h
 		src/magma/vk/FrameBuffer.cpp
 
