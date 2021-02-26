@@ -54,7 +54,6 @@ std::vector<const char*> Window::getRequiredVkExtensions() {
     return extensions;
 }
 
-
 void Window::updateResolution() {
     int new_w = 0, new_h = 0;
 
@@ -72,7 +71,6 @@ void Window::updateResolution() {
 void Window::setTitle(const std::string &title) {
     glfwSetWindowTitle(_window, title.c_str());
 }
-
 
 Window::~Window() {
     _instance.destroySurfaceKHR(_surface);
