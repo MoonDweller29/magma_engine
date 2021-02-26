@@ -21,7 +21,7 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     pipelineInfo.setLayout(descriptorSetLayout.getLayout());
 
-    Shader vertShader("depthVertShader", device.getDevice(), "shaders/depth.vert.spv", ShaderStage::VERT_SH);
+    Shader vertShader("depthVertShader", device.getDevice(), "shaders/depth.vert.spv", Shader::Stage::VERT_SH);
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShader.getStageInfo() };
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device.c_getDevice(), shaderStages, pipelineInfo, renderPass);
 

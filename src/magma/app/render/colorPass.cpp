@@ -18,8 +18,8 @@ ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     pipelineInfo.setLayout(descriptorSetLayout.getLayout());
     pipelineInfo.setDepthCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    Shader vertShader("colorVertShader", device.getDevice(), "shaders/shader.vert.spv", ShaderStage::VERT_SH);
-    Shader fragShader("colorFragShader", device.getDevice(), "shaders/shader.frag.spv", ShaderStage::FRAG_SH);
+    Shader vertShader("colorVertShader", device.getDevice(), "shaders/shader.vert.spv", Shader::Stage::VERT_SH);
+    Shader fragShader("colorFragShader", device.getDevice(), "shaders/shader.frag.spv", Shader::Stage::FRAG_SH);
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
             vertShader.getStageInfo(),
             fragShader.getStageInfo()
