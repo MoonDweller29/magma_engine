@@ -103,7 +103,7 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     textureInfo->curLayout = vk::ImageLayout::eUndefined;
     textureInfo->name = name;
 
-#ifdef NDEBUG
+#ifndef NDEBUG
     // set the name
     vk::DebugUtilsObjectNameInfoEXT nameInfo;
     nameInfo.objectType = vk::ObjectType::eImage;

@@ -58,7 +58,7 @@ Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size
     info->memoryProperty = properties;
     info->name = name;
 
-#ifdef NDEBUG
+#ifndef NDEBUG
         // set the name
         vk::DebugUtilsObjectNameInfoEXT nameInfo;
         nameInfo.objectType = vk::ObjectType::eBuffer;

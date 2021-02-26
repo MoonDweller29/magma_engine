@@ -35,7 +35,7 @@ Shader::Shader(const std::string &name, vk::Device device, const std::string &pa
     std::tie(result, _shaderModule) = _device.createShaderModule(createInfo);
     VK_HPP_CHECK_ERR(result, "Failed to create " + name + " shader module!");
 
-#ifdef NDEBUG
+#ifndef NDEBUG
     // set the name
     vk::DebugUtilsObjectNameInfoEXT nameInfo;
     nameInfo.objectType = vk::ObjectType::eShaderModule;
