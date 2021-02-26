@@ -103,6 +103,7 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     textureInfo->curLayout = vk::ImageLayout::eUndefined;
     textureInfo->name = name;
 
+#ifdef NDEBUG
     // set the name
     vk::DebugUtilsObjectNameInfoEXT nameInfo;
     nameInfo.objectType = vk::ObjectType::eImage;
@@ -110,6 +111,7 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     nameInfo.pObjectName = name.c_str();
     result = _device.getDevice().setDebugUtilsObjectNameEXT(nameInfo);
     VK_HPP_CHECK_ERR(result, "Failed to set image name!");
+#endif
 
     _textures.emplace(name, Texture(textureImage, textureMemory, ImageView(textureView), textureInfo));
     return _textures.at(name);

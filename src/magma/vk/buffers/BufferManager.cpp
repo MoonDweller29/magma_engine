@@ -58,13 +58,15 @@ Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size
     info->memoryProperty = properties;
     info->name = name;
 
-    // set the name
-    vk::DebugUtilsObjectNameInfoEXT nameInfo;
-    nameInfo.objectType = vk::ObjectType::eBuffer;
-    nameInfo.objectHandle = (uint64_t)(VkBuffer)buffer;
-    nameInfo.pObjectName = name.c_str();
-    result = _device.getDevice().setDebugUtilsObjectNameEXT(nameInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to set buffer name!");
+#ifdef NDEBUG
+        // set the name
+        vk::DebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.objectType = vk::ObjectType::eBuffer;
+        nameInfo.objectHandle = (uint64_t)(VkBuffer)buffer;
+        nameInfo.pObjectName = name.c_str();
+        result = _device.getDevice().setDebugUtilsObjectNameEXT(nameInfo);
+        VK_HPP_CHECK_ERR(result, "Failed to set buffer name!");
+#endif
 
     _buffers.emplace(name, Buffer(buffer, bufferMemory, info));
     return getBuffer(name);
