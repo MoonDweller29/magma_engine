@@ -10,7 +10,7 @@ public:
     CommandBuffer(vk::Device device, vk::CommandPool commandPool);
     ~CommandBuffer();
 
-    const vk::CommandBuffer getCmdBuf() const { return _commandBuffer; }
+    vk::CommandBuffer getCmdBuf() const { return _commandBuffer; }
 
     vk::CommandBuffer begin(vk::CommandBufferUsageFlags flags = vk::CommandBufferUsageFlags());
     void end();
@@ -18,7 +18,7 @@ public:
     void endAndSubmit_sync(vk::Queue queue);
     void reset(vk::CommandBufferResetFlags flag=vk::CommandBufferResetFlags());
 
-    [[deprecated]] const VkCommandBuffer c_getCmdBuf() const { return (VkCommandBuffer)_commandBuffer; }
+    [[deprecated]] VkCommandBuffer c_getCmdBuf() const { return (VkCommandBuffer)_commandBuffer; }
 
 private:
     vk::Device          _device;

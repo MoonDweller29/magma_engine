@@ -3,8 +3,6 @@
 CommandBufferArr::CommandBufferArr(vk::Device device, vk::CommandPool commandPool, uint32_t count) 
         : _device(device),
         _commandPool(commandPool) {
-    _commandBuffers.resize(count);
-
     vk::CommandBufferAllocateInfo allocInfo;
     allocInfo.commandPool = _commandPool;
     allocInfo.level = vk::CommandBufferLevel::ePrimary;

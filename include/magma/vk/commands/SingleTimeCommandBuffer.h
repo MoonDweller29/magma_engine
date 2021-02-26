@@ -9,7 +9,7 @@ public:
     SingleTimeCommandBuffer(vk::Device device, vk::CommandPool commandPool);
     ~SingleTimeCommandBuffer();
 
-    const vk::CommandBuffer getCmdBuf() const { return _commandBuffer; }
+    vk::CommandBuffer getCmdBuf() const { return _commandBuffer; }
     void endAndSubmit_sync(vk::Queue queue);
 
 private:
