@@ -10,7 +10,7 @@
 
 TextureManager::TextureManager(LogicalDevice &device) 
         : _device(device),
-        _commandBuffer(device.c_getDevice(), device.getGraphicsCmdPool())
+        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
 {}
 
 TextureManager::~TextureManager() {
@@ -172,7 +172,7 @@ void TextureManager::setLayout(Texture &texture, vk::ImageLayout newLayout) {
 
         cmdBuf.pipelineBarrier(srcStage, dstStage, {}, nullptr, nullptr, barrier);
     }
-    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue());
+    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue().queue);
     texture.getInfo()->curLayout = newLayout;
 }
 
@@ -200,7 +200,7 @@ void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
 
         cmdBuf.copyBufferToImage(buffer, texture.getImage(), vk::ImageLayout::eTransferDstOptimal, region);
     }
-    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue());
+    _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue().queue);
 }
 
 [[deprecated]] void TextureManager::copyBufToTex(Texture &texture, VkBuffer c_buffer) {

@@ -10,58 +10,38 @@ HardwareManager::HardwareManager(vk::Instance instance) :
     _instance(instance)
 {}
 
-static VkBool32 hasSurfaceSupportKHR(
-        vk::PhysicalDevice device,
-        uint32_t queueFamilyIndex,
-        vk::SurfaceKHR surface
-) {
-    return device.getSurfaceSupportKHR(queueFamilyIndex, surface).value;
-}
-
-static std::string to_string(const vk::QueueFamilyProperties& queueFamily, int i, vk::PhysicalDevice device, vk::SurfaceKHR surface) {
-    std::stringstream ss;
-    ss << i << " : " << to_string(queueFamily.queueFlags);
-    if (hasSurfaceSupportKHR(device, i, surface)) {
-        ss << " - Surface Support";
-    }
-    ss << " - " << queueFamily.queueCount;
-
-    return ss.str();
-}
-
-QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface) {
-    QueueFamilyIndices indices;
-
-    std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
-
-    std::cout << "PHYS DEVICE FAMILIES " << device << std::endl;
-    int ind = 0;
-    for (const auto& queueFamily : queueFamilies) {
-        std::cout << to_string(queueFamily, ind, device, surface) << std::endl;
-        ++ind;
-    }
-
+bool HardwareManager::checkQueueFamilies(const PhysicalDevice &device, const DeviceRequirements &requirements) {
+    std::vector<vk::QueueFamilyProperties> queueFamilies = device.device().getQueueFamilyProperties();
+    int graphicsFamiliesCount = 0;
+    int computeFamiliesCount = 0;
+    int presentFamiliesCount = 0;
 
     int i = 0;
     for (const auto& queueFamily : queueFamilies) {
         if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
-            indices.graphicsFamily = i;
+            ++graphicsFamiliesCount;
         }
         if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute) {
-            indices.computeFamily = i;
+            ++computeFamiliesCount;
         }
-        if (hasSurfaceSupportKHR(device, i, surface)) {
-            indices.presentFamily = i;
+        if (requirements.surface.isRequired()){
+            if (device.queueFamilyHasSurfaceSupport(i, requirements.surface.getValue())) {
+                ++presentFamiliesCount;
+            }
         }
-
-        if (indices.isComplete())
-            break;
 
         i++;
     }
 
-    return indices;
+    if ((requirements.graphicsSupport.isRequired() && (graphicsFamiliesCount == 0)) ||
+        (requirements.computeSupport.isRequired() && (computeFamiliesCount == 0)) ||
+        (requirements.surface.isRequired() && (presentFamiliesCount == 0)) ) {
+        return false;
+    }
+
+    return true;
 }
+
 
 bool HardwareManager::isDeviceSuitable(
         const PhysicalDevice &device, const DeviceRequirements &requirements
@@ -82,14 +62,16 @@ bool HardwareManager::isDeviceSuitable(
             return false;
         }
     }
+    if (!checkQueueFamilies(device, requirements)) {
+        return false;
+    }
 
     if (requirements.surface.isRequired()) {
         vk::SurfaceKHR surface = requirements.surface.getValue();
-        QueueFamilyIndices indices = findQueueFamilies(device.device(), surface);
         SwapChainSupportInfo swapChainSupport = device.getSwapChainSupportInfo(surface);
         bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 
-        return indices.isComplete() && swapChainAdequate;
+        return swapChainAdequate;
     }
 
     return true;

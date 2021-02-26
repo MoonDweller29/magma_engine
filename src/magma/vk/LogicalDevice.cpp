@@ -48,15 +48,19 @@ LogicalDevice::LogicalDevice(
     LOG_INFO("Logical Device is created");
 
     acquireQueues(indices);
-    _graphicsCmdPool = CommandPool::createPool(_device, indices.graphicsFamily.value());
 
     _textureManager = std::make_unique<TextureManager>(*this);
     _bufferManager = std::make_unique<BufferManager>(*this);
 }
 
 void LogicalDevice::acquireQueues(QueueFamilyIndices indices) {
-    _graphicsQueue = _device.getQueue(indices.graphicsFamily.value(), 0);
-    _presentQueue  = _device.getQueue(indices.presentFamily.value(), 0);
+    _graphicsQueue.queue = _device.getQueue(indices.graphicsFamily.value(), 0);
+    _graphicsQueue.queueFamily = indices.graphicsFamily.value();
+    _graphicsQueue.cmdPool = CommandPool::createPool(_device, indices.graphicsFamily.value());
+
+    _presentQueue.queue  = _device.getQueue(indices.presentFamily.value(), 0);
+    _presentQueue.queueFamily = indices.presentFamily.value();
+
 
     std::cout << "graphicsFamily ind : " << indices.graphicsFamily.value() << std::endl;
     std::cout << "presentFamily ind : " << indices.presentFamily.value() << std::endl;
@@ -81,6 +85,6 @@ void LogicalDevice::waitIdle() {
 LogicalDevice::~LogicalDevice() {
     _textureManager.reset();
     _bufferManager.reset();
-    _device.destroyCommandPool(_graphicsCmdPool);
+    _device.destroyCommandPool(_graphicsQueue.cmdPool);
     _device.destroy();
 }

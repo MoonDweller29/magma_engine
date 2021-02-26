@@ -17,6 +17,7 @@ public:
 private:
     vk::Instance _instance;
 
+    bool checkQueueFamilies(const PhysicalDevice &device, const DeviceRequirements &requirements);
     bool isDeviceSuitable(const PhysicalDevice &device, const DeviceRequirements &requirements);
     int rateSuitability(const PhysicalDevice &device, const DeviceRequirements &requirements);
 };

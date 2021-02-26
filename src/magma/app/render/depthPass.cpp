@@ -10,7 +10,7 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
         depthTex(depthTex),
         extent(extent),
         depthFinalLayout(depthFinalLayout), 
-        _commandBuffer(device.c_getDevice(), device.getGraphicsCmdPool())
+        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -164,7 +164,7 @@ CmdSync DepthPass::draw(
 
     vkResetFences(device.c_getDevice(), 1, &renderFinished.fence);
 
-    VkResult result = vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, renderFinished.fence);
+    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.fence);
     VK_CHECK_ERR(result, "failed to submit draw command buffer!");
 
     return renderFinished;

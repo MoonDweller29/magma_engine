@@ -6,7 +6,7 @@
 ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     device(device), swapChain(swapChain),
     extent(swapChain.getExtent()),
-    _commandBuffers(device.getDevice(), device.getGraphicsCmdPool(), swapChain.imgCount())
+    _commandBuffers(device.getDevice(), device.getGraphicsQueue().cmdPool, swapChain.imgCount())
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -121,7 +121,7 @@ void ColorPass::createRenderPass()
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = findDepthFormat(device.getVkPhysDevice());
+    depthAttachment.format = VkFormat(findDepthFormat(device.getPhysDevice().device()));
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -200,7 +200,7 @@ CmdSync ColorPass::draw(
 
     vkResetFences(device.c_getDevice(), 1, &renderFinished.fence);
 
-    VkResult result = vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, renderFinished.fence);
+    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.fence);
     VK_CHECK_ERR(result, "failed to submit draw command buffer!");
 
     return renderFinished;

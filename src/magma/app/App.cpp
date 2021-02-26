@@ -179,9 +179,8 @@ void App::createShadowMapResources() {
 
 
 void App::createDepthResources() {
-    VkFormat depthFormat = findDepthFormat(device->getVkPhysDevice());
-    depthTex = device->getTextureManager().createTexture2D("depth_texture", 
-        vk::Format(depthFormat),
+    depthTex = device->getTextureManager().createTexture2D("depth_texture",
+        findDepthFormat(device->getPhysDevice().device()),
         vk::Extent2D{WIN_WIDTH, WIN_HEIGHT},
         vk::ImageUsageFlagBits::eDepthStencilAttachment,
         vk::ImageAspectFlagBits::eDepth);
@@ -193,6 +192,8 @@ void App::initDevice() {
     DeviceRequirements deviceRequirements;
     deviceRequirements.surface.require(window->getSurface());
     deviceRequirements.deviceType.recommend(vk::PhysicalDeviceType::eDiscreteGpu);
+    deviceRequirements.graphicsSupport.require(true);
+    deviceRequirements.computeSupport.require(true);
 
     vk::PhysicalDeviceFeatures physicalDeviceFeatures;
     physicalDeviceFeatures.samplerAnisotropy = true;
@@ -334,7 +335,7 @@ void App::drawFrame() {
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    result = vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
+    result = vkQueuePresentKHR(device->getPresentQueue().queue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->wasResized()) {
         recreateSwapChain();
     } else if (result != VK_SUCCESS) {
@@ -390,17 +391,15 @@ void App::mainLoop() {
     float prev_time = global_clock.restart();
     int frames_count = 0;
 
-    while (!glfwWindowShouldClose(window->getGLFWp())) {
+    while (!glfwWindowShouldClose(window->getGlfwWindow())) {
         float time = global_clock.getTime();
         float frameTime = time-prev_time;
         prev_time = time;
 
         if(frames_count % 100 == 0) {
             std::stringstream ss;
-
-            ss << "VULKAN ENGINE | FPS: " << 1 / frameTime << std::endl;
-
-            glfwSetWindowTitle(window->getGLFWp(), ss.str().c_str());
+            ss << "MAGMA ENGINE | FPS: " << 1 / frameTime;
+            window->setTitle(ss.str());
         }
         frames_count++;
 
@@ -412,8 +411,8 @@ void App::mainLoop() {
         light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
 
         // @TODO Move this to input class
-        bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
-        bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGLFWp(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
+        bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+        bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
 
         // @TODO Add window focus handling
         if (mouse->isLocked()) {

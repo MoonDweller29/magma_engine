@@ -10,7 +10,7 @@ Mouse::Mouse(Window *window):
     locked(false)
 {
     double x_pos, y_pos;
-    glfwGetCursorPos(window->getGLFWp(), &x_pos, &y_pos);
+    glfwGetCursorPos(window->getGlfwWindow(), &x_pos, &y_pos);
     pos = glm::ivec2(x_pos, y_pos);
 
 //    glfwSetCursorPosCallback(window, cursor_position_callback);
@@ -20,7 +20,7 @@ void Mouse::update()
 {
     prev_pos = pos;
     double x_pos, y_pos;
-    glfwGetCursorPos(window->getGLFWp(), &x_pos, &y_pos);
+    glfwGetCursorPos(window->getGlfwWindow(), &x_pos, &y_pos);
     pos = glm::ivec2(x_pos, y_pos);
 
     if (!locked &&
@@ -44,14 +44,15 @@ const glm::ivec2 &Mouse::getShift() const
 
 void Mouse::lock()
 {
-    glfwSetCursorPos(window->getGLFWp(), window->getResolution().width/2, window->getResolution().height/2);
-    glfwSetInputMode(window->getGLFWp(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    auto resolution = window->getResolution();
+    glfwSetCursorPos(window->getGlfwWindow(), resolution.width/2, resolution.height/2);
+    glfwSetInputMode(window->getGlfwWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     update();
     locked = true;
 }
 
 void Mouse::unlock()
 {
-    glfwSetInputMode(window->getGLFWp(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetInputMode(window->getGlfwWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     locked = false;
 }

@@ -8,10 +8,7 @@ void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height
     app_window->_wasResized = true;
 }
 
-VkSurfaceKHR Window::createSurface(
-        const vk::Instance &hpp_instance,
-        GLFWwindow* window
-) {
+vk::SurfaceKHR Window::createSurface(vk::Instance hpp_instance, GLFWwindow* window) {
     VkInstance instance(hpp_instance);
     VkSurfaceKHR surface;
     VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
@@ -20,7 +17,7 @@ VkSurfaceKHR Window::createSurface(
     return surface;
 }
 
-Window::Window(uint32_t width, uint32_t height, const vk::Instance &instance) :
+Window::Window(uint32_t width, uint32_t height, vk::Instance instance) :
     _width(width), _height(height), _instance(instance), _wasResized(false)
 {
     initContext();
@@ -57,7 +54,6 @@ std::vector<const char*> Window::getRequiredVkExtensions() {
     return extensions;
 }
 
-
 void Window::updateResolution() {
     int new_w = 0, new_h = 0;
 
@@ -70,6 +66,10 @@ void Window::updateResolution() {
     _height = new_h;
 
     _wasResized = false;
+}
+
+void Window::setTitle(const std::string &title) {
+    glfwSetWindowTitle(_window, title.c_str());
 }
 
 Window::~Window() {

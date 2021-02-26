@@ -22,15 +22,17 @@ public:
     PhysicalDevice(vk::PhysicalDevice physDevice);
     ~PhysicalDevice() = default;
 
-    VkPhysicalDevice   c_device() const { return (VkPhysicalDevice)_physicalDevice; }
     vk::PhysicalDevice device()   const { return _physicalDevice; }
 
     uint32_t findMemoryTypeInd(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
     QueueFamilyIndices getQueueFamilyInds() const { return _inds; }
     void initInds(vk::SurfaceKHR surface);
+    void printQueueFamilies(vk::SurfaceKHR surface) const;
+    bool queueFamilyHasSurfaceSupport(uint32_t queueFamilyIndex, vk::SurfaceKHR surface) const;
 
-    const std::string &getName() const { return _name; }
+
+    const std::string           &getName()       const { return _name; }
     vk::PhysicalDeviceProperties getProperties() const { return _physicalDevice.getProperties(); }
     vk::PhysicalDeviceFeatures   getFeatures()   const { return _physicalDevice.getFeatures();   }
     bool checkExtensionSupport(const std::vector<const char*> &extensions) const;
@@ -40,5 +42,5 @@ private:
     vk::PhysicalDevice _physicalDevice;
     std::string _name;
 
-    static QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+    QueueFamilyIndices findQueueFamilies(vk::SurfaceKHR surface);
 };
