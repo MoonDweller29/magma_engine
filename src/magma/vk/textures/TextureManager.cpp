@@ -103,9 +103,16 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     textureInfo->curLayout = vk::ImageLayout::eUndefined;
     textureInfo->name = name;
 
+    // set the name
+    vk::DebugUtilsObjectNameInfoEXT nameInfo;
+    nameInfo.objectType = vk::ObjectType::eImage;
+    nameInfo.objectHandle = (uint64_t)(VkImage)textureImage;
+    nameInfo.pObjectName = name.c_str();
+    result = _device.getDevice().setDebugUtilsObjectNameEXT(nameInfo);
+    VK_HPP_CHECK_ERR(result, "Failed to set image name!");
+
     _textures.emplace(name, Texture(textureImage, textureMemory, ImageView(textureView), textureInfo));
     return _textures.at(name);
-
 }
 
 static bool hasStencilComponent(vk::Format format) {

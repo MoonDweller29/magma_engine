@@ -1,6 +1,7 @@
 #include "magma/vk/buffers/BufferManager.h"
 
 #include <stdexcept>
+#include <vulkan/vulkan_core.h>
 
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/vulkan_common.h"
@@ -57,6 +58,14 @@ Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size
     info->bufferInfo = bufferInfo;
     info->memoryProperty = properties;
     info->name = name;
+
+    // set the name
+    vk::DebugUtilsObjectNameInfoEXT nameInfo;
+    nameInfo.objectType = vk::ObjectType::eBuffer;
+    nameInfo.objectHandle = (uint64_t)(VkBuffer)buffer;
+    nameInfo.pObjectName = name.c_str();
+    result = _device.getDevice().setDebugUtilsObjectNameEXT(nameInfo);
+    VK_HPP_CHECK_ERR(result, "Failed to set buffer name!");
 
     _buffers.emplace(name, Buffer(buffer, bufferMemory, info));
     return getBuffer(name);

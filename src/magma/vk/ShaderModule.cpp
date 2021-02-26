@@ -1,6 +1,7 @@
 #include "magma/vk/ShaderModule.h"
 
 #include <fstream>
+#include <vulkan/vulkan_core.h>
 
 #include "magma/app/log.hpp"
 #include "magma/vk/vulkan_common.h"
@@ -34,6 +35,14 @@ Shader::Shader(const std::string &name, vk::Device device, const std::string &pa
     vk::Result result;
     std::tie(result, _shaderModule) = _device.createShaderModule(createInfo);
     VK_HPP_CHECK_ERR(result, "Failed to create " + name + " shader module!");
+
+    // set the name
+    vk::DebugUtilsObjectNameInfoEXT nameInfo;
+    nameInfo.objectType = vk::ObjectType::eShaderModule;
+    nameInfo.objectHandle = (uint64_t)(VkShaderModule)_shaderModule;
+    nameInfo.pObjectName = name.c_str();
+    result = _device.setDebugUtilsObjectNameEXT(nameInfo);
+    VK_HPP_CHECK_ERR(result, "Failed to set shader name!");
 
     _stageInfo.stage = stageToVkStage(stage);
     _stageInfo.module = _shaderModule;
