@@ -7,7 +7,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
 
-#include "shaderModule.h"
+#include "magma/vk/ShaderModule.h"
 
 /**
  * @brief Class that contains info for creating compute pipeline

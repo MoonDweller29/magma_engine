@@ -1,6 +1,6 @@
 #include "magma/app/render/colorPass.h"
 
-#include "magma/vk/shaderModule.h"
+#include "magma/vk/ShaderModule.h"
 #include "magma/vk/vulkan_common.h"
 
 ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
@@ -18,8 +18,8 @@ ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     pipelineInfo.setLayout(descriptorSetLayout.getLayout());
     pipelineInfo.setDepthCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    Shader vertShader(device.c_getDevice(), "shaders/shader.vert.spv", Shader::VERT_SH);
-    Shader fragShader(device.c_getDevice(), "shaders/shader.frag.spv", Shader::FRAG_SH);
+    Shader vertShader("colorVertShader", device.getDevice(), "shaders/shader.vert.spv", Shader::Stage::VERT_SH);
+    Shader fragShader("colorFragShader", device.getDevice(), "shaders/shader.frag.spv", Shader::Stage::FRAG_SH);
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
             vertShader.getStageInfo(),
             fragShader.getStageInfo()

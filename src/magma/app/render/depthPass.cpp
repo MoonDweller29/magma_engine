@@ -1,9 +1,9 @@
 #include "magma/app/render/depthPass.h"
 
-#include "magma/vk/shaderModule.h"
-#include "magma/vk/vulkan_common.h"
-
 #include <array>
+
+#include "magma/vk/ShaderModule.h"
+#include "magma/vk/vulkan_common.h"
 
 DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout)
         : device(device),
@@ -21,7 +21,7 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
     pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
     pipelineInfo.setLayout(descriptorSetLayout.getLayout());
 
-    Shader vertShader(device.c_getDevice(), "shaders/depth.vert.spv", Shader::VERT_SH);
+    Shader vertShader("depthVertShader", device.getDevice(), "shaders/depth.vert.spv", Shader::Stage::VERT_SH);
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShader.getStageInfo() };
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device.c_getDevice(), shaderStages, pipelineInfo, renderPass);
 
