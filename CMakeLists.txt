@@ -30,8 +30,8 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/glm_inc.h
 		include/magma/app/keyboard.h
 		src/magma/app/keyboard.cpp
-		include/magma/app/camera.h
-		src/magma/app/camera.cpp
+		include/magma/app/Camera.h
+		src/magma/app/Camera.cpp
 		include/magma/app/mouse.h
 		src/magma/app/mouse.cpp
 		include/magma/app/clock.h

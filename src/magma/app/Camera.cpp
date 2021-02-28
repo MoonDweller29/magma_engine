@@ -1,4 +1,4 @@
-#include "magma/app/camera.h"
+#include "magma/app/Camera.h"
 #include "magma/app/keyboard.h"
 #include "magma/app/mouse.h"
 
