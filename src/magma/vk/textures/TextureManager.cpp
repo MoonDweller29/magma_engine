@@ -216,6 +216,30 @@ void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
     copyBufToTex(texture, vk::Buffer(c_buffer));
 }
 
+vk::Format TextureManager::findSupportedFormat(
+        const std::vector<vk::Format>& candidates,
+        vk::ImageTiling tiling, vk::FormatFeatureFlags features
+) {
+    for (vk::Format format : candidates) {
+        vk::FormatProperties props = _device.getPhysDevice().device().getFormatProperties(format);
+        if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
+            return format;
+        } else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
+            return format;
+        }
+    }
+
+    LOG_AND_THROW std::runtime_error("failed to find supported format!");
+}
+
+vk::Format TextureManager::findDepthFormat() {
+    return findSupportedFormat(
+            {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+            vk::ImageTiling::eOptimal,
+            vk::FormatFeatureFlagBits::eDepthStencilAttachment
+    );
+}
+
 void TextureManager::deleteTexture(Texture &texture) {
      _textures.erase(texture.getInfo()->name);
     delete texture.getInfo();

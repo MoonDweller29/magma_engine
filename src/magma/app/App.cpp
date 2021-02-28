@@ -177,15 +177,6 @@ void App::createShadowMapResources() {
     renderShadow->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 }
 
-
-void App::createDepthResources() {
-    depthTex = device->getTextureManager().createTexture2D("depth_texture",
-        findDepthFormat(device->getPhysDevice().device()),
-        vk::Extent2D{WIN_WIDTH, WIN_HEIGHT},
-        vk::ImageUsageFlagBits::eDepthStencilAttachment,
-        vk::ImageAspectFlagBits::eDepth);
-}
-
 void App::initDevice() {
     HardwareManager hardwareMGR(instance->instance());
 
@@ -221,12 +212,12 @@ void App::initVulkan() {
 
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
-    createDepthResources();
+    gBuffer = std::make_unique<GBuffer>(device->getTextureManager(), window->getResolution());
     textureSampler = createDefaultTextureSampler(vk::Filter::eLinear, vk::Filter::eLinear);
 
     createShadowMapResources();
 
-    depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
+    depthPass = std::make_unique<DepthPass>(*device, gBuffer->getDepth(), VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
     depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
@@ -237,7 +228,7 @@ void App::initVulkan() {
                                    texture.getView(), textureSampler,
                                    lightSpaceUniform, sizeof(LightSpaceUniform),
                                    shadowMap.getView(), shadowMapSampler);
-    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
+    swapChain->createFrameBuffers(colorPass->getRenderPass(), gBuffer->getDepth().getView());
     colorPass->recordCmdBuffers(
             indexBuffer.getBuf(),
             vertexBuffer.getBuf(),
@@ -253,7 +244,7 @@ void App::cleanupSwapChain() {
     bufferManager.deleteBuffer(uniformBuffer);
     bufferManager.deleteBuffer(fragmentUniform);
 
-    device->getTextureManager().deleteTexture(depthTex);
+    gBuffer.reset();
 
     swapChain->clearFrameBuffers();
     colorPass.reset();
@@ -272,9 +263,9 @@ void App::recreateSwapChain() {
 
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
-    createDepthResources();
+    gBuffer = std::make_unique<GBuffer>(device->getTextureManager(), window->getResolution());
 
-    depthPass = std::make_unique<DepthPass>(*device, depthTex, VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
+    depthPass = std::make_unique<DepthPass>(*device, gBuffer->getDepth(), VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
     depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
@@ -285,7 +276,7 @@ void App::recreateSwapChain() {
                                    texture.getView(), textureSampler,
                                    lightSpaceUniform, sizeof(LightSpaceUniform),
                                    shadowMap.getView(), shadowMapSampler);
-    swapChain->createFrameBuffers(colorPass->getRenderPass(), depthTex.getView());
+    swapChain->createFrameBuffers(colorPass->getRenderPass(), gBuffer->getDepth().getView());
     colorPass->recordCmdBuffers(
             indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size(),
             swapChain->getVkFrameBuffers()

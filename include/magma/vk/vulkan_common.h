@@ -1,7 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 #include <stdexcept>
-#include <vector>
 
 #include "magma/app/log.hpp"
 
@@ -20,11 +19,3 @@
        throw std::runtime_error(message);  \
     }                                      \
 }
-
-
-vk::Format findSupportedFormat(
-        vk::PhysicalDevice physicalDevice,
-        const std::vector<vk::Format>& candidates,
-        vk::ImageTiling tiling, vk::FormatFeatureFlags features);
-
-vk::Format findDepthFormat(vk::PhysicalDevice physicalDevice);
