@@ -382,6 +382,9 @@ void App::mainLoop() {
     float prev_time = global_clock.restart();
     int frames_count = 0;
 
+    mainCamera->setPos({1, 1, 1});
+    mainCamera->lookAt({0, 0, 0});
+
     while (!glfwWindowShouldClose(window->getGlfwWindow())) {
         float time = global_clock.getTime();
         float frameTime = time-prev_time;

@@ -79,6 +79,31 @@ void Camera::update(Keyboard& keyboard, Mouse& mouse, float elapsedTime) {
     updateViewMat();
 }
 
+void Camera::setPos(glm::vec3 newPos) {
+    _pos = newPos;
+    updateViewMat();
+}
+
+void Camera::lookAt(glm::vec3 point) {
+    _forward = glm::normalize(point - _pos);
+    _right = glm::normalize(glm::cross(_forward, glm::vec3(0,1,0)));
+    _up = glm::normalize(glm::cross(_right, _forward));
+
+    //calculating pitch
+    float angle = glm::acos(dot(_forward, glm::vec3(0.0f, 1.0f, 0.0f)));
+    angle = glm::pi<float>()/2 - angle;
+    _pitch = glm::degrees(angle);
+
+    //calculating yaw
+    angle = glm::acos(dot(_right, glm::vec3(-1, 0, 0)));
+    if (_right.z < 0) {
+        angle = -angle;
+    }
+    _yaw = glm::degrees(angle);
+
+    updateViewMat();
+}
+
 void Camera::updateProjMat() {
     _proj = glm::perspective(
             glm::radians(_FOV),

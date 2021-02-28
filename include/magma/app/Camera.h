@@ -10,6 +10,8 @@ public:
 
     void updateScreenSize(int width, int height);
     void update(Keyboard& keyboard, Mouse& mouse, float elapsedTime);
+    void setPos(glm::vec3 newPos);
+    void lookAt(glm::vec3 point);
 
     const glm::mat4 &getProjMat() const { return _proj; }
     const glm::mat4 &getViewMat() const { return _view; }
