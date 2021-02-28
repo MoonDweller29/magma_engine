@@ -32,6 +32,11 @@ public:
     [[deprecated]] void setLayout(Texture &texture, VkImageLayout c_newLayout);
     [[deprecated]] void copyBufToTex(Texture &texture, VkBuffer c_buffer);
 
+    vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates,
+                                    vk::ImageTiling tiling, vk::FormatFeatureFlags features);
+    vk::Format findDepthFormat();
+
+
     void deleteTexture(Texture &texture);
 private:
     LogicalDevice &_device;

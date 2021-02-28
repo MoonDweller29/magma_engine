@@ -6,6 +6,7 @@
 #include "magma/vk/Window.h"
 #include "magma/vk/SwapChain.h"
 #include "magma/vk/textures/Texture.h"
+#include "magma/app/render/GBuffer.h"
 #include "magma/app/scene/mesh.h"
 #include "magma/app/scene/meshReader.h"
 #include "magma/app/scene/directLight.h"
@@ -14,7 +15,6 @@
 #include "magma/glm_inc.h"
 #include "camera.h"
 #include "clock.h"
-
 
 
 
@@ -57,7 +57,7 @@ private:
     Texture texture;
     VkSampler textureSampler;
     VkSampler shadowMapSampler;
-    Texture depthTex;
+    std::unique_ptr<GBuffer> gBuffer;
     Texture shadowMap;
 
     Clock global_clock;
@@ -76,7 +76,6 @@ private:
     void createShadowMapTex();
     void createShadowMapResources();
     void updateShadowUniform();
-    void createDepthResources();
     void createSyncObjects();
     void mainLoop();
 
