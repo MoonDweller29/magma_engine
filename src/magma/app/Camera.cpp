@@ -1,118 +1,94 @@
 #include "magma/app/Camera.h"
+
+#include <algorithm>
+
 #include "magma/app/keyboard.h"
 #include "magma/app/mouse.h"
 
-#include <algorithm>
-#include <iostream>
-
-Camera::Camera(float z_near, float z_far, int width, int height, float FOV):
-    z_near(z_near),
-    z_far(z_far),
-    width(width),
-    height(height),
-    FOV(std::clamp(FOV, 1.f, 179.f)),
-    pos(glm::vec3(0.0f, 0.0f, 3.0f)),
-    forward(glm::vec3(0.0f, 0.0f, -1.0f)),
-    right(glm::vec3(1.0f, 0.0f, 0.0f)),
-    up(glm::vec3(0.0f, 1.0f, 0.0f)),
-    pitch(0),
-    yaw(180),
-    sensitivity(0.2f),
-    speed(5.f)
+Camera::Camera(float zNear, float zFar, int width, int height, float FOV):
+    _zNear(zNear),
+    _zFar(zFar),
+    _width(width),
+    _height(height),
+    _FOV(std::clamp(FOV, 1.f, 179.f)),
+    _pos(glm::vec3(0.0f, 0.0f, 3.0f)),
+    _forward(glm::vec3(0.0f, 0.0f, -1.0f)),
+    _right(glm::vec3(1.0f, 0.0f, 0.0f)),
+    _up(glm::vec3(0.0f, 1.0f, 0.0f)),
+    _pitch(0),
+    _yaw(180),
+    _sensitivity(0.2f),
+    _speed(5.f)
 {
+    updateViewMat();
     updateProjMat();
 }
 
-void Camera::updateScreenSize(int width, int height)
-{
-    this->width = width;
-    this->height = height;
+void Camera::updateScreenSize(int width, int height) {
+    _width = width;
+    _height = height;
     updateProjMat();
 }
 
-void Camera::update(Keyboard& keyboard, Mouse& mouse, float elapsed_time)
-{
+void Camera::update(Keyboard& keyboard, Mouse& mouse, float elapsedTime) {
     glm::vec2 cursor_shift = mouse.getShift();
 
-    if (mouse.isLocked())
-    {
-        pitch -= cursor_shift.y*sensitivity;
-        yaw -= cursor_shift.x*sensitivity;
+    if (mouse.isLocked()) {
+        _pitch -= cursor_shift.y*_sensitivity;
+        _yaw -= cursor_shift.x*_sensitivity;
     }
 
     // std::cout << pitch << "_" << cursor_shift.y << std::endl;
 
-    forward = glm::vec3(
-            glm::cos(glm::radians(pitch)) * glm::sin(glm::radians(yaw)),
-            glm::sin(glm::radians(pitch)),
-            glm::cos(glm::radians(pitch)) * glm::cos(glm::radians(yaw))
+    _forward = glm::vec3(
+            glm::cos(glm::radians(_pitch)) * glm::sin(glm::radians(_yaw)),
+            glm::sin(glm::radians(_pitch)),
+            glm::cos(glm::radians(_pitch)) * glm::cos(glm::radians(_yaw))
     );
-    right = glm::normalize(glm::cross(forward, glm::vec3(0,1,0)));
-    up = glm::normalize(glm::cross(right, forward));
+    _right = glm::normalize(glm::cross(_forward, glm::vec3(0,1,0)));
+    _up = glm::normalize(glm::cross(_right, _forward));
 
-    float curr_speed = speed;
-    if (keyboard.isPressed(GLFW_KEY_LEFT_SHIFT))
-        curr_speed = speed*4;
-    if (keyboard.isPressed(GLFW_KEY_LEFT_CONTROL))
-        curr_speed = speed/20;
-
-    if (keyboard.isPressed(GLFW_KEY_W))
-    {
-        pos += elapsed_time*curr_speed*forward;
-    }
-    if (keyboard.isPressed(GLFW_KEY_S))
-    {
-        pos -= elapsed_time*curr_speed*forward;
+    float curr_speed = _speed;
+    if (keyboard.isPressed(GLFW_KEY_LEFT_SHIFT)) {
+        curr_speed = _speed*4;
+    } else if (keyboard.isPressed(GLFW_KEY_LEFT_CONTROL)) {
+        curr_speed = _speed/20;
     }
 
-    if (keyboard.isPressed(GLFW_KEY_D))
-    {
-        pos += elapsed_time*curr_speed*right;
+    if (keyboard.isPressed(GLFW_KEY_W)) {
+        _pos += elapsedTime*curr_speed*_forward;
     }
-    if (keyboard.isPressed(GLFW_KEY_A))
-    {
-        pos -= elapsed_time*curr_speed*right;
+    if (keyboard.isPressed(GLFW_KEY_S)) {
+        _pos -= elapsedTime*curr_speed*_forward;
     }
 
-    if (keyboard.isPressed(GLFW_KEY_E))
-    {
-        pos += elapsed_time*curr_speed*up;
+    if (keyboard.isPressed(GLFW_KEY_D)) {
+        _pos += elapsedTime*curr_speed*_right;
     }
-    if (keyboard.isPressed(GLFW_KEY_Q))
-    {
-        pos -= elapsed_time*curr_speed*up;
+    if (keyboard.isPressed(GLFW_KEY_A)) {
+        _pos -= elapsedTime*curr_speed*_right;
+    }
+
+    if (keyboard.isPressed(GLFW_KEY_E)) {
+        _pos += elapsedTime*curr_speed*_up;
+    }
+    if (keyboard.isPressed(GLFW_KEY_Q)) {
+        _pos -= elapsedTime*curr_speed*_up;
     }
 
     updateViewMat();
 }
 
-void Camera::updateProjMat()
-{
-    proj = glm::perspective(
-            glm::radians(this->FOV),
-            float(this->width)/float(this->height),
-            this->z_near, this->z_far
+void Camera::updateProjMat() {
+    _proj = glm::perspective(
+            glm::radians(_FOV),
+            float(_width)/float(_height),
+            _zNear, _zFar
     );
-    proj[1][1] *= -1; //OpenGL legacy in glm
+    _proj[1][1] *= -1; //OpenGL legacy in glm
 }
 
-void Camera::updateViewMat()
-{
+void Camera::updateViewMat() {
     // return glm::translate(glm::mat4(), -pos);
-    view = glm::lookAt(pos, pos + forward, up);
-}
-
-const glm::mat4 &Camera::getProjMat() const
-{
-    return proj;
-}
-
-const glm::mat4 &Camera::getViewMat() const
-{
-    return view;
-}
-
-const glm::vec3 &Camera::getPos() const
-{
-    return pos;
+    _view = glm::lookAt(_pos, _pos + _forward, _up);
 }

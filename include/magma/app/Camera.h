@@ -6,36 +6,36 @@ class Mouse;
 
 class Camera {
 public:
-    Camera(float z_near, float z_far, int width, int height, float FOV);
+    Camera(float zNear, float zFar, int width, int height, float FOV);
 
     void updateScreenSize(int width, int height);
-    void update(Keyboard& keyboard, Mouse& mouse, float elapsed_time);
+    void update(Keyboard& keyboard, Mouse& mouse, float elapsedTime);
 
-    const glm::mat4 &getProjMat() const;
-    const glm::mat4 &getViewMat() const;
-    const glm::vec3 &getPos() const;
+    const glm::mat4 &getProjMat() const { return _proj; }
+    const glm::mat4 &getViewMat() const { return _view; }
+    const glm::vec3 &getPos()     const { return _pos;  }
 
 private:
-    glm::mat4 proj;
-    glm::mat4 view;
+    glm::mat4 _proj;
+    glm::mat4 _view;
 
-    glm::vec3 pos;
+    glm::vec3 _pos;
 
-    glm::vec3 forward;
-    glm::vec3 up;
-    glm::vec3 right;
+    glm::vec3 _forward;
+    glm::vec3 _up;
+    glm::vec3 _right;
+    float     _pitch;
+    float     _yaw;
 
-    float z_near;
-    float z_far;
-    int   width;
-    int   height;
-    float FOV;
+    float _zNear;
+    float _zFar;
+    int   _width;
+    int   _height;
+    float _FOV;
 
-    float sensitivity;
-    float speed;
+    float _sensitivity;
+    float _speed;
 
-    float pitch;
-    float yaw;
 
     void updateProjMat();
     void updateViewMat();
