@@ -13,7 +13,7 @@
 #include "magma/app/render/depthPass.h"
 #include "magma/app/render/colorPass.h"
 #include "magma/glm_inc.h"
-#include "camera.h"
+#include "magma/app/Camera.h"
 #include "clock.h"
 
 
