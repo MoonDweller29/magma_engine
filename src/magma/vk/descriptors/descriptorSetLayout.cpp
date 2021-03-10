@@ -118,7 +118,7 @@ void DescriptorSetLayout::allocateSets(uint32_t count)
 void DescriptorSetLayout::beginSet(uint32_t ind)
 {
     if (ind > descriptorSets.size())
-        throw std::runtime_error("beginSet: wrong descriptorSet index");
+        LOG_AND_THROW std::runtime_error("beginSet: wrong descriptorSet index");
     setInd = ind;
 }
 
@@ -129,7 +129,7 @@ void DescriptorSetLayout::bindUniformBuffer(uint32_t binding, VkBuffer buf, VkDe
         std::stringstream message;
         message << "bindUniformBuffer: binding index mismatch:\n binding <" << binding <<
         "> has type <" << bindings[binding].descriptorType << "> which is not VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER";
-        throw std::runtime_error(message.str());
+        LOG_AND_THROW std::runtime_error(message.str());
     }
 
     VkDescriptorBufferInfo *bufferInfo = descriptorSetInfo.newBufferInfo();
@@ -155,7 +155,7 @@ void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, VkImageView
         std::stringstream message;
         message << "bindCombinedImageSampler: binding index mismatch:\n binding <" << binding <<
                 "> has type <" << bindings[binding].descriptorType << "> which is not VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER";
-        throw std::runtime_error(message.str());
+        LOG_AND_THROW std::runtime_error(message.str());
     }
 
     VkDescriptorImageInfo *imageInfo = descriptorSetInfo.newImageInfo();
@@ -181,7 +181,7 @@ void DescriptorSetLayout::bindStorageImage(uint32_t binding, VkImageView imageVi
         std::stringstream message;
         message << "bindStorageImage: binding index mismatch:\n binding <" << binding <<
                 "> has type <" << bindings[binding].descriptorType << "> which is not VK_DESCRIPTOR_TYPE_STORAGE_IMAGE";
-        throw std::runtime_error(message.str());
+        LOG_AND_THROW std::runtime_error(message.str());
     }
 
     VkDescriptorImageInfo *imageInfo = descriptorSetInfo.newImageInfo();
