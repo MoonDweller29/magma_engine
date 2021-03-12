@@ -1,4 +1,5 @@
 #include "magma/app/image.h"
+
 #include <algorithm>
 #include <stdexcept>
 
@@ -6,6 +7,8 @@
 #include <stb/stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
+
+#include "magma/app/log.hpp"
 
 struct StbDeleter {
     void operator()(stbi_uc* p) const {
@@ -20,7 +23,7 @@ Image::Image(const char *filename, int channel_count):
     int actualChCount;
     stbi_uc* pixels = stbi_load(filename, &width, &height, &actualChCount, channel_count);
     if (!pixels)
-        throw std::runtime_error("failed to load image!");
+        LOG_AND_THROW std::runtime_error("failed to load image!");
     raw_data = std::shared_ptr<stbi_uc>(pixels, StbDeleter());
 }
 
