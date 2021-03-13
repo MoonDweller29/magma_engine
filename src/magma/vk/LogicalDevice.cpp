@@ -44,7 +44,7 @@ LogicalDevice::LogicalDevice(
 
     vk::Result result;
     std::tie(result, _device) = _physDevice.device().createDevice(createInfo);
-    VK_HPP_CHECK_ERR(result, "failed to create logical device!");
+    VK_CHECK_ERR(result, "failed to create logical device!");
     LOG_INFO("Logical Device is created");
 
     acquireQueues(indices);
@@ -73,7 +73,7 @@ vk::DeviceMemory LogicalDevice::memAlloc(vk::MemoryRequirements memRequirements,
     );
 
     auto [result, deviceMemory] = _device.allocateMemory(allocInfo);
-    VK_HPP_CHECK_ERR(result, "failed to allocate memory!");
+    VK_CHECK_ERR(result, "failed to allocate memory!");
     return deviceMemory;
 }
 

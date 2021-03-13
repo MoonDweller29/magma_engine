@@ -4,7 +4,7 @@
 
 #include "magma/vk/vulkan_common.h"
 
-CustomImageView::CustomImageView(Texture &texture, vk::ImageAspectFlags aspectMask) 
+CustomImageView::CustomImageView(Texture &texture, vk::ImageAspectFlags aspectMask)
         : _device(texture.getInfo()->device) {
     vk::ImageCreateInfo info = texture.getInfo()->imageInfo;
 
@@ -20,7 +20,7 @@ CustomImageView::CustomImageView(Texture &texture, vk::ImageAspectFlags aspectMa
 
     vk::Result result;
     std::tie(result, _imageView) = _device.createImageView(viewInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
+    VK_CHECK_ERR(result, "Failed to create image view!");
 }
 
 CustomImageView::CustomImageView(vk::Device device, vk::Image image, vk::Format format, vk::ImageAspectFlags aspectMask)
@@ -38,7 +38,7 @@ CustomImageView::CustomImageView(vk::Device device, vk::Image image, vk::Format 
 
     vk::Result result;
     std::tie(result, _imageView) = _device.createImageView(viewInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
+    VK_CHECK_ERR(result, "Failed to create image view!");
 }
 
 CustomImageView::~CustomImageView() {

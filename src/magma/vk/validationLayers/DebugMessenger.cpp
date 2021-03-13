@@ -66,7 +66,7 @@ DebugMessenger::DebugMessenger(const vk::Instance &instance) : _instance(instanc
     auto createInfo = getCreateInfo();
     vk::Result result;
     std::tie(result, _debugMessenger) = _instance.createDebugUtilsMessengerEXT(createInfo);
-    VK_HPP_CHECK_ERR(result, "failed to set up debug messenger!");
+    VK_CHECK_ERR(result, "failed to set up debug messenger!");
 }
 
 DebugMessenger::~DebugMessenger() {

@@ -150,7 +150,7 @@ vk::Sampler App::createDefaultTextureSampler(vk::Filter minFilter, vk::Filter ma
     samplerInfo.maxLod = 0.0f;
 
     auto[result, sampler] = device->getDevice().createSampler(samplerInfo);
-    VK_HPP_CHECK_ERR(result, "failed to create texture sampler!");
+    VK_CHECK_ERR(result, "failed to create texture sampler!");
 
     return sampler;
 }
@@ -205,7 +205,7 @@ void App::initVulkan() {
     initDevice();
 
     loadScene();
-    
+
     BufferManager& bufferManager = device->getBufferManager();
     vertexBuffer = bufferManager.createVertexBuffer("vertexBuffer", vertices);
     indexBuffer = bufferManager.createIndexBuffer("indexBuffer", indices);

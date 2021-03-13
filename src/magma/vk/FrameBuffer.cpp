@@ -19,7 +19,7 @@ FrameBuffer::FrameBuffer(
 
     vk::Result result;
     std::tie(result, _frameBuffer) = _device.createFramebuffer(framebufferInfo);
-    VK_HPP_CHECK_ERR(result, "failed to create framebuffer!");
+    VK_CHECK_ERR(result, "failed to create framebuffer!");
 }
 
 FrameBuffer::FrameBuffer(FrameBuffer&& other) :
