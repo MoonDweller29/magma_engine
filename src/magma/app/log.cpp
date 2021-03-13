@@ -14,6 +14,10 @@ void Log::initFromConfig(const Log::Config &init_config) {
     init();
 }
 
+std::string Log::location(std::string_view filename, unsigned line) {
+    return "[" + std::string(filename) + ":" + std::to_string(line) + "] ";
+}
+
 std::ostream &operator<<(std::ostream &stream, Log::Level level) {
     switch (level) {
         case Log::Level::DEBUG:    return stream << "[DEBUG]";
@@ -39,7 +43,6 @@ bool operator>(Log::Level l1, Log::Level l2) {
 }
 
 
-Log::ExceptionLogger::ExceptionLogger(const char *filename, int line)
-    : _filename(filename)
-    , _line(line) {
+Log::ExceptionLogger::ExceptionLogger(std::string_view message)
+    : _message(message) {
 }

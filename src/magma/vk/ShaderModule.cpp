@@ -23,7 +23,7 @@ static std::vector<char> readFile(const std::string &filename) {
 }
 
 /// @todo add constant value
-Shader::Shader(const std::string &name, vk::Device device, const std::string &path, Stage stage) 
+Shader::Shader(const std::string &name, vk::Device device, const std::string &path, Stage stage)
         : _device(device) {
     auto shaderCode = readFile(path);
 
@@ -33,7 +33,7 @@ Shader::Shader(const std::string &name, vk::Device device, const std::string &pa
 
     vk::Result result;
     std::tie(result, _shaderModule) = _device.createShaderModule(createInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to create " + name + " shader module!");
+    VK_CHECK_ERR(result, "Failed to create " + name + " shader module!");
 
 #ifndef NDEBUG
     // set the name
@@ -42,7 +42,7 @@ Shader::Shader(const std::string &name, vk::Device device, const std::string &pa
     nameInfo.objectHandle = (uint64_t)(VkShaderModule)_shaderModule;
     nameInfo.pObjectName = name.c_str();
     result = _device.setDebugUtilsObjectNameEXT(nameInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to set shader name!");
+    VK_CHECK_ERR(result, "Failed to set shader name!");
 #endif
 
     _stageInfo.stage = stageToVkStage(stage);

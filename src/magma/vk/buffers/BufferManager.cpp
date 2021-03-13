@@ -7,7 +7,7 @@
 #include "magma/vk/buffers/Buffer.h"
 
 
-BufferManager::BufferManager(LogicalDevice &device) 
+BufferManager::BufferManager(LogicalDevice &device)
         : _device(device),
         _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
 {}
@@ -32,7 +32,7 @@ Buffer& BufferManager::getBuffer(const std::string &name) {
     return _buffers.at(name);
 };
 
-Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size, 
+Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size,
         vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) {
     if (bufferExists(name)) {
         LOG_AND_THROW std::invalid_argument(name + " buffer exist");
@@ -43,14 +43,14 @@ Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size
     bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
     auto [result, buffer] = _device.getDevice().createBuffer(bufferInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to create buffer!");
+    VK_CHECK_ERR(result, "Failed to create buffer!");
 
     vk::MemoryRequirements memRequirements = _device.getDevice().getBufferMemoryRequirements(buffer);
 
     VkDeviceMemory bufferMemory  = _device.memAlloc(memRequirements, properties);
 
     result = _device.getDevice().bindBufferMemory(buffer, bufferMemory, 0);
-    VK_HPP_CHECK_ERR(result, "Failed to bind buffer!");
+    VK_CHECK_ERR(result, "Failed to bind buffer!");
 
     BufferInfo* info = new BufferInfo;
     info->device = _device.c_getDevice();
@@ -65,7 +65,7 @@ Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size
         nameInfo.objectHandle = (uint64_t)(VkBuffer)buffer;
         nameInfo.pObjectName = name.c_str();
         result = _device.getDevice().setDebugUtilsObjectNameEXT(nameInfo);
-        VK_HPP_CHECK_ERR(result, "Failed to set buffer name!");
+        VK_CHECK_ERR(result, "Failed to set buffer name!");
 #endif
 
     _buffers.emplace(name, Buffer(buffer, bufferMemory, info));
@@ -84,7 +84,7 @@ Buffer& BufferManager::createUniformBuffer(const std::string &name, vk::DeviceSi
     return createStagingBuffer(name, size, vk::BufferUsageFlagBits::eUniformBuffer);
 }
 
-Buffer& BufferManager::createBufferWithData(const std::string &name, const void* data, vk::DeviceSize dataSize, 
+Buffer& BufferManager::createBufferWithData(const std::string &name, const void* data, vk::DeviceSize dataSize,
         vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties) {
     auto isDeviceBuffer = properties & vk::MemoryPropertyFlagBits::eDeviceLocal;
     if (isDeviceBuffer) {

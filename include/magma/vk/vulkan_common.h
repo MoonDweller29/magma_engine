@@ -4,14 +4,11 @@
 
 #include "magma/app/log.hpp"
 
-#define VK_CHECK_ERR(result, message) {            \
-    if (result != VK_SUCCESS) {                    \
-       LOG_AND_THROW std::runtime_error(message);  \
-    }                                              \
-}
+bool isSuccess(VkResult result);
 
-#define VK_HPP_CHECK_ERR(result, message) {        \
-    if (result != vk::Result::eSuccess) {          \
-       LOG_AND_THROW std::runtime_error(message);  \
-    }                                              \
-}
+bool isSuccess(vk::Result result);
+
+#define VK_CHECK_ERR(result, message)               \
+    if (!isSuccess(result)) {                       \
+        LOG_AND_THROW std::runtime_error(message);  \
+    }

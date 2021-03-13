@@ -1,7 +1,7 @@
 #include "magma/vk/commands/CommandBuffer.h"
 
 CommandBuffer::CommandBuffer(vk::Device device, vk::CommandPool commandPool)
-        : _device(device), 
+        : _device(device),
         _commandPool(commandPool) {
     vk::CommandBufferAllocateInfo allocInfo;
     allocInfo.commandPool = commandPool;
@@ -9,7 +9,7 @@ CommandBuffer::CommandBuffer(vk::Device device, vk::CommandPool commandPool)
     allocInfo.commandBufferCount = 1;
 
     vk::Result result = _device.allocateCommandBuffers(&allocInfo, &_commandBuffer);
-    VK_HPP_CHECK_ERR(result, "Failed to allocate command buffers!");
+    VK_CHECK_ERR(result, "Failed to allocate command buffers!");
 }
 
 CommandBuffer::~CommandBuffer() {
@@ -20,13 +20,13 @@ vk::CommandBuffer CommandBuffer::begin(vk::CommandBufferUsageFlags flags) {
     vk::CommandBufferBeginInfo beginInfo;
     beginInfo.flags = flags;
     vk::Result result = _commandBuffer.begin(beginInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to begin recording command buffer!");
+    VK_CHECK_ERR(result, "Failed to begin recording command buffer!");
     return _commandBuffer;
 }
 
 void CommandBuffer::end() {
     vk::Result result = _commandBuffer.end();
-    VK_HPP_CHECK_ERR(result, "Failed to record command buffer!");
+    VK_CHECK_ERR(result, "Failed to record command buffer!");
 }
 
 void CommandBuffer::submit_sync(vk::Queue queue) {
@@ -35,9 +35,9 @@ void CommandBuffer::submit_sync(vk::Queue queue) {
     submitInfo.pCommandBuffers = &_commandBuffer;
 
     vk::Result result = queue.submit(submitInfo, vk::Fence());
-    VK_HPP_CHECK_ERR(result, "Failed to submit command buffer!");
+    VK_CHECK_ERR(result, "Failed to submit command buffer!");
     result = queue.waitIdle();
-    VK_HPP_CHECK_ERR(result, "Failed to wait idle command buffer!");
+    VK_CHECK_ERR(result, "Failed to wait idle command buffer!");
 }
 
 void CommandBuffer::endAndSubmit_sync(vk::Queue queue) {

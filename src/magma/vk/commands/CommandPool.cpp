@@ -8,7 +8,7 @@ vk::CommandPool CommandPool::createPool(vk::Device device, uint32_t queueFamilyI
         queueFamilyIndex);
 
     auto [result, commandPool] = device.createCommandPool(poolInfo);
-    VK_HPP_CHECK_ERR(result, "failed to create command pool!");
+    VK_CHECK_ERR(result, "failed to create command pool!");
 
     return commandPool;
 }

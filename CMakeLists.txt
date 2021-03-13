@@ -54,6 +54,7 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/app/render/GBuffer.cpp
 
 		include/magma/vk/vulkan_common.h
+		src/magma/vk/vulkan_common.cpp
 		include/magma/vk/Context.h
 		src/magma/vk/Context.cpp
 		include/magma/vk/Extensions.h

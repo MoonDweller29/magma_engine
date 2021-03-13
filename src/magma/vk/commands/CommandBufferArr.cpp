@@ -1,6 +1,6 @@
 #include "magma/vk/commands/CommandBufferArr.h"
 
-CommandBufferArr::CommandBufferArr(vk::Device device, vk::CommandPool commandPool, uint32_t count) 
+CommandBufferArr::CommandBufferArr(vk::Device device, vk::CommandPool commandPool, uint32_t count)
         : _device(device),
         _commandPool(commandPool) {
     vk::CommandBufferAllocateInfo allocInfo;
@@ -10,7 +10,7 @@ CommandBufferArr::CommandBufferArr(vk::Device device, vk::CommandPool commandPoo
 
     vk::Result result;
     std::tie(result, _commandBuffers) = _device.allocateCommandBuffers(allocInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to allocate command buffers!");
+    VK_CHECK_ERR(result, "Failed to allocate command buffers!");
 }
 
 CommandBufferArr::~CommandBufferArr() {
@@ -20,13 +20,13 @@ CommandBufferArr::~CommandBufferArr() {
 vk::CommandBuffer CommandBufferArr::begin(uint32_t i) {
     vk::CommandBufferBeginInfo beginInfo;
     vk::Result result = _commandBuffers[i].begin(beginInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to begin recording command buffer!");
+    VK_CHECK_ERR(result, "Failed to begin recording command buffer!");
     return _commandBuffers.at(i);
 }
 
 void CommandBufferArr::end(uint32_t i) {
     vk::Result result = _commandBuffers[i].end();
-    VK_HPP_CHECK_ERR(result, "Failed to record command buffer!");
+    VK_CHECK_ERR(result, "Failed to record command buffer!");
 }
 
 void CommandBufferArr::submit_sync(uint32_t i, vk::Queue queue) {
@@ -35,9 +35,9 @@ void CommandBufferArr::submit_sync(uint32_t i, vk::Queue queue) {
     submitInfo.pCommandBuffers = &_commandBuffers[i];
 
     vk::Result result = queue.submit(submitInfo, vk::Fence());
-    VK_HPP_CHECK_ERR(result, "Failed to submit command buffer!");
+    VK_CHECK_ERR(result, "Failed to submit command buffer!");
     result = queue.waitIdle();
-    VK_HPP_CHECK_ERR(result, "Failed to wait idle command buffer!");
+    VK_CHECK_ERR(result, "Failed to wait idle command buffer!");
 }
 
 void CommandBufferArr::endAndSubmit_sync(uint32_t i, vk::Queue queue) {

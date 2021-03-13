@@ -8,7 +8,7 @@
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/vulkan_common.h"
 
-TextureManager::TextureManager(LogicalDevice &device) 
+TextureManager::TextureManager(LogicalDevice &device)
         : _device(device),
         _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
 {}
@@ -74,13 +74,13 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     imageInfo.initialLayout = vk::ImageLayout::eUndefined;
 
     auto [result, textureImage] = _device.getDevice().createImage(imageInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to create image!");
+    VK_CHECK_ERR(result, "Failed to create image!");
 
     vk::MemoryRequirements memRequirements = _device.getDevice().getImageMemoryRequirements(textureImage);
     vk::DeviceMemory textureMemory = _device.memAlloc(memRequirements, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
     result = _device.getDevice().bindImageMemory(textureImage, textureMemory, 0);
-    VK_HPP_CHECK_ERR(result, "Failed to bind image memory!");
+    VK_CHECK_ERR(result, "Failed to bind image memory!");
 
     vk::ImageViewCreateInfo viewInfo;
     viewInfo.image = textureImage;
@@ -94,7 +94,7 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
 
     vk::ImageView textureView;
     std::tie(result, textureView) = _device.getDevice().createImageView(viewInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to create image view!");
+    VK_CHECK_ERR(result, "Failed to create image view!");
 
     TextureInfo* textureInfo = new TextureInfo;
     textureInfo->device = _device.c_getDevice();
@@ -110,7 +110,7 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     nameInfo.objectHandle = (uint64_t)(VkImage)textureImage;
     nameInfo.pObjectName = name.c_str();
     result = _device.getDevice().setDebugUtilsObjectNameEXT(nameInfo);
-    VK_HPP_CHECK_ERR(result, "Failed to set image name!");
+    VK_CHECK_ERR(result, "Failed to set image name!");
 #endif
 
     _textures.emplace(name, Texture(textureImage, textureMemory, ImageView(textureView), textureInfo));

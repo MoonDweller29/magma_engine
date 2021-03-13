@@ -71,7 +71,7 @@ uint32_t PhysicalDevice::findMemoryTypeInd(uint32_t typeFilter, vk::MemoryProper
 
 bool PhysicalDevice::checkExtensionSupport(const std::vector<const char*> &extensions) const {
     auto [result, availableExtensions] = _physicalDevice.enumerateDeviceExtensionProperties();
-    VK_HPP_CHECK_ERR(result, "failed to enumerate device extension properties");
+    VK_CHECK_ERR(result, "failed to enumerate device extension properties");
 
     std::set<std::string> requiredExtensions(extensions.begin(), extensions.end());
     for (const auto& extension : availableExtensions) {

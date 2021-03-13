@@ -49,7 +49,7 @@ Context::Context() {
 
     vk::Result result;
     std::tie(result, _instance) = vk::createInstance(createInfo);
-    VK_HPP_CHECK_ERR(result, "failed to create instance!");
+    VK_CHECK_ERR(result, "failed to create instance!");
     _c_instance = VkInstance(_instance);
 
     #if ( VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1 )

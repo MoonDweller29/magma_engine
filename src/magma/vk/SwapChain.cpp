@@ -141,7 +141,7 @@ SwapChain::SwapChain(LogicalDevice &device, const Window &window):
 
     vk::Result result;
     std::tie(result, _swapChain) = _device.createSwapchainKHR(createInfo);
-    VK_HPP_CHECK_ERR(result, "failed to create swap chain!");
+    VK_CHECK_ERR(result, "failed to create swap chain!");
 
     _imageFormat = surfaceFormat.format;
     _extent = resolution;
@@ -152,7 +152,7 @@ SwapChain::SwapChain(LogicalDevice &device, const Window &window):
 void SwapChain::acquireImages() {
     vk::Result result;
     std::tie(result, _images) = _device.getSwapchainImagesKHR(_swapChain);
-    VK_HPP_CHECK_ERR(result, "failed to acquire swap chain images");
+    VK_CHECK_ERR(result, "failed to acquire swap chain images");
 }
 
 void SwapChain::createImageViews() {
