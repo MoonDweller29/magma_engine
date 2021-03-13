@@ -60,14 +60,13 @@ public:
 
     class ExceptionLogger {
     public:
-        ExceptionLogger(const char *filename, int line);
+        explicit ExceptionLogger(std::string_view message);
 
         template <typename E>
         [[ noreturn ]] void operator<<(E exception) const;
 
     private:
-        const char *_filename;
-        int _line;
+        std::string _message;
 
     };
 
@@ -113,7 +112,7 @@ JSON_ENUM_MAPPING(Log::Level,
 #define LOG_WARNING(...)  Log::warning  (Log::location(__FILENAME__, __LINE__), __VA_ARGS__)
 #define LOG_ERROR(...)    Log::error    (Log::location(__FILENAME__, __LINE__), __VA_ARGS__)
 #define LOG_CRITICAL(...) Log::critical (Log::location(__FILENAME__, __LINE__), __VA_ARGS__)
-#define LOG_AND_THROW Log::ExceptionLogger(__FILENAME__, __LINE__) <<
+#define LOG_AND_THROW Log::ExceptionLogger(Log::location(__FILENAME__, __LINE__)) <<
 
 
 template <typename ... Args>
@@ -170,6 +169,6 @@ void Log::print(std::ostream &stream, const T &object) {
 
 template <typename E>
 void Log::ExceptionLogger::operator<<(E exception) const {
-    Log::error(Log::location(_filename, _line), exception.what());
+    Log::error(_message, exception.what());
     throw exception;
 }

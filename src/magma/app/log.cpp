@@ -43,7 +43,6 @@ bool operator>(Log::Level l1, Log::Level l2) {
 }
 
 
-Log::ExceptionLogger::ExceptionLogger(const char *filename, int line)
-    : _filename(filename)
-    , _line(line) {
+Log::ExceptionLogger::ExceptionLogger(std::string_view message)
+    : _message(message) {
 }
