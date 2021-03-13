@@ -3,6 +3,7 @@
 #include <iostream>
 #include <type_traits>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include "magma/app/clock.h"
 #include "magma/app/config/JSON.h"
@@ -55,6 +56,8 @@ public:
     template <typename ... Args>
     static void critical(const Args &... args);
 
+    static std::string location(std::string_view filename, unsigned line);
+
     class ExceptionLogger {
     public:
         ExceptionLogger(const char *filename, int line);
@@ -105,12 +108,11 @@ JSON_ENUM_MAPPING(Log::Level,
 #define __FILENAME__ __FILE__
 #endif
 
-#define LOG_LOCATION_FORMAT(file, line) "[", file, ":", line, "] "
-#define LOG_DEBUG(...)    Log::debug    (LOG_LOCATION_FORMAT(__FILENAME__, __LINE__), __VA_ARGS__)
-#define LOG_INFO(...)     Log::info     (LOG_LOCATION_FORMAT(__FILENAME__, __LINE__), __VA_ARGS__)
-#define LOG_WARNING(...)  Log::warning  (LOG_LOCATION_FORMAT(__FILENAME__, __LINE__), __VA_ARGS__)
-#define LOG_ERROR(...)    Log::error    (LOG_LOCATION_FORMAT(__FILENAME__, __LINE__), __VA_ARGS__)
-#define LOG_CRITICAL(...) Log::critical (LOG_LOCATION_FORMAT(__FILENAME__, __LINE__), __VA_ARGS__)
+#define LOG_DEBUG(...)    Log::debug    (Log::location(__FILENAME__, __LINE__), __VA_ARGS__)
+#define LOG_INFO(...)     Log::info     (Log::location(__FILENAME__, __LINE__), __VA_ARGS__)
+#define LOG_WARNING(...)  Log::warning  (Log::location(__FILENAME__, __LINE__), __VA_ARGS__)
+#define LOG_ERROR(...)    Log::error    (Log::location(__FILENAME__, __LINE__), __VA_ARGS__)
+#define LOG_CRITICAL(...) Log::critical (Log::location(__FILENAME__, __LINE__), __VA_ARGS__)
 #define LOG_AND_THROW Log::ExceptionLogger(__FILENAME__, __LINE__) <<
 
 
@@ -168,6 +170,6 @@ void Log::print(std::ostream &stream, const T &object) {
 
 template <typename E>
 void Log::ExceptionLogger::operator<<(E exception) const {
-    Log::error(LOG_LOCATION_FORMAT(_filename, _line), exception.what());
+    Log::error(Log::location(_filename, _line), exception.what());
     throw exception;
 }
