@@ -184,7 +184,7 @@ CmdSync ColorPass::draw(
         submitInfo.waitSemaphoreCount = 0;
         submitInfo.pWaitSemaphores = nullptr;
     }
-    else if (waitSemaphores[0] != renderFinished.semaphore)
+    else if (waitSemaphores[0] != renderFinished.getSemaphore())
     {
         submitInfo.waitSemaphoreCount = waitSemaphores.size();
         submitInfo.pWaitSemaphores = waitSemaphores.data();
@@ -196,11 +196,11 @@ CmdSync ColorPass::draw(
     submitInfo.pCommandBuffers = &commandBuffer;
 
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &renderFinished.semaphore;
+    submitInfo.pSignalSemaphores = &renderFinished.getSemaphore();
 
-    vkResetFences(device.c_getDevice(), 1, &renderFinished.fence);
+    vkResetFences(device.c_getDevice(), 1, &renderFinished.getFence());
 
-    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.fence);
+    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.getFence());
     VK_CHECK_ERR(result, "failed to submit draw command buffer!");
 
     return renderFinished;
