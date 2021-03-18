@@ -1,8 +1,14 @@
-# compiling glfw
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(glfw)
+#compiling SFML
+set(SFML_BUILD_GRAPHICS FALSE CACHE STRING "" FORCE)
+set(SFML_BUILD_AUDIO FALSE CACHE STRING "" FORCE)
+set(SFML_BUILD_NETWORK FALSE CACHE STRING "" FORCE)
+add_subdirectory(sfml)
+add_library(sfml INTERFACE)
+target_include_directories(sfml INTERFACE sfml/include)
+target_link_libraries(sfml INTERFACE
+        sfml-window
+        ${CMAKE_DL_LIBS}
+)
 
 # compiling assimp
 if (MINGW)

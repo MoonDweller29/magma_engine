@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-#include "magma/app/keyboard.h"
-#include "magma/app/mouse.h"
+#include "magma/app/Keyboard.h"
+#include "magma/app/Mouse.h"
 
 Camera::Camera(float zNear, float zFar, int width, int height, float FOV):
     _zNear(zNear),
@@ -49,30 +49,30 @@ void Camera::update(Keyboard& keyboard, Mouse& mouse, float elapsedTime) {
     _up = glm::normalize(glm::cross(_right, _forward));
 
     float curr_speed = _speed;
-    if (keyboard.isPressed(GLFW_KEY_LEFT_SHIFT)) {
+    if (keyboard.isPressed(sf::Keyboard::LShift)) {
         curr_speed = _speed*4;
-    } else if (keyboard.isPressed(GLFW_KEY_LEFT_CONTROL)) {
+    } else if (keyboard.isPressed(sf::Keyboard::LControl)) {
         curr_speed = _speed/20;
     }
 
-    if (keyboard.isPressed(GLFW_KEY_W)) {
+    if (keyboard.isPressed(sf::Keyboard::W)) {
         _pos += elapsedTime*curr_speed*_forward;
     }
-    if (keyboard.isPressed(GLFW_KEY_S)) {
+    if (keyboard.isPressed(sf::Keyboard::S)) {
         _pos -= elapsedTime*curr_speed*_forward;
     }
 
-    if (keyboard.isPressed(GLFW_KEY_D)) {
+    if (keyboard.isPressed(sf::Keyboard::D)) {
         _pos += elapsedTime*curr_speed*_right;
     }
-    if (keyboard.isPressed(GLFW_KEY_A)) {
+    if (keyboard.isPressed(sf::Keyboard::A)) {
         _pos -= elapsedTime*curr_speed*_right;
     }
 
-    if (keyboard.isPressed(GLFW_KEY_E)) {
+    if (keyboard.isPressed(sf::Keyboard::E)) {
         _pos += elapsedTime*curr_speed*_up;
     }
-    if (keyboard.isPressed(GLFW_KEY_Q)) {
+    if (keyboard.isPressed(sf::Keyboard::Q)) {
         _pos -= elapsedTime*curr_speed*_up;
     }
 

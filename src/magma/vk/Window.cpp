@@ -1,66 +1,98 @@
 #include "magma/vk/Window.h"
 
 #include <iostream>
+
 #include "magma/vk/vulkan_common.h"
+#include "magma/app/log.hpp"
 
-void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    Window *app_window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-    app_window->_wasResized = true;
-}
-
-vk::SurfaceKHR Window::createSurface(vk::Instance hpp_instance, GLFWwindow* window) {
-    VkInstance instance(hpp_instance);
-    VkSurfaceKHR surface;
-    VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
-    VK_CHECK_ERR(result, "failed to create window surface!");
-
-    return surface;
-}
-
-Window::Window(uint32_t width, uint32_t height, vk::Instance instance) :
-    _width(width), _height(height), _instance(instance), _wasResized(false)
+Window::Window(uint32_t width, uint32_t height, vk::Instance instance)
+        :_width(width),
+        _height(height),
+        _instance(instance),
+        _wasResized(false),
+        _window(sf::VideoMode(width, height), "Magma Engine", sf::Style::Default)
 {
-    initContext();
+    _keyboard = std::make_unique<Keyboard>();
 
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); //call that turns off OpenGL context
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //potential problem. Resizable window is unstable
-
-    _window = glfwCreateWindow(width, height, "Vulkan 3D", nullptr, nullptr);
-    glfwSetWindowUserPointer(_window, this);
-    glfwSetFramebufferSizeCallback(_window, framebufferResizeCallback);
-    _keyboard = std::make_unique<Keyboard>(_window);
-    _mouse = std::make_unique<Mouse>(this);
+    _mouse = std::make_unique<Mouse>(_window);
 
     _surface = createSurface(_instance, _window);
 }
 
-void Window::initContext() {
-    glfwInit();
+Window::~Window() {
+    _instance.destroySurfaceKHR(_surface);
+    _keyboard.reset();
+    _mouse.reset();
 }
 
-void Window::closeContext() {
-    glfwTerminate();
+void Window::setTitle(const std::string &title) {
+    _window.setTitle(title.c_str());
+}
+
+void Window::updateEvents() {
+    sf::Event event;
+    _keyboard->flush();
+
+    while(_window.pollEvent(event)) {
+
+        switch (event.type) {
+            case sf::Event::Closed:
+                _window.close();
+                break;
+            case sf::Event::Resized:
+                _wasResized = true;
+                break;
+
+            case sf::Event::KeyPressed:
+                _keyboard->addPressed(event.key.code);
+                break;
+            case sf::Event::KeyReleased:
+                _keyboard->addReleased(event.key.code);
+                break;
+            default:
+                break;
+        }
+
+    }
+    // Closed,                 //!< The window requested to be closed (no data)
+    // Resized,                //!< The window was resized (data in event.size)
+    // LostFocus,              //!< The window lost the focus (no data)
+    // GainedFocus,            //!< The window gained the focus (no data)
+    // TextEntered,            //!< A character was entered (data in event.text)
+    // KeyPressed,             //!< A key was pressed (data in event.key)
+    // KeyReleased,            //!< A key was released (data in event.key)
+    // MouseWheelMoved,        //!< The mouse wheel was scrolled (data in event.mouseWheel) (deprecated)
+    // MouseWheelScrolled,     //!< The mouse wheel was scrolled (data in event.mouseWheelScroll)
+    // MouseButtonPressed,     //!< A mouse button was pressed (data in event.mouseButton)
+    // MouseButtonReleased,    //!< A mouse button was released (data in event.mouseButton)
+    // MouseMoved,             //!< The mouse cursor moved (data in event.mouseMove)
+    // MouseEntered,           //!< The mouse cursor entered the area of the window (no data)
+    // MouseLeft,              //!< The mouse cursor left the area of the window (no data)
+    // JoystickButtonPressed,  //!< A joystick button was pressed (data in event.joystickButton)
+    // JoystickButtonReleased, //!< A joystick button was released (data in event.joystickButton)
+    // JoystickMoved,          //!< The joystick moved along an axis (data in event.joystickMove)
+    // JoystickConnected,      //!< A joystick was connected (data in event.joystickConnect)
+    // JoystickDisconnected,   //!< A joystick was disconnected (data in event.joystickConnect)
+    // TouchBegan,             //!< A touch event began (data in event.touch)
+    // TouchMoved,             //!< A touch moved (data in event.touch)
+    // TouchEnded,             //!< A touch event ended (data in event.touch)
+    // SensorChanged,          //!< A sensor value changed (data in event.sensor)
+    // Count                   //!< Keep last -- the total number of event types
 }
 
 std::vector<const char*> Window::getRequiredVkExtensions() {
-    initContext();
-
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions;
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
+    std::vector<const char*> extensions = sf::Vulkan::getGraphicsRequiredInstanceExtensions();
     return extensions;
 }
 
 void Window::updateResolution() {
     int new_w = 0, new_h = 0;
 
-    glfwGetFramebufferSize(_window, &new_w, &new_h);
+    new_w = _window.getSize().x;
+    new_h = _window.getSize().y;
     while (new_w == 0 || new_h == 0) {
-        glfwWaitEvents();
-        glfwGetFramebufferSize(_window, &new_w, &new_h);
+        new_w = _window.getSize().x;
+        new_h = _window.getSize().y;
     }
     _width = new_w;
     _height = new_h;
@@ -68,13 +100,11 @@ void Window::updateResolution() {
     _wasResized = false;
 }
 
-void Window::setTitle(const std::string &title) {
-    glfwSetWindowTitle(_window, title.c_str());
-}
+vk::SurfaceKHR Window::createSurface(vk::Instance hpp_instance, sf::WindowBase &window) {
+    VkInstance instance(hpp_instance);
+    VkSurfaceKHR surface;
+    if (!window.createVulkanSurface(instance, surface))
+        LOG_WARNING("Failed to create window surface!");
 
-Window::~Window() {
-    _instance.destroySurfaceKHR(_surface);
-    _keyboard.reset();
-    _mouse.reset();
-    glfwDestroyWindow(_window);
+    return surface;
 }

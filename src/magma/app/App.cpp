@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "SFML/Window/Mouse.hpp"
 #include "magma/app/App.h"
 #include "magma/vk/buffers/BufferManager.h"
 #include "magma/vk/textures/TextureManager.h"
@@ -55,7 +56,7 @@ static std::string joinPath(const std::string &s1, const std::string &s2) {
 
 
 bool App::isClosed() {
-	return keyBoard->wasPressed(GLFW_KEY_ESCAPE);
+	return !window->getSfmlWindow().isOpen();
 }
 
 int App::run() {
@@ -341,7 +342,7 @@ void App::updateUniformBuffer(uint32_t currentImage) {
     float time = global_clock.getTime();
     static bool light_view = false;
 
-    if (keyBoard->wasPressed(GLFW_KEY_2))
+    if (keyBoard->wasPressed(sf::Keyboard::Num2))
         light_view = !light_view;
 
     UniformBufferObject ubo{};
@@ -385,7 +386,7 @@ void App::mainLoop() {
     mainCamera->setPos({1, 1, 1});
     mainCamera->lookAt({0, 0, 0});
 
-    while (!glfwWindowShouldClose(window->getGlfwWindow())) {
+    while (window->getSfmlWindow().isOpen()) {
         float time = global_clock.getTime();
         float frameTime = time-prev_time;
         prev_time = time;
@@ -397,24 +398,18 @@ void App::mainLoop() {
         }
         frames_count++;
 
-        keyBoard->flush();
-        glfwPollEvents();
-        mouse->update();
+        window->updateEvents();
         mainCamera->update(*keyBoard, *mouse, frameTime);
-//        light->lookAt(glm::vec3(0,0,0), glm::vec3(sin(time), 0.4f, cos(time)));
-        light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
 
-        // @TODO Move this to input class
-        bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
-        bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
+        light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
 
         // @TODO Add window focus handling
         if (mouse->isLocked()) {
-            if (isLeftMouseButtonReleased) {
+            if (!mouse->isButtonPressed(sf::Mouse::Button::Right)) {
                 mouse->unlock();
             }
         } else {
-            if (isLeftMouseButtonPressed) {
+            if (mouse->isButtonPressed(sf::Mouse::Button::Right)) {
                 mouse->lock();
             }
         }
@@ -452,6 +447,4 @@ void App::cleanUp() {
     window.reset();
     debugMessenger.reset();
     instance.reset();
-
-    Window::closeContext();
 }

@@ -28,12 +28,12 @@ set(LIBRARY_NAME magma)
 
 add_library(${LIBRARY_NAME} STATIC
 		include/magma/glm_inc.h
-		include/magma/app/keyboard.h
-		src/magma/app/keyboard.cpp
+		include/magma/app/Keyboard.h
+		src/magma/app/Keyboard.cpp
 		include/magma/app/Camera.h
 		src/magma/app/Camera.cpp
-		include/magma/app/mouse.h
-		src/magma/app/mouse.cpp
+		include/magma/app/Mouse.h
+		src/magma/app/Mouse.cpp
 		include/magma/app/clock.h
 		src/magma/app/clock.cpp
 		include/magma/app/image.h
@@ -131,11 +131,11 @@ target_include_directories(${LIBRARY_NAME}
 )
 target_link_libraries(${LIBRARY_NAME}
 		${Vulkan_LIBRARY}
-		glfw
 		glm
 		assimp
 		nlohmann_json
 		stb
+		sfml
 )
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_DIR_PATH_LENGTH)
 target_compile_definitions(${LIBRARY_NAME}
