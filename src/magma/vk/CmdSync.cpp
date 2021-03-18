@@ -1,4 +1,4 @@
-#include "magma/vk/cmdSync.h"
+#include "magma/vk/CmdSync.h"
 #include "magma/vk/vulkan_common.h"
 
 CmdSync::CmdSync():

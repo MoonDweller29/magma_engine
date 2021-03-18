@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include "magma/vk/graphicsPipeline.h"
 #include "magma/vk/LogicalDevice.h"
-#include "magma/vk/cmdSync.h"
+#include "magma/vk/CmdSync.h"
 #include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/textures/Texture.h"
 #include "magma/vk/descriptors/descriptorSetLayout.h"

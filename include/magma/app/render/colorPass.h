@@ -3,7 +3,7 @@
 #include "magma/vk/graphicsPipeline.h"
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/SwapChain.h"
-#include "magma/vk/cmdSync.h"
+#include "magma/vk/CmdSync.h"
 #include "magma/vk/commands/CommandBufferArr.h"
 #include "magma/vk/descriptors/descriptorSetLayout.h"
 #include "magma/app/scene/mesh.h"
