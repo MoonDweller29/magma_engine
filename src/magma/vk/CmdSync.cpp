@@ -1,19 +1,21 @@
 #include "magma/vk/CmdSync.h"
+
+#include <cstdint>
 #include "magma/vk/vulkan_common.h"
 
-CmdSync::CmdSync(VkDevice device) : _isResourceOwner(true), _device(device) {
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+CmdSync::CmdSync(vk::Device device, bool makeFenceSignaled) : _isResourceOwner(true), _device(device) {
+    vk::SemaphoreCreateInfo semaphoreInfo;
+    vk::Result result;
+    std::tie(result, _semaphore) = _device.createSemaphore(semaphoreInfo);
+    VK_CHECK_ERR(result, "failed to create semaphore!");
 
-    VkFenceCreateInfo fenceInfo{};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    vk::FenceCreateInfo fenceInfo;
+    if (makeFenceSignaled) {
+        fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+    }
 
-    VkResult result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &_semaphore);
-    VK_CHECK_ERR(result, "failed to create semaphores!");
-
-    result = vkCreateFence(device, &fenceInfo, nullptr, &_fence);
-    VK_CHECK_ERR(result, "failed to create fences!");
+    std::tie(result, _fence) = _device.createFence(fenceInfo);
+    VK_CHECK_ERR(result, "failed to create fence!");
 }
 
 CmdSync::CmdSync(CmdSync &other):
@@ -22,7 +24,7 @@ CmdSync::CmdSync(CmdSync &other):
 {}
 
 CmdSync::CmdSync(CmdSync &&other):
-    _isResourceOwner(true), _device(other._device),
+    _isResourceOwner(other._isResourceOwner), _device(other._device),
     _semaphore(other._semaphore), _fence(other._fence)
 {
     other._isResourceOwner = false;
@@ -30,19 +32,24 @@ CmdSync::CmdSync(CmdSync &&other):
 
 CmdSync::~CmdSync() {
     if (_isResourceOwner) {
-        vkDestroySemaphore(_device, _semaphore, nullptr);
-        vkDestroyFence(_device, _fence, nullptr);
+        _device.destroySemaphore(_semaphore);
+        _device.destroyFence(_fence);
     }
+}
+
+void CmdSync::waitForFence() const {
+    vk::Result result = _device.waitForFences(1, &_fence, VK_TRUE, UINT64_MAX);
 }
 
 void CmdSync::resetFence() {
     if (_isResourceOwner) {
-        vkResetFences(_device, 1, &_fence);
+        vk::Result result = _device.resetFences(1, &_fence);
+        VK_CHECK_ERR(result, "failed to reset fence");
     } else {
         LOG_AND_THROW std::logic_error("attempt to reset fence from a non owner of CmdSync");
     }
 }
 
-bool CmdSync::isFenceSignaled() {
-    return vkGetFenceStatus(_device, _fence) == VK_SUCCESS;
+bool CmdSync::isFenceSignaled() const {
+    return _device.getFenceStatus(_fence) == vk::Result::eSuccess;
 }

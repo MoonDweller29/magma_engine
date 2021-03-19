@@ -7,7 +7,7 @@ ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     device(device), swapChain(swapChain),
     extent(swapChain.getExtent()),
     _commandBuffers(device.getDevice(), device.getGraphicsQueue().cmdPool, swapChain.imgCount()),
-    renderFinished(device.c_getDevice())
+    renderFinished(device.getDevice())
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -195,7 +195,8 @@ CmdSync ColorPass::draw(
     submitInfo.pCommandBuffers = &commandBuffer;
 
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &renderFinished.getSemaphore();
+    VkSemaphore renderFinishedSemaphore = renderFinished.getSemaphore();
+    submitInfo.pSignalSemaphores = &renderFinishedSemaphore;
 
     renderFinished.resetFence();
 

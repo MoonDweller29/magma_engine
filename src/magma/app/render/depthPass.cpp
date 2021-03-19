@@ -11,7 +11,7 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
         extent(extent),
         depthFinalLayout(depthFinalLayout), 
         _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool),
-        renderFinished(device.c_getDevice())
+        renderFinished(device.getDevice())
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -159,7 +159,8 @@ CmdSync DepthPass::draw(
     submitInfo.pCommandBuffers = &commandBuffer;
 
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &renderFinished.getSemaphore();
+    VkSemaphore renderFinishedSemaphore = renderFinished.getSemaphore();
+    submitInfo.pSignalSemaphores = &renderFinishedSemaphore;
 
     renderFinished.resetFence();
 

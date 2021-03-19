@@ -1,21 +1,23 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 class CmdSync {
 public:
-    CmdSync(VkDevice device);
+    CmdSync(vk::Device device, bool makeFenceSignaled = true);
     CmdSync(CmdSync &other);
     CmdSync(CmdSync &&other);
     ~CmdSync();
 
-    const VkSemaphore &getSemaphore() const { return _semaphore; }
-    const VkFence     &getFence()     const { return _fence;     }
+    const vk::Semaphore &getSemaphore() const { return _semaphore; }
+    const vk::Fence     &getFence()     const { return _fence;     }
+
+    void waitForFence() const;
     void resetFence();
-    bool isFenceSignaled();
+    bool isFenceSignaled() const;
 
 private:
-    bool        _isResourceOwner;
-    VkDevice    _device;
-    VkSemaphore _semaphore;
-    VkFence     _fence;
+    bool          _isResourceOwner;
+    vk::Device    _device;
+    vk::Semaphore _semaphore;
+    vk::Fence     _fence;
 };

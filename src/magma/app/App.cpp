@@ -285,7 +285,7 @@ void App::recreateSwapChain() {
 }
 
 void App::drawFrame() {
-    vkWaitForFences(device->c_getDevice(), 1, &colorPass->getSync().getFence(), VK_TRUE, UINT64_MAX);
+    colorPass->getSync().waitForFence();
 
     if (window->wasResized())
         recreateSwapChain();
@@ -318,7 +318,8 @@ void App::drawFrame() {
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &colorPassSync.getSemaphore();
+    VkSemaphore colorPassSemaphore = colorPassSync.getSemaphore();
+    presentInfo.pWaitSemaphores = &colorPassSemaphore;
 
     VkSwapchainKHR swapChains[] = {swapChain->getSwapChain()};
     presentInfo.swapchainCount = 1;
