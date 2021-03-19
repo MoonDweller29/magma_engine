@@ -3,20 +3,19 @@
 
 class CmdSync {
 public:
-    CmdSync();
     CmdSync(VkDevice device);
     CmdSync(CmdSync &other);
     CmdSync(CmdSync &&other);
     ~CmdSync();
 
-    void create(VkDevice device);
-
     const VkSemaphore &getSemaphore() const { return _semaphore; }
     const VkFence     &getFence()     const { return _fence;     }
+    void resetFence();
+    bool isFenceSignaled();
 
 private:
-    VkDevice    _device; //if device == VK_NULL_HANDLE, then it's a copy of a resource
+    bool        _isResourceOwner;
+    VkDevice    _device;
     VkSemaphore _semaphore;
     VkFence     _fence;
-    void clear();
 };

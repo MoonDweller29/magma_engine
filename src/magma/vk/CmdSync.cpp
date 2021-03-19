@@ -1,14 +1,7 @@
 #include "magma/vk/CmdSync.h"
 #include "magma/vk/vulkan_common.h"
 
-CmdSync::CmdSync():
-    _device(VK_NULL_HANDLE), _semaphore(VK_NULL_HANDLE), _fence(VK_NULL_HANDLE)
-{}
-
-void CmdSync::create(VkDevice device) {
-    clear();
-    _device = device;
-
+CmdSync::CmdSync(VkDevice device) : _isResourceOwner(true), _device(device) {
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -23,28 +16,33 @@ void CmdSync::create(VkDevice device) {
     VK_CHECK_ERR(result, "failed to create fences!");
 }
 
-CmdSync::CmdSync(VkDevice device) {
-    _device = VK_NULL_HANDLE;
-    create(device);
-}
-
 CmdSync::CmdSync(CmdSync &other):
-    _device(VK_NULL_HANDLE), _semaphore(other._semaphore), _fence(other._fence)
+    _isResourceOwner(false), _device(other._device),
+    _semaphore(other._semaphore), _fence(other._fence)
 {}
 
 CmdSync::CmdSync(CmdSync &&other):
-    _device(other._device), _semaphore(other._semaphore), _fence(other._fence)
+    _isResourceOwner(true), _device(other._device),
+    _semaphore(other._semaphore), _fence(other._fence)
 {
-    other._device = VK_NULL_HANDLE;
+    other._isResourceOwner = false;
 }
 
-void CmdSync::clear() {
-    if (_device != VK_NULL_HANDLE) {
+CmdSync::~CmdSync() {
+    if (_isResourceOwner) {
         vkDestroySemaphore(_device, _semaphore, nullptr);
         vkDestroyFence(_device, _fence, nullptr);
     }
 }
 
-CmdSync::~CmdSync() {
-    clear();
+void CmdSync::resetFence() {
+    if (_isResourceOwner) {
+        vkResetFences(_device, 1, &_fence);
+    } else {
+        LOG_AND_THROW std::logic_error("attempt to reset fence from a non owner of CmdSync");
+    }
+}
+
+bool CmdSync::isFenceSignaled() {
+    return vkGetFenceStatus(_device, _fence) == VK_SUCCESS;
 }
