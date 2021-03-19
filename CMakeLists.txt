@@ -116,8 +116,8 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/descriptors/descriptorPool.cpp
 		include/magma/vk/descriptors/descriptorSetInfo.h
 		src/magma/vk/descriptors/descriptorSetInfo.cpp
-		include/magma/vk/cmdSync.h
-		src/magma/vk/cmdSync.cpp
+		include/magma/vk/CmdSync.h
+		src/magma/vk/CmdSync.cpp
 		include/magma/app/config/JSON.h
 		src/magma/app/config/JSON.cpp
 		include/magma/app/log.hpp

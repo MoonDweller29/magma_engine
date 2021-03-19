@@ -6,7 +6,8 @@
 ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
     device(device), swapChain(swapChain),
     extent(swapChain.getExtent()),
-    _commandBuffers(device.getDevice(), device.getGraphicsQueue().cmdPool, swapChain.imgCount())
+    _commandBuffers(device.getDevice(), device.getGraphicsQueue().cmdPool, swapChain.imgCount()),
+    renderFinished(device.getDevice())
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -25,8 +26,6 @@ ColorPass::ColorPass(LogicalDevice &device, SwapChain &swapChain):
             fragShader.getStageInfo()
     };
     graphicsPipeline = std::make_unique<GraphicsPipeline>(device.c_getDevice(), shaderStages, pipelineInfo, renderPass);
-
-    renderFinished.create(device.c_getDevice());
 }
 
 void ColorPass::initDescriptorSetLayout()
@@ -184,7 +183,7 @@ CmdSync ColorPass::draw(
         submitInfo.waitSemaphoreCount = 0;
         submitInfo.pWaitSemaphores = nullptr;
     }
-    else if (waitSemaphores[0] != renderFinished.semaphore)
+    else if (waitSemaphores[0] != renderFinished.getSemaphore())
     {
         submitInfo.waitSemaphoreCount = waitSemaphores.size();
         submitInfo.pWaitSemaphores = waitSemaphores.data();
@@ -196,11 +195,12 @@ CmdSync ColorPass::draw(
     submitInfo.pCommandBuffers = &commandBuffer;
 
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &renderFinished.semaphore;
+    VkSemaphore renderFinishedSemaphore = renderFinished.getSemaphore();
+    submitInfo.pSignalSemaphores = &renderFinishedSemaphore;
 
-    vkResetFences(device.c_getDevice(), 1, &renderFinished.fence);
+    renderFinished.resetFence();
 
-    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.fence);
+    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.getFence());
     VK_CHECK_ERR(result, "failed to submit draw command buffer!");
 
     return renderFinished;

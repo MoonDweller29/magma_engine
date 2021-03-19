@@ -285,7 +285,7 @@ void App::recreateSwapChain() {
 }
 
 void App::drawFrame() {
-    vkWaitForFences(device->c_getDevice(), 1, &colorPass->getSync().fence, VK_TRUE, UINT64_MAX);
+    colorPass->getSync().waitForFence();
 
     if (window->wasResized())
         recreateSwapChain();
@@ -305,12 +305,12 @@ void App::drawFrame() {
     updateUniformBuffer(imageIndex);
     updateShadowUniform();
 
-    std::vector<VkFence> waitFences = { colorPass->getSync().fence };
+    std::vector<VkFence> waitFences = { colorPass->getSync().getFence() };
     std::vector<VkSemaphore> waitSemaphores;
     CmdSync depthPassSync = depthPass->draw(waitSemaphores, waitFences);
     CmdSync shadowPassSync = renderShadow->draw(waitSemaphores, waitFences);
-    waitFences = { depthPassSync.fence, shadowPassSync.fence};
-    waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.semaphore, shadowPassSync.semaphore};
+    waitFences = { depthPassSync.getFence(), shadowPassSync.getFence()};
+    waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.getSemaphore(), shadowPassSync.getSemaphore()};
     CmdSync colorPassSync = colorPass->draw(imageIndex, waitSemaphores, waitFences);
 
 
@@ -318,7 +318,8 @@ void App::drawFrame() {
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &colorPassSync.semaphore;
+    VkSemaphore colorPassSemaphore = colorPassSync.getSemaphore();
+    presentInfo.pWaitSemaphores = &colorPassSemaphore;
 
     VkSwapchainKHR swapChains[] = {swapChain->getSwapChain()};
     presentInfo.swapchainCount = 1;

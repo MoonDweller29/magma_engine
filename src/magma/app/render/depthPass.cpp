@@ -10,7 +10,8 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
         depthTex(depthTex),
         extent(extent),
         depthFinalLayout(depthFinalLayout), 
-        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
+        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool),
+        renderFinished(device.getDevice())
 {
     initDescriptorSetLayout();
     createRenderPass();
@@ -27,8 +28,6 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
 
     std::vector<vk::ImageView> attachments = { depthTex.getView() };
     frameBuffer = std::make_unique<FrameBuffer>(device.c_getDevice(), attachments, renderPass, extent);
-
-    renderFinished.create(device.c_getDevice());
 }
 
 void DepthPass::initDescriptorSetLayout()
@@ -148,7 +147,7 @@ CmdSync DepthPass::draw(
         submitInfo.waitSemaphoreCount = 0;
         submitInfo.pWaitSemaphores = nullptr;
     }
-    else if (waitSemaphores[0] != renderFinished.semaphore)
+    else if (waitSemaphores[0] != renderFinished.getSemaphore())
     {
         submitInfo.waitSemaphoreCount = waitSemaphores.size();
         submitInfo.pWaitSemaphores = waitSemaphores.data();
@@ -160,11 +159,12 @@ CmdSync DepthPass::draw(
     submitInfo.pCommandBuffers = &commandBuffer;
 
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &renderFinished.semaphore;
+    VkSemaphore renderFinishedSemaphore = renderFinished.getSemaphore();
+    submitInfo.pSignalSemaphores = &renderFinishedSemaphore;
 
-    vkResetFences(device.c_getDevice(), 1, &renderFinished.fence);
+    renderFinished.resetFence();
 
-    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.fence);
+    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.getFence());
     VK_CHECK_ERR(result, "failed to submit draw command buffer!");
 
     return renderFinished;
