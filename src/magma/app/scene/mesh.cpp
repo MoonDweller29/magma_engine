@@ -1,32 +1,32 @@
 #include "magma/app/scene/mesh.h"
+#include <vulkan/vulkan.hpp>
 
-std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescription()
+std::vector<vk::VertexInputBindingDescription> Vertex::getBindingDescription()
 {
-    std::vector<VkVertexInputBindingDescription>  bindingDescription(1, VkVertexInputBindingDescription{});
+    std::vector<vk::VertexInputBindingDescription>  bindingDescription(1, vk::VertexInputBindingDescription());
     bindingDescription[0].binding = 0;
     bindingDescription[0].stride = sizeof(Vertex);
-    bindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    bindingDescription[0].inputRate = vk::VertexInputRate::eVertex;
 
     return bindingDescription;
 }
 
-std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions()
+std::vector<vk::VertexInputAttributeDescription> Vertex::getAttributeDescriptions()
 {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(3, VkVertexInputAttributeDescription{});
-
+    std::vector<vk::VertexInputAttributeDescription> attributeDescriptions(3, vk::VertexInputAttributeDescription());
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
     attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
     attributeDescriptions[1].binding = 0;
     attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
     attributeDescriptions[1].offset = offsetof(Vertex, normal);
 
     attributeDescriptions[2].binding = 0;
     attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[2].format = vk::Format::eR32G32B32Sfloat;
     attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
     return attributeDescriptions;

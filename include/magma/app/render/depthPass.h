@@ -1,6 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include "magma/vk/graphicsPipeline.h"
+#include "magma/vk/pipeline/GraphicsPipeline.h"
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/CmdSync.h"
 #include "magma/vk/commands/CommandBuffer.h"
