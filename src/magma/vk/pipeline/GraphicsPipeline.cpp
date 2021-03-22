@@ -1,7 +1,6 @@
 #include "magma/vk/pipeline/GraphicsPipeline.h"
-#include "magma/vk/vulkan_common.h"
 
-#include <vulkan/vulkan.hpp>
+#include "magma/vk/vulkan_common.h"
 
 GraphicsPipeline::GraphicsPipeline(vk::Device device,
     const std::vector<vk::PipelineShaderStageCreateInfo> &shaderStages,

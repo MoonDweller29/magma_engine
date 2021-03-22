@@ -15,16 +15,17 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
 {
     initDescriptorSetLayout();
 
+    PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
     PipelineInfo pipelineInfo(_extent);
-    pipelineInfo.setLayout(_descriptorSetLayout.getLayout());
+    pipelineInfo.setLayout(pipelineLayoutInfo);
 
     Shader vertShader("imageProcessVert", _device, "shaders/imageProcess.vert.spv", Shader::Stage::VERT_SH);
     Shader fragShader("gBufferResolveFrag", _device, "shaders/gBufferResolve.frag.spv", Shader::Stage::FRAG_SH);
-    std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
+    std::vector<vk::PipelineShaderStageCreateInfo> shaderStages = {
             vertShader.getStageInfo(),
             fragShader.getStageInfo()
     };
-    _graphicsPipeline = std::make_unique<GraphicsPipeline>(VkDevice(_device), shaderStages, pipelineInfo, _renderPass.get());
+    _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
 }
 
 GBufferResolve::~GBufferResolve() {
@@ -144,7 +145,7 @@ void GBufferResolve::recordCmdBuffers() {
 
         cmdBuf.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
         {
-            cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, _graphicsPipeline->getHandler());
+            cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, _graphicsPipeline->getPipeline());
             cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
                                       _graphicsPipeline->getPipelineLayout(), 0, 1, &_descriptorSet, 0, nullptr);
             cmdBuf.draw(3, 1, 0, 0);

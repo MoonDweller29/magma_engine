@@ -15,12 +15,12 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
 {
     initDescriptorSetLayout();
     createRenderPass();
-    vk::DescriptorSetLayout vk_descriptorSetLayout = vk::DescriptorSetLayout(descriptorSetLayout.getLayout());
-    PipelineLayoutInfo pipelineLayoutInfo(vk_descriptorSetLayout);
+
+    PipelineLayoutInfo pipelineLayoutInfo(descriptorSetLayout.getLayout());
+    PipelineVertexInputInfo pipelineVertexInputInfo(Vertex::getBindingDescription(), Vertex::getAttributeDescriptions());
+
     PipelineInfo pipelineInfo(extent);
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
+    pipelineInfo.setVertexInputInfo(pipelineVertexInputInfo);
     pipelineInfo.setLayout(pipelineLayoutInfo);
 
     Shader vertShader("depthVertShader", device.getDevice(), "shaders/depth.vert.spv", Shader::Stage::VERT_SH);

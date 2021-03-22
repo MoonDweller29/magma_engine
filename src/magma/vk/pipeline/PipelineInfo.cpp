@@ -1,29 +1,30 @@
 #include "magma/vk/pipeline/PipelineInfo.h"
 
 #include "magma/vk/vulkan_common.h"
-#include <vulkan/vulkan.hpp>
 
 PipelineLayoutInfo::PipelineLayoutInfo()
         : _pipelineLayoutInfo()
 {}
 
 PipelineLayoutInfo::PipelineLayoutInfo(const std::vector<vk::DescriptorSetLayout> &descriptorSetLayouts)
-        : _pipelineLayoutInfo({}, descriptorSetLayouts)
+        : _descriptorSetLayouts(descriptorSetLayouts),
+          _pipelineLayoutInfo({}, _descriptorSetLayouts)
 {}
 
 PipelineLayoutInfo::PipelineLayoutInfo(const vk::DescriptorSetLayout &descriptorSetLayout)
-        : _pipelineLayoutInfo({}, 1, &descriptorSetLayout)
+        : _descriptorSetLayouts(1, descriptorSetLayout),
+        _pipelineLayoutInfo({}, _descriptorSetLayouts)
+{}
+
+PipelineVertexInputInfo::PipelineVertexInputInfo(const std::vector<vk::VertexInputBindingDescription> &bindingInfo,
+        const std::vector<vk::VertexInputAttributeDescription> &attributeInfo)
+        : _bindingInfo(bindingInfo),
+        _attributeInfo(attributeInfo),
+        _pipelineVertexInputInfo({}, _bindingInfo, _attributeInfo)
 {}
 
 PipelineInfo::PipelineInfo(vk::Extent2D extent) 
         : _resolution(extent) {
-
-    //vertex input info
-    //use setVertexInputInfo to change
-    _vertexInput.vertexBindingDescriptionCount = 0;
-    _vertexInput.pVertexBindingDescriptions = nullptr; // Optional
-    _vertexInput.vertexAttributeDescriptionCount = 0;
-    _vertexInput.pVertexAttributeDescriptions = nullptr; // Optional
 
     //topology
     _inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
@@ -47,16 +48,16 @@ PipelineInfo::PipelineInfo(vk::Extent2D extent)
     _viewportState.pScissors = &_scissor;
 
     //rasterizer
-    _rasterization.depthClampEnable = false; //to set true requires gpu feature
-    _rasterization.rasterizerDiscardEnable = false;
-    _rasterization.polygonMode = vk::PolygonMode::eFill; //can be changed to line or point, req gpu feature
-    _rasterization.lineWidth = 1.0f; //check wideLines gpu feature
-    _rasterization.cullMode = vk::CullModeFlagBits::eNone; //VK_CULL_MODE_BACK_BIT
-    _rasterization.frontFace = vk::FrontFace::eClockwise;
-    _rasterization.depthBiasEnable = false;
-    _rasterization.depthBiasConstantFactor = 0.0f; // Optional
-    _rasterization.depthBiasClamp = 0.0f; // Optional
-    _rasterization.depthBiasSlopeFactor = 0.0f; // Optional
+    _rasterizer.depthClampEnable = false; //to set true requires gpu feature
+    _rasterizer.rasterizerDiscardEnable = false;
+    _rasterizer.polygonMode = vk::PolygonMode::eFill; //can be changed to line or point, req gpu feature
+    _rasterizer.lineWidth = 1.0f; //check wideLines gpu feature
+    _rasterizer.cullMode = vk::CullModeFlagBits::eNone; //VK_CULL_MODE_BACK_BIT
+    _rasterizer.frontFace = vk::FrontFace::eClockwise;
+    _rasterizer.depthBiasEnable = false;
+    _rasterizer.depthBiasConstantFactor = 0.0f; // Optional
+    _rasterizer.depthBiasClamp = 0.0f; // Optional
+    _rasterizer.depthBiasSlopeFactor = 0.0f; // Optional
 
     //multisampling
     _multisampleState.sampleShadingEnable = false;
@@ -98,11 +99,6 @@ PipelineInfo::PipelineInfo(vk::Extent2D extent)
 
     _dynamicState.dynamicStateCount = _dynamicStates.size();
     _dynamicState.pDynamicStates = _dynamicStates.data();
-
-    _layoutInfo.setLayoutCount = 0; // setLayouts
-    _layoutInfo.pSetLayouts = nullptr; // setLayouts
-    _layoutInfo.pushConstantRangeCount = 0; // Optional
-    _layoutInfo.pPushConstantRanges = nullptr; // Optional
 }
 
 vk::PipelineColorBlendAttachmentState PipelineInfo::createColorBlendAttachmentState() {
@@ -122,16 +118,12 @@ vk::PipelineColorBlendAttachmentState PipelineInfo::createColorBlendAttachmentSt
     return colorBlendAttachment;
 }
 
-void PipelineInfo::setVertexInputInfo(const std::vector<vk::VertexInputBindingDescription> &bindingInfo,
-        const std::vector<vk::VertexInputAttributeDescription> &attributeInfo) {
-    _vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingInfo.size());
-    _vertexInput.pVertexBindingDescriptions = bindingInfo.data();
-    _vertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeInfo.size());
-    _vertexInput.pVertexAttributeDescriptions = attributeInfo.data();
+void PipelineInfo::setVertexInputInfo(const PipelineVertexInputInfo &pipelineVertexInputInfo) {
+    _vertexInfo = pipelineVertexInputInfo;
 }
 
 void PipelineInfo::setLayout(const PipelineLayoutInfo &pipelineLayoutInfo) {
-    _layoutInfo = pipelineLayoutInfo.getPipelineLayoutInfo();
+    _layoutInfo = pipelineLayoutInfo;
 }
 
 void PipelineInfo::setDepthCompareOp(vk::CompareOp op) {
@@ -139,8 +131,8 @@ void PipelineInfo::setDepthCompareOp(vk::CompareOp op) {
 }
 
 void PipelineInfo::setDepthBias(vk::Bool32 depthBiasEnable, float depthBiasConstantFactor) {
-    _rasterization.depthBiasEnable = depthBiasEnable;
-    _rasterization.depthBiasConstantFactor = depthBiasConstantFactor;
+    _rasterizer.depthBiasEnable = depthBiasEnable;
+    _rasterizer.depthBiasConstantFactor = depthBiasConstantFactor;
 }
 
 void PipelineInfo::setColorBlendAttachments(const std::vector<vk::PipelineColorBlendAttachmentState> &attachments) {

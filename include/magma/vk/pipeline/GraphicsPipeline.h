@@ -12,6 +12,8 @@ public:
         const PipelineInfo &pipelineInfo, vk::RenderPass renderPass);
     ~GraphicsPipeline();
 
+    GraphicsPipeline(const GraphicsPipeline &) = delete;
+
     vk::Pipeline        getPipeline()       const { return _graphicsPipeline;   }
     vk::PipelineLayout  getPipelineLayout() const { return _pipelineLayout;     }
 

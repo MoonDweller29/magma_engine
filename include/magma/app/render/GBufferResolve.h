@@ -7,7 +7,7 @@
 #include "magma/vk/CmdSync.h"
 #include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/descriptors/descriptorSetLayout.h"
-#include "magma/vk/graphicsPipeline.h"
+#include "magma/vk/pipeline/GraphicsPipeline.h"
 #include "magma/vk/FrameBuffer.h"
 
 

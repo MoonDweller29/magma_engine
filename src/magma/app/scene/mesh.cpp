@@ -1,5 +1,4 @@
 #include "magma/app/scene/mesh.h"
-#include <vulkan/vulkan.hpp>
 
 std::vector<vk::VertexInputBindingDescription> Vertex::getBindingDescription()
 {

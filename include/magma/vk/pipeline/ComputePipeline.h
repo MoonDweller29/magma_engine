@@ -11,6 +11,8 @@ public:
             const PipelineLayoutInfo &pipelineLayoutInfo);
     ~ComputePipeline();
 
+    ComputePipeline(const ComputePipeline &) = delete;
+
     vk::Pipeline          getPipeline()       const { return _pipeline;       }
     vk::PipelineLayout    getPipelineLayout() const { return _pipelineLayout; }
 private:

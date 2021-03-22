@@ -166,7 +166,6 @@ add_executable(${EDITOR_EXE_NAME}
 )
 target_link_libraries(${EDITOR_EXE_NAME}
 		${LIBRARY_NAME}
-		dl
 )
 
 

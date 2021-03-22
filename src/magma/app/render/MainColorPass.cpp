@@ -1,11 +1,9 @@
 #include "magma/app/render/MainColorPass.h"
 
 #include <array>
-#include <vulkan/vulkan.hpp>
 
 #include "magma/app/render/GBuffer.h"
 #include "magma/app/scene/mesh.h"
-#include "magma/vk/pipeline/PipelineInfo.h"
 
 MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue queue) :
     _device(device), _gBuffer(gBuffer), _queue(queue),
@@ -19,12 +17,11 @@ MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue qu
 {
     initDescriptorSetLayout();
 
-    vk::DescriptorSetLayout vk_descriptorSetLayout = vk::DescriptorSetLayout(_descriptorSetLayout.getLayout());
-    PipelineLayoutInfo pipelineLayoutInfo(vk_descriptorSetLayout);
+    PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
+    PipelineVertexInputInfo pipelineVertexInputInfo(Vertex::getBindingDescription(), Vertex::getAttributeDescriptions());
+
     PipelineInfo pipelineInfo(_gBuffer.getExtent());
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
+    pipelineInfo.setVertexInputInfo(pipelineVertexInputInfo);
     pipelineInfo.setLayout(pipelineLayoutInfo);
     pipelineInfo.setDepthCompareOp(vk::CompareOp::eLessOrEqual);
     pipelineInfo.setColorBlendAttachments({
