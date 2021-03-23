@@ -60,6 +60,7 @@ private:
     VkSampler textureSampler;
     VkSampler shadowMapSampler;
     std::unique_ptr<GBuffer> gBuffer;
+    Texture mainRenderTarget;
     Texture shadowMap;
 
     Clock global_clock;
@@ -78,6 +79,7 @@ private:
     void createShadowMapTex();
     void createShadowMapResources();
     void updateShadowUniform();
+    void createMainRenderTarget();
     void createSyncObjects();
     void mainLoop();
 
