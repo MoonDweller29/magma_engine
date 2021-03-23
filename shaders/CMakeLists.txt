@@ -10,6 +10,8 @@ set(SHADERS
         shader.vert
         shader.frag
         depth.vert
+        mainColorPass.vert
+        mainColorPass.frag
 )
 
 set(COMPILED_SHADERS)
