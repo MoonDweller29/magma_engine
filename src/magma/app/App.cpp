@@ -235,6 +235,11 @@ void App::initVulkan() {
             indices.size(),
             swapChain->getVkFrameBuffers()
     );
+    mainColorPass = std::make_unique<MainColorPass>(device->getDevice(), *gBuffer, device->getGraphicsQueue());
+    mainColorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
+                                       texture.getView(), textureSampler);
+    mainColorPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
+
 
     createSyncObjects();
 }
@@ -247,6 +252,7 @@ void App::cleanupSwapChain() {
     gBuffer.reset();
 
     swapChain->clearFrameBuffers();
+    mainColorPass.reset();
     colorPass.reset();
     depthPass.reset();
     swapChain.reset();
@@ -281,6 +287,10 @@ void App::recreateSwapChain() {
             indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size(),
             swapChain->getVkFrameBuffers()
     );
+    mainColorPass = std::make_unique<MainColorPass>(device->getDevice(), *gBuffer, device->getGraphicsQueue());
+    mainColorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
+                                       texture.getView(), textureSampler);
+    mainColorPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
     mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
 }
 
@@ -305,13 +315,17 @@ void App::drawFrame() {
     updateUniformBuffer(imageIndex);
     updateShadowUniform();
 
-    std::vector<VkFence> waitFences = { colorPass->getSync().getFence() };
-    std::vector<VkSemaphore> waitSemaphores;
-    CmdSync depthPassSync = depthPass->draw(waitSemaphores, waitFences);
-    CmdSync shadowPassSync = renderShadow->draw(waitSemaphores, waitFences);
-    waitFences = { depthPassSync.getFence(), shadowPassSync.getFence()};
-    waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.getSemaphore(), shadowPassSync.getSemaphore()};
-    CmdSync colorPassSync = colorPass->draw(imageIndex, waitSemaphores, waitFences);
+    std::vector<VkFence> c_waitFences = { colorPass->getSync().getFence() };
+    std::vector<VkSemaphore> c_waitSemaphores;
+    CmdSync depthPassSync = depthPass->draw(c_waitSemaphores, c_waitFences);
+    CmdSync shadowPassSync = renderShadow->draw(c_waitSemaphores, c_waitFences);
+    const CmdSync &mainColorPassSync = mainColorPass->draw(
+            { }, { depthPassSync.getFence() }
+    );
+    c_waitFences = { depthPassSync.getFence(), shadowPassSync.getFence() };
+    c_waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.getSemaphore(),
+                         shadowPassSync.getSemaphore(), mainColorPassSync.getSemaphore()};
+    CmdSync colorPassSync = colorPass->draw(imageIndex, c_waitSemaphores, c_waitFences);
 
 
     VkPresentInfoKHR presentInfo{};

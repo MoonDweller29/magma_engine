@@ -15,7 +15,7 @@ class PipelineInfo
     VkPipelineRasterizationStateCreateInfo rasterizer;
     VkPipelineMultisampleStateCreateInfo multisampling;
     VkPipelineDepthStencilStateCreateInfo depthStencil;
-    VkPipelineColorBlendAttachmentState colorBlendAttachment;
+    std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
     VkPipelineColorBlendStateCreateInfo colorBlending;
     std::vector<VkDynamicState> dynamicStates;
     VkPipelineDynamicStateCreateInfo dynamicState;
@@ -24,6 +24,8 @@ class PipelineInfo
 public:
     PipelineInfo(VkExtent2D extent);
     ~PipelineInfo() = default;
+
+    static VkPipelineColorBlendAttachmentState createColorBlendAttachmentOFF();
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     // getters
@@ -37,7 +39,6 @@ public:
     const VkPipelineRasterizationStateCreateInfo &getRasterizer()        const { return rasterizer; }
     const VkPipelineMultisampleStateCreateInfo &getMultisampling()       const { return multisampling; }
     const VkPipelineDepthStencilStateCreateInfo &getDepthStencil()       const { return depthStencil; }
-    const VkPipelineColorBlendAttachmentState &getColorBlendAttachment() const { return colorBlendAttachment; }
     const VkPipelineColorBlendStateCreateInfo &getColorBlending()        const { return colorBlending; }
     const VkPipelineDynamicStateCreateInfo &getDynamicState()            const { return dynamicState; }
     const VkPipelineLayoutCreateInfo &getPipelineLayoutInfo()            const { return pipelineLayoutInfo; }
@@ -56,6 +57,7 @@ public:
     void setLayout(const VkDescriptorSetLayout &descriptorSetLayout);
     void setDepthCompareOp(VkCompareOp op);
     void setDepthBias(VkBool32 depthBiasEnable, float depthBiasConstantFactor);
+    void setColorBlendAttachments(const std::vector<VkPipelineColorBlendAttachmentState> &attachments);
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////////////////

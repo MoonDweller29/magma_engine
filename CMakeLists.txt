@@ -52,6 +52,8 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/app/render/depthPass.cpp
 		include/magma/app/render/GBuffer.h
 		src/magma/app/render/GBuffer.cpp
+		include/magma/app/render/MainColorPass.h
+		src/magma/app/render/MainColorPass.cpp
 
 		include/magma/vk/vulkan_common.h
 		src/magma/vk/vulkan_common.cpp

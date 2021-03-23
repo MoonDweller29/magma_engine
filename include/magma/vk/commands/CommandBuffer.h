@@ -10,7 +10,7 @@ public:
     CommandBuffer(vk::Device device, vk::CommandPool commandPool);
     ~CommandBuffer();
 
-    vk::CommandBuffer getCmdBuf() const { return _commandBuffer; }
+    const vk::CommandBuffer &getCmdBuf() const { return _commandBuffer; }
 
     vk::CommandBuffer begin(vk::CommandBufferUsageFlags flags = vk::CommandBufferUsageFlags());
     void end();
