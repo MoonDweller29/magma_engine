@@ -17,7 +17,6 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
 
     PipelineInfo pipelineInfo(_extent);
     pipelineInfo.setLayout(_descriptorSetLayout.getLayout());
-    pipelineInfo.setDepthCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
 
     Shader vertShader("gBufferResolveVert", _device, "shaders/imageProcess.vert.spv", Shader::Stage::VERT_SH);
     Shader fragShader("gBufferResolveFrag", _device, "shaders/gBufferResolve.frag.spv", Shader::Stage::FRAG_SH);
