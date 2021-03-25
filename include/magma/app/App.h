@@ -13,6 +13,7 @@
 #include "magma/app/render/depthPass.h"
 #include "magma/app/render/colorPass.h"
 #include "magma/app/render/MainColorPass.h"
+#include "magma/app/render/GBufferResolve.h"
 #include "magma/glm_inc.h"
 #include "magma/app/Camera.h"
 #include "clock.h"
@@ -47,6 +48,7 @@ private:
     std::unique_ptr<DepthPass> depthPass;
     std::unique_ptr<ColorPass> colorPass;
     std::unique_ptr<MainColorPass> mainColorPass;
+    std::unique_ptr<GBufferResolve> gBufferResolve;
     std::unique_ptr<DepthPass> renderShadow;
     Buffer vertexBuffer;
     Buffer indexBuffer;
