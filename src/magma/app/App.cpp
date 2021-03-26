@@ -253,6 +253,10 @@ void App::initVulkan() {
                                         fragmentUniform, sizeof(FragmentUniform),
                                         lightSpaceUniform, sizeof(LightSpaceUniform));
     gBufferResolve->recordCmdBuffers();
+    swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
+            device->getDevice(), mainRenderTarget.getView(), *swapChain, device->getGraphicsQueue()
+    );
+    swapChainImageSupplier->recordCmdBuffers();
 
     createSyncObjects();
 }
@@ -268,6 +272,7 @@ void App::cleanupSwapChain() {
     swapChain->clearFrameBuffers();
     mainColorPass.reset();
     gBufferResolve.reset();
+    swapChainImageSupplier.reset();
     colorPass.reset();
     depthPass.reset();
     swapChain.reset();
@@ -312,11 +317,15 @@ void App::recreateSwapChain() {
                                         fragmentUniform, sizeof(FragmentUniform),
                                         lightSpaceUniform, sizeof(LightSpaceUniform));
     gBufferResolve->recordCmdBuffers();
+    swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
+            device->getDevice(), mainRenderTarget.getView(), *swapChain, device->getGraphicsQueue()
+    );
+    swapChainImageSupplier->recordCmdBuffers();
     mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
 }
 
 void App::drawFrame() {
-    colorPass->getSync().waitForFence();
+    swapChainImageSupplier->getSync().waitForFence();
 
     if (window->wasResized())
         recreateSwapChain();
@@ -341,22 +350,25 @@ void App::drawFrame() {
     CmdSync depthPassSync = depthPass->draw(c_waitSemaphores, c_waitFences);
     CmdSync shadowPassSync = renderShadow->draw(c_waitSemaphores, c_waitFences);
     const CmdSync &mainColorPassSync = mainColorPass->draw(
-            { }, { depthPassSync.getFence() }
+            { depthPassSync.getSemaphore() }, { }
     );
     const CmdSync &gBufferResolveSync = gBufferResolve->draw(
-            { mainColorPassSync.getSemaphore() }, { }
+            { mainColorPassSync.getSemaphore(), shadowPassSync.getSemaphore() }, { }
     );
-    c_waitFences = { depthPassSync.getFence(), shadowPassSync.getFence() };
-    c_waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.getSemaphore(),
-                         shadowPassSync.getSemaphore(), gBufferResolveSync.getSemaphore()};
-    CmdSync colorPassSync = colorPass->draw(imageIndex, c_waitSemaphores, c_waitFences);
+    const CmdSync &swapChainImageSupplierSync = swapChainImageSupplier->draw(
+            imageIndex, { imageAvailableSemaphores[currentFrame], gBufferResolveSync.getSemaphore() }, { }
+    );
+//    c_waitFences = { depthPassSync.getFence(), shadowPassSync.getFence() };
+//    c_waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.getSemaphore(),
+//                         shadowPassSync.getSemaphore(), gBufferResolveSync.getSemaphore()};
+//    CmdSync colorPassSync = colorPass->draw(imageIndex, c_waitSemaphores, c_waitFences);
 
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    VkSemaphore colorPassSemaphore = colorPassSync.getSemaphore();
+    VkSemaphore colorPassSemaphore = swapChainImageSupplierSync.getSemaphore();
     presentInfo.pWaitSemaphores = &colorPassSemaphore;
 
     VkSwapchainKHR swapChains[] = {swapChain->getSwapChain()};

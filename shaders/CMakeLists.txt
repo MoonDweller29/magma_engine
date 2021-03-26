@@ -13,6 +13,7 @@ set(SHADERS
         mainColorPass.vert
         mainColorPass.frag
         imageProcess.vert
+        imageTransfer.frag
         gBufferResolve.frag
 )
 

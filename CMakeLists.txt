@@ -56,6 +56,8 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/app/render/MainColorPass.cpp
 		include/magma/app/render/GBufferResolve.h
 		src/magma/app/render/GBufferResolve.cpp
+		include/magma/app/render/SwapChainImageSupplier.h
+		src/magma/app/render/SwapChainImageSupplier.cpp
 
 		include/magma/vk/vulkan_common.h
 		src/magma/vk/vulkan_common.cpp
