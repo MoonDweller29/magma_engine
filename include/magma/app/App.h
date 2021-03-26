@@ -47,7 +47,6 @@ private:
     std::unique_ptr<DirectLight> light;
     std::unique_ptr<SwapChain>            swapChain;
     std::unique_ptr<DepthPass> depthPass;
-    std::unique_ptr<ColorPass> colorPass;
     std::unique_ptr<MainColorPass> mainColorPass;
     std::unique_ptr<GBufferResolve> gBufferResolve;
     std::unique_ptr<SwapChainImageSupplier> swapChainImageSupplier;

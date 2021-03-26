@@ -231,19 +231,7 @@ void App::initVulkan() {
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
     depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 
-    colorPass = std::make_unique<ColorPass>(*device, *swapChain);
-    colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
-                                   fragmentUniform, sizeof(FragmentUniform),
-                                   texture.getView(), textureSampler,
-                                   lightSpaceUniform, sizeof(LightSpaceUniform),
-                                   shadowMap.getView(), shadowMapSampler);
-    swapChain->createFrameBuffers(colorPass->getRenderPass(), gBuffer->getDepth().getView());
-    colorPass->recordCmdBuffers(
-            indexBuffer.getBuf(),
-            vertexBuffer.getBuf(),
-            indices.size(),
-            swapChain->getVkFrameBuffers()
-    );
+
     mainColorPass = std::make_unique<MainColorPass>(device->getDevice(), *gBuffer, device->getGraphicsQueue());
     mainColorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                        texture.getView(), textureSampler);
@@ -269,11 +257,9 @@ void App::cleanupSwapChain() {
     gBuffer.reset();
     device->getTextureManager().deleteTexture(mainRenderTarget);
 
-    swapChain->clearFrameBuffers();
     mainColorPass.reset();
     gBufferResolve.reset();
     swapChainImageSupplier.reset();
-    colorPass.reset();
     depthPass.reset();
     swapChain.reset();
 }
@@ -297,17 +283,7 @@ void App::recreateSwapChain() {
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
     depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 
-    colorPass = std::make_unique<ColorPass>(*device, *swapChain);
-    colorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
-                                   fragmentUniform, sizeof(FragmentUniform),
-                                   texture.getView(), textureSampler,
-                                   lightSpaceUniform, sizeof(LightSpaceUniform),
-                                   shadowMap.getView(), shadowMapSampler);
-    swapChain->createFrameBuffers(colorPass->getRenderPass(), gBuffer->getDepth().getView());
-    colorPass->recordCmdBuffers(
-            indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size(),
-            swapChain->getVkFrameBuffers()
-    );
+
     mainColorPass = std::make_unique<MainColorPass>(device->getDevice(), *gBuffer, device->getGraphicsQueue());
     mainColorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                        texture.getView(), textureSampler);
@@ -327,8 +303,9 @@ void App::recreateSwapChain() {
 void App::drawFrame() {
     swapChainImageSupplier->getSync().waitForFence();
 
-    if (window->wasResized())
+    if (window->wasResized()) {
         recreateSwapChain();
+    }
 
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
@@ -345,23 +322,17 @@ void App::drawFrame() {
     updateUniformBuffer(imageIndex);
     updateShadowUniform();
 
-    std::vector<VkFence> c_waitFences = { colorPass->getSync().getFence() };
-    std::vector<VkSemaphore> c_waitSemaphores;
-    CmdSync depthPassSync = depthPass->draw(c_waitSemaphores, c_waitFences);
-    CmdSync shadowPassSync = renderShadow->draw(c_waitSemaphores, c_waitFences);
+    CmdSync depthPassSync = depthPass->draw({}, {});
+    CmdSync shadowPassSync = renderShadow->draw({}, {});
     const CmdSync &mainColorPassSync = mainColorPass->draw(
-            { depthPassSync.getSemaphore() }, { }
+            { depthPassSync.getSemaphore() }, {}
     );
     const CmdSync &gBufferResolveSync = gBufferResolve->draw(
-            { mainColorPassSync.getSemaphore(), shadowPassSync.getSemaphore() }, { }
+            { mainColorPassSync.getSemaphore(), shadowPassSync.getSemaphore() }, {}
     );
     const CmdSync &swapChainImageSupplierSync = swapChainImageSupplier->draw(
-            imageIndex, { imageAvailableSemaphores[currentFrame], gBufferResolveSync.getSemaphore() }, { }
+            imageIndex, { imageAvailableSemaphores[currentFrame], gBufferResolveSync.getSemaphore() }, {}
     );
-//    c_waitFences = { depthPassSync.getFence(), shadowPassSync.getFence() };
-//    c_waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.getSemaphore(),
-//                         shadowPassSync.getSemaphore(), gBufferResolveSync.getSemaphore()};
-//    CmdSync colorPassSync = colorPass->draw(imageIndex, c_waitSemaphores, c_waitFences);
 
 
     VkPresentInfoKHR presentInfo{};
