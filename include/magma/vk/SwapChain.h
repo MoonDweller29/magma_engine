@@ -5,7 +5,6 @@
 #include "magma/vk/physicalDevice/PhysicalDevice.h"
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/Window.h"
-#include "magma/vk/FrameBuffer.h"
 #include "magma/vk/textures/CustomImageView.h"
 
 class SwapChain {
@@ -19,17 +18,11 @@ public:
     size_t               imgCount()       const { return _imageViews.size();            }
     vk::ImageView        getView(int i)   const { return _imageViews.at(i).getView();   }
 
-    /// @todo remove framebuffers from swapChain
-    std::vector<VkFramebuffer> getVkFrameBuffers() const;
-    void createFrameBuffers(vk::RenderPass renderPass, vk::ImageView depthImageView);
-    void clearFrameBuffers();
-
 private:
     vk::SwapchainKHR              _swapChain;
     vk::Device                    _device;
     std::vector<vk::Image>        _images;
     std::vector<CustomImageView>  _imageViews;
-    std::vector<FrameBuffer>      _frameBuffers;
     vk::Format                    _imageFormat;
     vk::Extent2D                  _extent;
 
