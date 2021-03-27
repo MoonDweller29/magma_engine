@@ -17,25 +17,26 @@ MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue qu
 {
     initDescriptorSetLayout();
 
+    PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
+    PipelineVertexInputInfo pipelineVertexInputInfo(Vertex::getBindingDescription(), Vertex::getAttributeDescriptions());
+
     PipelineInfo pipelineInfo(_gBuffer.getExtent());
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
-    pipelineInfo.setLayout(_descriptorSetLayout.getLayout());
-    pipelineInfo.setDepthCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
+    pipelineInfo.setVertexInputInfo(pipelineVertexInputInfo);
+    pipelineInfo.setLayout(pipelineLayoutInfo);
+    pipelineInfo.setDepthCompareOp(vk::CompareOp::eLessOrEqual);
     pipelineInfo.setColorBlendAttachments({
-        PipelineInfo::createColorBlendAttachmentOFF(),
-        PipelineInfo::createColorBlendAttachmentOFF(),
-        PipelineInfo::createColorBlendAttachmentOFF(),
+        PipelineInfo::createColorBlendAttachmentState(),
+        PipelineInfo::createColorBlendAttachmentState(),
+        PipelineInfo::createColorBlendAttachmentState(),
     });
 
     Shader vertShader("mainColorPassVert", _device, "shaders/mainColorPass.vert.spv", Shader::Stage::VERT_SH);
     Shader fragShader("mainColorPassFrag", _device, "shaders/mainColorPass.frag.spv", Shader::Stage::FRAG_SH);
-    std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
+    std::vector<vk::PipelineShaderStageCreateInfo> shaderStages = {
             vertShader.getStageInfo(),
             fragShader.getStageInfo()
     };
-    _graphicsPipeline = std::make_unique<GraphicsPipeline>(VkDevice(_device), shaderStages, pipelineInfo, _renderPass.get());
+    _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
 }
 
 MainColorPass::~MainColorPass() {
@@ -151,7 +152,7 @@ void MainColorPass::recordCmdBuffers(vk::Buffer indexBuffer, vk::Buffer vertexBu
 
         cmdBuf.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
         {
-            cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, _graphicsPipeline->getHandler());
+            cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, _graphicsPipeline->getPipeline());
 
             vk::Buffer vertexBuffers[] = { vertexBuffer };
             vk::DeviceSize offsets[] = { 0 };

@@ -16,15 +16,16 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
     initDescriptorSetLayout();
     createRenderPass();
 
+    PipelineLayoutInfo pipelineLayoutInfo(descriptorSetLayout.getLayout());
+    PipelineVertexInputInfo pipelineVertexInputInfo(Vertex::getBindingDescription(), Vertex::getAttributeDescriptions());
+
     PipelineInfo pipelineInfo(extent);
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    pipelineInfo.setVertexInputInfo(bindingDescription, attributeDescriptions);
-    pipelineInfo.setLayout(descriptorSetLayout.getLayout());
+    pipelineInfo.setVertexInputInfo(pipelineVertexInputInfo);
+    pipelineInfo.setLayout(pipelineLayoutInfo);
 
     Shader vertShader("depthVertShader", device.getDevice(), "shaders/depth.vert.spv", Shader::Stage::VERT_SH);
-    std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShader.getStageInfo() };
-    graphicsPipeline = std::make_unique<GraphicsPipeline>(device.c_getDevice(), shaderStages, pipelineInfo, renderPass);
+    std::vector<vk::PipelineShaderStageCreateInfo> shaderStages = { vertShader.getStageInfo() };
+    graphicsPipeline = std::make_unique<GraphicsPipeline>(device.getDevice(), shaderStages, pipelineInfo, vk::RenderPass(renderPass));
 
     std::vector<vk::ImageView> attachments = { depthTex.getView() };
     frameBuffer = std::make_unique<FrameBuffer>(device.c_getDevice(), attachments, renderPass, extent);
@@ -112,7 +113,7 @@ void DepthPass::recordCmdBuffers(
 
         vkCmdBeginRenderPass(cmdBuf, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         {
-            vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->getHandler());
+            vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)graphicsPipeline->getPipeline());
 
             VkBuffer vertexBuffers[] = {vertexBuffer};
             VkDeviceSize offsets[] = {0};

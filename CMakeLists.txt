@@ -75,16 +75,19 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/vk/physicalDevice/DeviceRequirements.h
 		src/magma/vk/physicalDevice/DeviceRequirements.cpp
 
+		include/magma/vk/pipeline/PipelineInfo.h
+		src/magma/vk/pipeline/PipelineInfo.cpp
+		include/magma/vk/pipeline/ComputePipeline.h
+		src/magma/vk/pipeline/ComputePipeline.cpp
+		include/magma/vk/pipeline/GraphicsPipeline.h
+		src/magma/vk/pipeline/GraphicsPipeline.cpp
+
 		include/magma/vk/LogicalDevice.h
 		src/magma/vk/LogicalDevice.cpp
 		include/magma/vk/Window.h
 		src/magma/vk/Window.cpp
 		include/magma/vk/SwapChain.h
 		src/magma/vk/SwapChain.cpp
-		include/magma/vk/ComputePipeline.h
-		src/magma/vk/ComputePipeline.cpp
-		include/magma/vk/graphicsPipeline.h
-		src/magma/vk/graphicsPipeline.cpp
 		include/magma/vk/ShaderModule.h
 		src/magma/vk/ShaderModule.cpp
 		include/magma/vk/FrameBuffer.h
@@ -162,7 +165,7 @@ add_executable(${EDITOR_EXE_NAME}
 		src/magma/app/App.cpp
 )
 target_link_libraries(${EDITOR_EXE_NAME}
-        ${LIBRARY_NAME}
+		${LIBRARY_NAME}
 )
 
 

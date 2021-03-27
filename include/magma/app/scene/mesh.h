@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include <vector>
 #include <string>
 #include "magma/glm_inc.h"
@@ -9,8 +9,8 @@ struct Vertex {
     glm::vec3 normal;
     glm::vec2 texCoord;
 
-    static std::vector<VkVertexInputBindingDescription> getBindingDescription();
-    static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
+    static std::vector<vk::VertexInputBindingDescription> getBindingDescription();
+    static std::vector<vk::VertexInputAttributeDescription> getAttributeDescriptions();
 };
 
 class Mesh
