@@ -12,3 +12,5 @@ bool isSuccess(vk::Result result);
     if (!isSuccess(result)) {                       \
         LOG_AND_THROW std::runtime_error(message);  \
     }
+
+vk::Extent2D toExtent2D(const vk::Extent3D &extent3D);

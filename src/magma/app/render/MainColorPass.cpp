@@ -141,9 +141,9 @@ void MainColorPass::recordCmdBuffers(vk::Buffer indexBuffer, vk::Buffer vertexBu
         renderPassInfo.renderArea.extent = _gBuffer.getExtent();
 
         std::array<vk::ClearValue, 4> clearValues;
-        clearValues[0].setColor(std::array<uint32_t, 4>{0,0,0,0});
-        clearValues[0].setColor(std::array<uint32_t, 4>{0,0,0,0});
-        clearValues[0].setColor(std::array<uint32_t, 4>{0,0,0,0});
+        clearValues[0].setColor(std::array<float, 4>{0.0f,0.0f,0.0f,1.0f});
+        clearValues[1].setColor(std::array<float, 4>{0.0f,0.0f,0.0f,1.0f});
+        clearValues[2].setColor(std::array<float, 4>{0.0f,0.0f,0.0f,1.0f});
         clearValues[3].setDepthStencil(vk::ClearDepthStencilValue(1.0f, 0));
 
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());

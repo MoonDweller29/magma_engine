@@ -177,6 +177,14 @@ void App::createShadowMapResources() {
     renderShadow->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 }
 
+void App::createMainRenderTarget() {
+    mainRenderTarget = device->getTextureManager().createTexture2D("main_render_target",
+        vk::Format::eR16G16B16A16Unorm, gBuffer->getExtent(),
+        vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled,
+        vk::ImageAspectFlagBits::eColor);
+}
+
+
 void App::initDevice() {
     HardwareManager hardwareMGR(instance->instance());
 
@@ -213,6 +221,7 @@ void App::initVulkan() {
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
     gBuffer = std::make_unique<GBuffer>(device->getTextureManager(), window->getResolution());
+    createMainRenderTarget();
     textureSampler = createDefaultTextureSampler(vk::Filter::eLinear, vk::Filter::eLinear);
 
     createShadowMapResources();
@@ -239,7 +248,11 @@ void App::initVulkan() {
     mainColorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                        texture.getView(), textureSampler);
     mainColorPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
-
+    gBufferResolve = std::make_unique<GBufferResolve>(device->getDevice(), mainRenderTarget, device->getGraphicsQueue());
+    gBufferResolve->writeDescriptorSets(*gBuffer, shadowMap.getView(), shadowMapSampler,
+                                        fragmentUniform, sizeof(FragmentUniform),
+                                        lightSpaceUniform, sizeof(LightSpaceUniform));
+    gBufferResolve->recordCmdBuffers();
 
     createSyncObjects();
 }
@@ -250,9 +263,11 @@ void App::cleanupSwapChain() {
     bufferManager.deleteBuffer(fragmentUniform);
 
     gBuffer.reset();
+    device->getTextureManager().deleteTexture(mainRenderTarget);
 
     swapChain->clearFrameBuffers();
     mainColorPass.reset();
+    gBufferResolve.reset();
     colorPass.reset();
     depthPass.reset();
     swapChain.reset();
@@ -270,6 +285,7 @@ void App::recreateSwapChain() {
     swapChain = std::make_unique<SwapChain>(*device, *window);
     createUniformBuffers();
     gBuffer = std::make_unique<GBuffer>(device->getTextureManager(), window->getResolution());
+    createMainRenderTarget();
 
     depthPass = std::make_unique<DepthPass>(*device, gBuffer->getDepth(), VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -291,6 +307,11 @@ void App::recreateSwapChain() {
     mainColorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
                                        texture.getView(), textureSampler);
     mainColorPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
+    gBufferResolve = std::make_unique<GBufferResolve>(device->getDevice(), mainRenderTarget, device->getGraphicsQueue());
+    gBufferResolve->writeDescriptorSets(*gBuffer, shadowMap.getView(), shadowMapSampler,
+                                        fragmentUniform, sizeof(FragmentUniform),
+                                        lightSpaceUniform, sizeof(LightSpaceUniform));
+    gBufferResolve->recordCmdBuffers();
     mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
 }
 
@@ -322,9 +343,12 @@ void App::drawFrame() {
     const CmdSync &mainColorPassSync = mainColorPass->draw(
             { }, { depthPassSync.getFence() }
     );
+    const CmdSync &gBufferResolveSync = gBufferResolve->draw(
+            { mainColorPassSync.getSemaphore() }, { }
+    );
     c_waitFences = { depthPassSync.getFence(), shadowPassSync.getFence() };
     c_waitSemaphores = { imageAvailableSemaphores[currentFrame], depthPassSync.getSemaphore(),
-                         shadowPassSync.getSemaphore(), mainColorPassSync.getSemaphore()};
+                         shadowPassSync.getSemaphore(), gBufferResolveSync.getSemaphore()};
     CmdSync colorPassSync = colorPass->draw(imageIndex, c_waitSemaphores, c_waitFences);
 
 
