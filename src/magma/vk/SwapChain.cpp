@@ -161,25 +161,6 @@ void SwapChain::createImageViews() {
     }
 }
 
-void SwapChain::createFrameBuffers(vk::RenderPass renderPass, vk::ImageView depthImageView) {
-    for (size_t i = 0; i < _imageViews.size(); i++) {
-        std::vector<vk::ImageView> currImage = { _imageViews[i].getView(), depthImageView };
-        _frameBuffers.emplace_back(_device, currImage, renderPass, _extent);
-    }
-}
-void SwapChain::clearFrameBuffers() {
-    _frameBuffers.clear();
-}
-
-std::vector<VkFramebuffer> SwapChain::getVkFrameBuffers() const {
-    std::vector<VkFramebuffer> buffers;
-    for (size_t i = 0; i < _frameBuffers.size(); ++i) {
-        buffers.push_back(_frameBuffers[i].getFrameBuf());
-    }
-
-    return buffers;
-}
-
 SwapChain::~SwapChain() {
     _device.destroySwapchainKHR(_swapChain);
 }

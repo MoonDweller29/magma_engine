@@ -1,25 +1,26 @@
-#include "magma/app/render/GBufferResolve.h"
+#include "magma/app/render/SwapChainImageSupplier.h"
 
-#include "magma/app/render/GBuffer.h"
-#include "magma/vk/vulkan_common.h"
-
-GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue queue) :
-    _device(device), _renderTarget(renderTarget), _queue(queue),
-    _extent(toExtent2D(_renderTarget.getInfo()->imageInfo.extent)),
-    _cmdBuf(device, queue.cmdPool),
+SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView inputImageView, SwapChain &swapChain, Queue queue) :
+    _device(device), _swapChain(swapChain), _queue(queue),
+    _extent(_swapChain.getExtent()),
+    _cmdBufArr(device, queue.cmdPool, _swapChain.imgCount()),
     _renderFinished(device),
     _imgSampler(createImageSampler()),
-    _renderPass(std::move(createRenderPass())),
-    _frameBuffer(_device, {_renderTarget.getView()},
-                 _renderPass.get(), _extent)
+    _renderPass(std::move(createRenderPass()))
 {
+    for (int i = 0; i < _swapChain.imgCount(); ++i) {
+        std::vector<vk::ImageView> attachments{ _swapChain.getView(i) };
+        _frameBuffers.emplace_back(_device, attachments, _renderPass.get(), _extent);
+    }
+
     initDescriptorSetLayout();
+    writeDescriptorSets(inputImageView);
 
     PipelineInfo pipelineInfo(_extent);
     pipelineInfo.setLayout(_descriptorSetLayout.getLayout());
 
     Shader vertShader("imageProcessVert", _device, "shaders/imageProcess.vert.spv", Shader::Stage::VERT_SH);
-    Shader fragShader("gBufferResolveFrag", _device, "shaders/gBufferResolve.frag.spv", Shader::Stage::FRAG_SH);
+    Shader fragShader("imageTransferFrag", _device, "shaders/imageTransfer.frag.spv", Shader::Stage::FRAG_SH);
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
             vertShader.getStageInfo(),
             fragShader.getStageInfo()
@@ -27,30 +28,34 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(VkDevice(_device), shaderStages, pipelineInfo, _renderPass.get());
 }
 
-GBufferResolve::~GBufferResolve() {
+SwapChainImageSupplier::~SwapChainImageSupplier() {
     _descriptorSetLayout.clear();
 }
 
-void GBufferResolve::initDescriptorSetLayout() {
+void SwapChainImageSupplier::initDescriptorSetLayout() {
     _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
     _descriptorSetLayout.createLayout(_device);
 }
 
-vk::UniqueRenderPass GBufferResolve::createRenderPass() {
+void SwapChainImageSupplier::writeDescriptorSets(vk::ImageView inputImageView) {
+    _descriptorSetLayout.allocateSets(1);
+    _descriptorSetLayout.beginSet(0);
+    {
+        _descriptorSetLayout.bindCombinedImageSampler(0, inputImageView, _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+    _descriptorSet = _descriptorSetLayout.recordAndReturnSets()[0];
+}
+
+vk::UniqueRenderPass SwapChainImageSupplier::createRenderPass() {
     vk::AttachmentDescription colorAttachment;
-    colorAttachment.format         = _renderTarget.getInfo()->imageInfo.format;
+    colorAttachment.format         = _swapChain.getImageFormat();
     colorAttachment.samples        = vk::SampleCountFlagBits::e1; //for multisampling
     colorAttachment.loadOp         = vk::AttachmentLoadOp::eDontCare;
     colorAttachment.storeOp        = vk::AttachmentStoreOp::eStore;
     colorAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
     colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
     colorAttachment.initialLayout  = vk::ImageLayout::eUndefined;
-    colorAttachment.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
+    colorAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
 
     vk::AttachmentReference colorAttachmentRef(0, vk::ImageLayout::eColorAttachmentOptimal);
 
@@ -84,7 +89,7 @@ vk::UniqueRenderPass GBufferResolve::createRenderPass() {
     return std::move(renderPass);
 }
 
-vk::UniqueSampler GBufferResolve::createImageSampler() {
+vk::UniqueSampler SwapChainImageSupplier::createImageSampler() {
     vk::SamplerCreateInfo samplerInfo;
     samplerInfo.magFilter = vk::Filter::eNearest;
     samplerInfo.minFilter = vk::Filter::eNearest;
@@ -109,52 +114,35 @@ vk::UniqueSampler GBufferResolve::createImageSampler() {
     return std::move(sampler);
 }
 
-
-void GBufferResolve::writeDescriptorSets(
-        const GBuffer &gBuffer,
-        VkImageView shadowMapView, VkSampler shadowMapSampler,
-        const Buffer &fragmentUniform, uint32_t fuboSize,
-        const Buffer &lightSpaceUniform, uint32_t luboSize
-) {
-    _descriptorSetLayout.allocateSets(1);
-    _descriptorSetLayout.beginSet(0);
-    {
-        _descriptorSetLayout.bindCombinedImageSampler(0, gBuffer.getAlbedo().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(1, gBuffer.getNormals().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(2, gBuffer.getGlobalPos().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(3, shadowMapView, shadowMapSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindUniformBuffer(4, fragmentUniform.getBuf(), 0, fuboSize);
-        _descriptorSetLayout.bindUniformBuffer(5, lightSpaceUniform.getBuf(), 0, luboSize);
-    }
-    _descriptorSet = _descriptorSetLayout.recordAndReturnSets()[0];
-}
-
-void GBufferResolve::recordCmdBuffers() {
-    vk::CommandBuffer cmdBuf = _cmdBuf.begin();
-    {
-        vk::RenderPassBeginInfo renderPassInfo;
-        renderPassInfo.renderPass = _renderPass.get();
-        renderPassInfo.framebuffer = _frameBuffer.getFrameBuf();
-
-        renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
-        renderPassInfo.renderArea.extent = _extent;
-
-        renderPassInfo.clearValueCount = 0;
-        renderPassInfo.pClearValues = nullptr;
-
-        cmdBuf.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+void SwapChainImageSupplier::recordCmdBuffers() {
+    for (int i = 0; i < _swapChain.imgCount(); ++i) {
+        vk::CommandBuffer cmdBuf = _cmdBufArr.begin(i);
         {
-            cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, _graphicsPipeline->getHandler());
-            cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
-                                      _graphicsPipeline->getPipelineLayout(), 0, 1, &_descriptorSet, 0, nullptr);
-            cmdBuf.draw(3, 1, 0, 0);
+            vk::RenderPassBeginInfo renderPassInfo;
+            renderPassInfo.renderPass = _renderPass.get();
+            renderPassInfo.framebuffer = _frameBuffers[i].getFrameBuf();
+
+            renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
+            renderPassInfo.renderArea.extent = _extent;
+
+            renderPassInfo.clearValueCount = 0;
+            renderPassInfo.pClearValues = nullptr;
+
+            cmdBuf.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+            {
+                cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, _graphicsPipeline->getHandler());
+                cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                                          _graphicsPipeline->getPipelineLayout(), 0, 1, &_descriptorSet, 0, nullptr);
+                cmdBuf.draw(3, 1, 0, 0);
+            }
+            cmdBuf.endRenderPass();
         }
-        cmdBuf.endRenderPass();
+        _cmdBufArr.end(i);
     }
-    _cmdBuf.end();
 }
 
-const CmdSync &GBufferResolve::draw(
+const CmdSync &SwapChainImageSupplier::draw(
+        int imgInd,
         const std::vector<vk::Semaphore> &waitSemaphores,
         const std::vector<vk::Fence> &waitFences
 ) {
@@ -170,8 +158,8 @@ const CmdSync &GBufferResolve::draw(
         submitInfo.waitSemaphoreCount = 0;
         submitInfo.pWaitSemaphores = nullptr;
     } else if (
-        std::find(waitSemaphores.begin(), waitSemaphores.end(), _renderFinished.getSemaphore()) == waitSemaphores.end()
-    ) {
+            std::find(waitSemaphores.begin(), waitSemaphores.end(), _renderFinished.getSemaphore()) == waitSemaphores.end()
+            ) {
         submitInfo.waitSemaphoreCount = waitSemaphores.size();
         submitInfo.pWaitSemaphores = waitSemaphores.data();
         submitInfo.pWaitDstStageMask = waitStages.data();
@@ -180,7 +168,7 @@ const CmdSync &GBufferResolve::draw(
     }
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &_cmdBuf.getCmdBuf();
+    submitInfo.pCommandBuffers = &_cmdBufArr[imgInd];
 
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &_renderFinished.getSemaphore();
