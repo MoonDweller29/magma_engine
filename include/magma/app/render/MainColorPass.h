@@ -16,7 +16,7 @@ class GBuffer;
 class MainColorPass {
 public:
     MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue queue);
-    ~MainColorPass();
+    ~MainColorPass() = default;
 
     const CmdSync &getSync() const { return _renderFinished; }
 

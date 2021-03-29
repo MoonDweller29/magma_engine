@@ -28,10 +28,6 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
 }
 
-GBufferResolve::~GBufferResolve() {
-    _descriptorSetLayout.clear();
-}
-
 void GBufferResolve::initDescriptorSetLayout() {
     _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
     _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);

@@ -2,17 +2,17 @@
 #include "magma/vk/vulkan_common.h"
 #include <sstream>
 
-void DescriptorSetLayout::clearPoolSizes()
-{
-    poolSizes.clear();
-}
-
 DescriptorSetLayout::DescriptorSetLayout():
         layout(VK_NULL_HANDLE), device(VK_NULL_HANDLE), setInd(0)
 {
-    clearPoolSizes();
 }
 
+DescriptorSetLayout::~DescriptorSetLayout() {
+    pools.clear();
+    poolSizes.clear();
+    bindings.clear();
+    vkDestroyDescriptorSetLayout(device, layout, nullptr);
+}
 
 const VkDescriptorSetLayout &DescriptorSetLayout::createLayout(VkDevice device)
 {
@@ -82,14 +82,6 @@ void DescriptorSetLayout::freePool()
 {
     pools.clear();
     pools.push_back(DescriptorPool(device, poolSizes, DescriptorPool::DEFAULT_SET_COUNT));
-}
-
-void DescriptorSetLayout::clear()
-{
-    pools.clear();
-    clearPoolSizes();
-    bindings.clear();
-    vkDestroyDescriptorSetLayout(device, layout, nullptr);
 }
 
 void DescriptorSetLayout::allocateSets(uint32_t count)

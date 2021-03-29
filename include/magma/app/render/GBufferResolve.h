@@ -16,7 +16,7 @@ class GBuffer;
 class GBufferResolve {
 public:
     GBufferResolve(vk::Device device, Texture renderTarget, Queue queue);
-    ~GBufferResolve();
+    ~GBufferResolve() = default;
 
     const CmdSync &getSync() const { return _renderFinished; }
 

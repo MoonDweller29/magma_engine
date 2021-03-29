@@ -6,27 +6,14 @@
 #include "DescriptorPool.h"
 #include "DescriptorSetInfo.h"
 
-class DescriptorSetLayout
-{
-    VkDescriptorSetLayout layout;
-    VkDevice device;
-    std::vector<VkDescriptorSetLayoutBinding> bindings;
-    std::unordered_map<vk::DescriptorType, uint32_t> poolSizes;
-    std::vector<DescriptorPool> pools;
-
-    void clearPoolSizes();
-    void increaseDescriptorsCount(vk::DescriptorType desc_type, int desc_count);
-
-    std::vector<VkDescriptorSet> descriptorSets;
-    DescriptorSetInfo descriptorSetInfo;
-    uint32_t setInd; //index of set that is recording
+class DescriptorSetLayout {
 public:
     DescriptorSetLayout();
-    ~DescriptorSetLayout() = default;
+    DescriptorSetLayout(const DescriptorSetLayout &) = delete;
+    ~DescriptorSetLayout();
 
     const VkDescriptorSetLayout &createLayout(VkDevice device);
     void freePool();
-    void clear();
 
     const size_t size() const { return bindings.size(); }
     const VkDescriptorSetLayout &getLayout() const { return layout; }
@@ -53,4 +40,16 @@ public:
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+    VkDescriptorSetLayout layout;
+    VkDevice device;
+    std::vector<VkDescriptorSetLayoutBinding> bindings;
+    std::unordered_map<vk::DescriptorType, uint32_t> poolSizes;
+    std::vector<DescriptorPool> pools;
+
+    void increaseDescriptorsCount(vk::DescriptorType desc_type, int desc_count);
+
+    std::vector<VkDescriptorSet> descriptorSets;
+    DescriptorSetInfo descriptorSetInfo;
+    uint32_t setInd; //index of set that is recording
 };

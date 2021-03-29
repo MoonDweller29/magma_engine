@@ -29,10 +29,6 @@ SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView 
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
 }
 
-SwapChainImageSupplier::~SwapChainImageSupplier() {
-    _descriptorSetLayout.clear();
-}
-
 void SwapChainImageSupplier::initDescriptorSetLayout() {
     _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
     _descriptorSetLayout.createLayout(_device);

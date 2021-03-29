@@ -16,7 +16,7 @@
 class SwapChainImageSupplier {
 public:
     SwapChainImageSupplier(vk::Device device, vk::ImageView inputImageView, SwapChain &swapChain, Queue queue);
-    ~SwapChainImageSupplier();
+    ~SwapChainImageSupplier() = default;
 
     const CmdSync &getSync() const { return _renderFinished; }
 

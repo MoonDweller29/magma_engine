@@ -39,10 +39,6 @@ MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue qu
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
 }
 
-MainColorPass::~MainColorPass() {
-    _descriptorSetLayout.clear();
-}
-
 void MainColorPass::initDescriptorSetLayout() {
     _descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
     _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);

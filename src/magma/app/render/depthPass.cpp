@@ -175,5 +175,4 @@ DepthPass::~DepthPass()
 {
     vkDestroyRenderPass(device.c_getDevice(), renderPass, nullptr);
     graphicsPipeline.reset();
-    descriptorSetLayout.clear();
 }

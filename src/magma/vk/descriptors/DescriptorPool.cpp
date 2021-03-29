@@ -1,6 +1,5 @@
 #include "magma/vk/descriptors/DescriptorPool.h"
 
-#include <vector>
 #include <algorithm>
 
 #include "magma/vk/vulkan_common.h"
