@@ -1,20 +1,21 @@
 #pragma once
-#include "DescriptorPool.h"
-#include "DescriptorSetInfo.h"
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include <vector>
 #include <unordered_map>
+
+#include "DescriptorPool.h"
+#include "DescriptorSetInfo.h"
 
 class DescriptorSetLayout
 {
     VkDescriptorSetLayout layout;
     VkDevice device;
     std::vector<VkDescriptorSetLayoutBinding> bindings;
-    std::unordered_map<VkDescriptorType, uint32_t> poolSizes;
+    std::unordered_map<vk::DescriptorType, uint32_t> poolSizes;
     std::vector<DescriptorPool> pools;
 
     void clearPoolSizes();
-    void increaseDescriptorsCount(VkDescriptorType desc_type, int desc_count);
+    void increaseDescriptorsCount(vk::DescriptorType desc_type, int desc_count);
 
     std::vector<VkDescriptorSet> descriptorSets;
     DescriptorSetInfo descriptorSetInfo;

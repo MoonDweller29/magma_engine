@@ -1,86 +1,84 @@
 #include "magma/vk/descriptors/DescriptorPool.h"
-#include "magma/vk/vulkan_common.h"
+
 #include <vector>
 #include <algorithm>
+
+#include "magma/vk/vulkan_common.h"
 
 uint32_t DescriptorPool::DEFAULT_SET_COUNT = 10;
 
 DescriptorPool::DescriptorPool(
-        VkDevice device,
-        const std::unordered_map<VkDescriptorType, uint32_t> &pool_sizes,
-        uint32_t max_set_count
-):
-    maxSetCount(max_set_count), device(device), setCount(0)
+        vk::Device device,
+        const std::unordered_map<vk::DescriptorType, uint32_t> &poolSizes,
+        uint32_t maxSetCount
+) :
+    _maxSetCount(maxSetCount), _device(device), _setCount(0)
 {
-    std::vector<VkDescriptorPoolSize> nonzeroPoolSizes;
-    for (auto [descType, descCount] : pool_sizes)
-    {
-        VkDescriptorPoolSize actualPoolSize{};
-        actualPoolSize.type = descType;
-        actualPoolSize.descriptorCount = descCount*max_set_count;
+    std::vector<vk::DescriptorPoolSize> nonzeroPoolSizes;
+    for (auto [descType, descCount] : poolSizes) {
+        vk::DescriptorPoolSize actualPoolSize(descType, descCount*maxSetCount);
         nonzeroPoolSizes.push_back(actualPoolSize);
     }
 
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    vk::DescriptorPoolCreateInfo poolInfo;
     poolInfo.poolSizeCount = static_cast<uint32_t>(nonzeroPoolSizes.size());
     poolInfo.pPoolSizes = nonzeroPoolSizes.data();
-    poolInfo.maxSets = max_set_count;
-    poolInfo.flags = 0; //Optional
+    poolInfo.maxSets = maxSetCount;
+    poolInfo.flags = vk::DescriptorPoolCreateFlags(); //Optional
 
-    VkResult result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &pool);
+    vk::Result result;
+    std::tie(result, _pool) = _device.createDescriptorPool(poolInfo);
     VK_CHECK_ERR(result, "failed to create descriptor pool!");
 }
 
-DescriptorPool::DescriptorPool(DescriptorPool &&other_pool):
-        device(other_pool.device),
-        pool(other_pool.pool),
-        maxSetCount(other_pool.maxSetCount),
-        setCount(other_pool.setCount)
+DescriptorPool::DescriptorPool(DescriptorPool &&otherPool) :
+        _device(otherPool._device),
+        _pool(otherPool._pool),
+        _maxSetCount(otherPool._maxSetCount),
+        _setCount(otherPool._setCount)
 {
-    other_pool.pool = VK_NULL_HANDLE;
+    otherPool._device = vk::Device();
 }
 
-VkDescriptorSet DescriptorPool::allocateSet(VkDescriptorSetLayout layout)
-{
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = pool;
+DescriptorPool::~DescriptorPool() {
+    if (_device) {
+        _device.destroyDescriptorPool(_pool);
+    }
+}
+
+vk::DescriptorSet DescriptorPool::allocateSet(vk::DescriptorSetLayout layout) {
+    vk::DescriptorSetAllocateInfo allocInfo;
+    allocInfo.descriptorPool = _pool;
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout;
 
-    VkDescriptorSet descriptorSet;
-    VkResult result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
+    auto[result, descriptorSets] = _device.allocateDescriptorSets(allocInfo);
     VK_CHECK_ERR(result, "failed to allocate descriptor sets!");
-    setCount+=1;
+    _setCount+=1;
 
-    return descriptorSet;
+    return descriptorSets[0];
 }
 
-//can return less descriptors than was required if gets full
-std::vector<VkDescriptorSet> DescriptorPool::allocateSets(VkDescriptorSetLayout layout, uint32_t count)
-{
-    uint32_t descriptorCount = std::min(count, maxSetCount - setCount);
-    std::vector<VkDescriptorSet> descriptorSets(descriptorCount);
-    if (descriptorCount == 0)
-        return descriptorSets;
-    std::vector<VkDescriptorSetLayout> layouts(descriptorCount, layout);
+//can return less descriptors than was required if pool gets full
+std::vector<VkDescriptorSet> DescriptorPool::allocateSets(vk::DescriptorSetLayout layout, uint32_t count) {
+    uint32_t descriptorSetCount = std::min(count, _maxSetCount - _setCount);
+    if (descriptorSetCount == 0) {
+        return std::vector<VkDescriptorSet>();
+    }
+    std::vector<vk::DescriptorSetLayout> layouts(descriptorSetCount, layout);
 
+    vk::DescriptorSetAllocateInfo allocInfo(_pool, layouts);
 
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = pool;
-    allocInfo.descriptorSetCount = descriptorCount;
-    allocInfo.pSetLayouts = layouts.data();
-
-    VkResult result = vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data());
+    auto[result, descriptorSets] = _device.allocateDescriptorSets(allocInfo);
     VK_CHECK_ERR(result, "failed to allocate descriptor sets!");
-    setCount += descriptorCount;
+    _setCount += descriptorSetCount;
 
-    return descriptorSets;
+    //@TODO: remove C API
+    std::vector<VkDescriptorSet> c_descriptorSets;
+    for (auto &descrSet : descriptorSets) {
+        c_descriptorSets.push_back(descrSet);
+    }
+
+    return c_descriptorSets;
 }
 
-DescriptorPool::~DescriptorPool()
-{
-    vkDestroyDescriptorPool(device, pool, nullptr);
-}

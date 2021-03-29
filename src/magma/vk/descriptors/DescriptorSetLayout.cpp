@@ -31,7 +31,7 @@ const VkDescriptorSetLayout &DescriptorSetLayout::createLayout(VkDevice device)
     return layout;
 }
 
-void DescriptorSetLayout::increaseDescriptorsCount(VkDescriptorType desc_type, int desc_count)
+void DescriptorSetLayout::increaseDescriptorsCount(vk::DescriptorType desc_type, int desc_count)
 {
     if (poolSizes.find(desc_type) != poolSizes.end()) {
         poolSizes[desc_type] += desc_count;
@@ -50,7 +50,7 @@ void DescriptorSetLayout::addUniformBuffer(uint32_t buf_size, VkShaderStageFlags
     uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
     bindings.push_back(uboLayoutBinding);
-    increaseDescriptorsCount(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, buf_size);
+    increaseDescriptorsCount(vk::DescriptorType::eUniformBuffer, buf_size);
 }
 
 void DescriptorSetLayout::addCombinedImageSampler(VkShaderStageFlags stage_flags)
@@ -63,7 +63,7 @@ void DescriptorSetLayout::addCombinedImageSampler(VkShaderStageFlags stage_flags
     samplerLayoutBinding.stageFlags = stage_flags;
 
     bindings.push_back(samplerLayoutBinding);
-    increaseDescriptorsCount(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+    increaseDescriptorsCount(vk::DescriptorType::eCombinedImageSampler, 1);
 }
 
 void DescriptorSetLayout::addStorageImage(VkShaderStageFlags stage_flags) {
@@ -75,7 +75,7 @@ void DescriptorSetLayout::addStorageImage(VkShaderStageFlags stage_flags) {
     storageImageLayoutBinding.stageFlags = stage_flags;
 
     bindings.push_back(storageImageLayoutBinding);
-    increaseDescriptorsCount(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
+    increaseDescriptorsCount(vk::DescriptorType::eStorageImage, 1);
 }
 
 void DescriptorSetLayout::freePool()
