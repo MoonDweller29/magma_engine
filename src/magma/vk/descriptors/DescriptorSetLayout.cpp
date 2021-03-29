@@ -104,12 +104,7 @@ void DescriptorSetLayout::beginSet(uint32_t ind) {
 void DescriptorSetLayout::bindUniformBuffer(
         uint32_t binding, vk::Buffer buf, vk::DeviceSize offset, vk::DeviceSize range
 ) {
-    if (_bindings[binding].descriptorType != vk::DescriptorType::eUniformBuffer) {
-        std::stringstream message;
-        message << "bindUniformBuffer: binding index mismatch:\n binding <" << binding <<
-        "> has type <" << to_string(_bindings[binding].descriptorType) << "> which is not VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER";
-        LOG_AND_THROW std::runtime_error(message.str());
-    }
+    checkBindingIndex(binding, vk::DescriptorType::eUniformBuffer);
 
     vk::DescriptorBufferInfo *bufferInfo = _descriptorSetInfo.newBufferInfo();
     bufferInfo->buffer = buf;
@@ -126,12 +121,7 @@ void DescriptorSetLayout::bindUniformBuffer(
 }
 
 void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, vk::ImageView imageView, vk::Sampler sampler) {
-    if (_bindings[binding].descriptorType != vk::DescriptorType::eCombinedImageSampler) {
-        std::stringstream message;
-        message << "bindCombinedImageSampler: binding index mismatch:\n binding <" << binding <<
-                "> has type <" << to_string(_bindings[binding].descriptorType) << "> which is not VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER";
-        LOG_AND_THROW std::runtime_error(message.str());
-    }
+    checkBindingIndex(binding, vk::DescriptorType::eCombinedImageSampler);
 
     vk::DescriptorImageInfo *imageInfo = _descriptorSetInfo.newImageInfo();
     imageInfo->imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
@@ -148,12 +138,7 @@ void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, vk::ImageVi
 }
 
 void DescriptorSetLayout::bindStorageImage(uint32_t binding, vk::ImageView imageView, vk::ImageLayout imageLayout) {
-    if (_bindings[binding].descriptorType != vk::DescriptorType::eStorageImage) {
-        std::stringstream message;
-        message << "bindStorageImage: binding index mismatch:\n binding <" << binding <<
-                "> has type <" << to_string(_bindings[binding].descriptorType) << "> which is not VK_DESCRIPTOR_TYPE_STORAGE_IMAGE";
-        LOG_AND_THROW std::runtime_error(message.str());
-    }
+    checkBindingIndex(binding, vk::DescriptorType::eStorageImage);
 
     vk::DescriptorImageInfo *imageInfo = _descriptorSetInfo.newImageInfo();
     imageInfo->imageLayout = imageLayout;
@@ -174,4 +159,17 @@ std::vector<vk::DescriptorSet> DescriptorSetLayout::recordAndReturnSets() {
     _device.updateDescriptorSets(descriptorWrites,nullptr);
 
     return _descriptorSets;
+}
+
+void DescriptorSetLayout::checkBindingIndex(uint32_t bindingInd, vk::DescriptorType descriptorType) {
+    if (bindingInd >= _bindings.size()) {
+        LOG_AND_THROW std::out_of_range("binding index <"+std::to_string(bindingInd)+"> is out of range");
+    }
+    if (_bindings[bindingInd].descriptorType != descriptorType) {
+        std::stringstream message;
+        message << "binding index mismatch:\n binding <" << bindingInd <<
+                "> has type <" << to_string(_bindings[bindingInd].descriptorType) <<
+                "> which is not <" << to_string(descriptorType) << ">";
+        LOG_AND_THROW std::runtime_error(message.str());
+    }
 }

@@ -48,6 +48,7 @@ private:
     std::vector<DescriptorPool> _pools;
 
     void increaseDescriptorsCount(vk::DescriptorType descrType, int descrCount);
+    void checkBindingIndex(uint32_t bindingInd, vk::DescriptorType descriptorType);
 
     std::vector<vk::DescriptorSet> _descriptorSets;
     DescriptorSetInfo _descriptorSetInfo;
