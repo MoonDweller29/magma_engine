@@ -1,6 +1,6 @@
 #pragma once
-#include "descriptorPool.h"
-#include "descriptorSetInfo.h"
+#include "DescriptorPool.h"
+#include "DescriptorSetInfo.h"
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <unordered_map>

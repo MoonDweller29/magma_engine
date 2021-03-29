@@ -1,4 +1,4 @@
-#include "magma/vk/descriptors/descriptorSetInfo.h"
+#include "magma/vk/descriptors/DescriptorSetInfo.h"
 
 VkDescriptorBufferInfo *DescriptorSetInfo::newBufferInfo()
 {

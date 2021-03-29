@@ -1,4 +1,4 @@
-#include "magma/vk/descriptors/descriptorSetLayout.h"
+#include "magma/vk/descriptors/DescriptorSetLayout.h"
 #include "magma/vk/vulkan_common.h"
 #include <sstream>
 
