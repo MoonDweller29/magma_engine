@@ -126,7 +126,7 @@ void MainColorPass::writeDescriptorSets(
     _descriptorSetLayout.beginSet(0);
     {
         _descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.getBuf(), 0, uboSize);
-        _descriptorSetLayout.bindCombinedImageSampler(1, albedoTexView, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        _descriptorSetLayout.bindCombinedImageSampler(1, albedoTexView, sampler);
     }
     _descriptorSet = _descriptorSetLayout.recordAndReturnSets()[0];
 }

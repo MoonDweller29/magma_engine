@@ -42,7 +42,7 @@ void SwapChainImageSupplier::writeDescriptorSets(vk::ImageView inputImageView) {
     _descriptorSetLayout.allocateSets(1);
     _descriptorSetLayout.beginSet(0);
     {
-        _descriptorSetLayout.bindCombinedImageSampler(0, inputImageView, _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        _descriptorSetLayout.bindCombinedImageSampler(0, inputImageView, _imgSampler.get());
     }
     _descriptorSet = _descriptorSetLayout.recordAndReturnSets()[0];
 }

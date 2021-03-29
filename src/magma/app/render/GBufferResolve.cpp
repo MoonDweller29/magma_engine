@@ -120,10 +120,10 @@ void GBufferResolve::writeDescriptorSets(
     _descriptorSetLayout.allocateSets(1);
     _descriptorSetLayout.beginSet(0);
     {
-        _descriptorSetLayout.bindCombinedImageSampler(0, gBuffer.getAlbedo().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(1, gBuffer.getNormals().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(2, gBuffer.getGlobalPos().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(3, shadowMapView, shadowMapSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        _descriptorSetLayout.bindCombinedImageSampler(0, gBuffer.getAlbedo().getView(), _imgSampler.get());
+        _descriptorSetLayout.bindCombinedImageSampler(1, gBuffer.getNormals().getView(), _imgSampler.get());
+        _descriptorSetLayout.bindCombinedImageSampler(2, gBuffer.getGlobalPos().getView(), _imgSampler.get());
+        _descriptorSetLayout.bindCombinedImageSampler(3, shadowMapView, shadowMapSampler);
         _descriptorSetLayout.bindUniformBuffer(4, fragmentUniform.getBuf(), 0, fuboSize);
         _descriptorSetLayout.bindUniformBuffer(5, lightSpaceUniform.getBuf(), 0, luboSize);
     }

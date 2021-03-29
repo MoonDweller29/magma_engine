@@ -148,7 +148,7 @@ void DescriptorSetLayout::bindUniformBuffer(uint32_t binding, VkBuffer buf, VkDe
     descriptorWrite.pBufferInfo = bufferInfo;
 }
 
-void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, VkImageView imageView, VkSampler sampler, VkImageLayout imageLayout)
+void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, VkImageView imageView, VkSampler sampler)
 {
     if (bindings[binding].descriptorType != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
     {
@@ -159,7 +159,7 @@ void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, VkImageView
     }
 
     VkDescriptorImageInfo *imageInfo = descriptorSetInfo.newImageInfo();
-    imageInfo->imageLayout = imageLayout;
+    imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     imageInfo->imageView = imageView;
     imageInfo->sampler = sampler;
 
