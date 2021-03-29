@@ -1,20 +1,22 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include <list>
 #include <vector>
 
-class DescriptorSetInfo
-{
-    std::list<VkDescriptorBufferInfo> bufferInfo;
-    std::list<VkDescriptorImageInfo> imageInfo;
-    std::vector<VkWriteDescriptorSet> descriptorWrites;
+class DescriptorSetInfo {
 public:
     DescriptorSetInfo() = default;
+    DescriptorSetInfo(const DescriptorSetInfo &) = delete;
     ~DescriptorSetInfo() = default;
 
-    VkDescriptorBufferInfo *newBufferInfo();
-    VkDescriptorImageInfo *newImageInfo();
-    VkWriteDescriptorSet &newDescriptorWriteInfo();
-    const std::vector<VkWriteDescriptorSet> &getDescriptorWrites() const { return descriptorWrites; }
+    vk::DescriptorBufferInfo *newBufferInfo();
+    vk::DescriptorImageInfo  *newImageInfo();
+    vk::WriteDescriptorSet &newDescriptorWriteInfo();
+    const std::vector<vk::WriteDescriptorSet> &getDescriptorWrites() const { return _descriptorWrites; }
     void clear();
+
+private:
+    std::list<vk::DescriptorBufferInfo> _bufferInfo;
+    std::list<vk::DescriptorImageInfo>  _imageInfo;
+    std::vector<vk::WriteDescriptorSet> _descriptorWrites;
 };

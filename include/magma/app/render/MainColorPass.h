@@ -22,7 +22,7 @@ public:
 
     void writeDescriptorSets(
             const Buffer &uniformBuffer, uint32_t uboSize,
-            VkImageView albedoTexView, VkSampler sampler);
+            vk::ImageView albedoTexView, vk::Sampler sampler);
     void recordCmdBuffers(vk::Buffer indexBuffer, vk::Buffer vertexBuffer, uint32_t vertexCount);
     const CmdSync &draw(
             const std::vector<vk::Semaphore> &waitSemaphores,

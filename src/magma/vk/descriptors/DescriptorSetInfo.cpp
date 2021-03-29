@@ -1,26 +1,22 @@
 #include "magma/vk/descriptors/DescriptorSetInfo.h"
 
-VkDescriptorBufferInfo *DescriptorSetInfo::newBufferInfo()
-{
-    bufferInfo.push_back(VkDescriptorBufferInfo{});
-    return &bufferInfo.back();
+vk::DescriptorBufferInfo *DescriptorSetInfo::newBufferInfo() {
+    _bufferInfo.emplace_back();
+    return &_bufferInfo.back();
 }
 
-VkDescriptorImageInfo *DescriptorSetInfo::newImageInfo()
-{
-    imageInfo.push_back(VkDescriptorImageInfo{});
-    return &imageInfo.back();
+vk::DescriptorImageInfo *DescriptorSetInfo::newImageInfo() {
+    _imageInfo.emplace_back();
+    return &_imageInfo.back();
 }
 
-VkWriteDescriptorSet &DescriptorSetInfo::newDescriptorWriteInfo()
-{
-    descriptorWrites.push_back(VkWriteDescriptorSet{});
-    return descriptorWrites[descriptorWrites.size() - 1];
+vk::WriteDescriptorSet &DescriptorSetInfo::newDescriptorWriteInfo() {
+    _descriptorWrites.emplace_back();
+    return _descriptorWrites[_descriptorWrites.size() - 1]; //@TODO: change to method back
 }
 
-void DescriptorSetInfo::clear()
-{
-    bufferInfo.clear();
-    imageInfo.clear();
-    descriptorWrites.clear();
+void DescriptorSetInfo::clear() {
+    _bufferInfo.clear();
+    _imageInfo.clear();
+    _descriptorWrites.clear();
 }

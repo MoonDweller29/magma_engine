@@ -12,18 +12,17 @@ public:
     DescriptorSetLayout(const DescriptorSetLayout &) = delete;
     ~DescriptorSetLayout();
 
-    const VkDescriptorSetLayout &createLayout(VkDevice device);
+    void createLayout(vk::Device device);
     void freePool();
 
-    const size_t size() const { return bindings.size(); }
-    const VkDescriptorSetLayout &getLayout() const { return layout; }
+    const vk::DescriptorSetLayout &getLayout() const { return _layout; }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     // adding bindings to layout
     //////////////////////////////////////////////////////////////////////////////////////////////////////
-    void addUniformBuffer(uint32_t buf_size, VkShaderStageFlags stage_flags);
-    void addCombinedImageSampler(VkShaderStageFlags stage_flags);
-    void addStorageImage(VkShaderStageFlags stage_flags);
+    void addUniformBuffer(uint32_t bufSize, vk::ShaderStageFlags stageFlags);
+    void addCombinedImageSampler(vk::ShaderStageFlags stageFlags);
+    void addStorageImage(vk::ShaderStageFlags stageFlags);
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,23 +32,24 @@ public:
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     void allocateSets(uint32_t count);
     void beginSet(uint32_t ind);
-    void bindUniformBuffer(uint32_t binding, VkBuffer buf, VkDeviceSize offset, VkDeviceSize range);
-    void bindCombinedImageSampler(uint32_t binding, VkImageView imageView, VkSampler sampler);
-    void bindStorageImage(uint32_t binding, VkImageView imageView, VkImageLayout imageLayout);
-    std::vector<VkDescriptorSet> recordAndReturnSets();
+    void bindUniformBuffer(uint32_t binding, vk::Buffer buf, vk::DeviceSize offset, vk::DeviceSize range);
+    void bindCombinedImageSampler(uint32_t binding, vk::ImageView imageView, vk::Sampler sampler);
+    void bindStorageImage(uint32_t binding, vk::ImageView imageView, vk::ImageLayout imageLayout);
+    std::vector<vk::DescriptorSet> recordAndReturnSets();
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
-    VkDescriptorSetLayout layout;
-    VkDevice device;
-    std::vector<VkDescriptorSetLayoutBinding> bindings;
-    std::unordered_map<vk::DescriptorType, uint32_t> poolSizes;
-    std::vector<DescriptorPool> pools;
+    vk::Device _device;
+    std::vector<vk::DescriptorSetLayoutBinding> _bindings;
+    std::unordered_map<vk::DescriptorType, uint32_t> _poolSizes;
+    vk::DescriptorSetLayout _layout;
 
-    void increaseDescriptorsCount(vk::DescriptorType desc_type, int desc_count);
+    std::vector<DescriptorPool> _pools;
 
-    std::vector<VkDescriptorSet> descriptorSets;
-    DescriptorSetInfo descriptorSetInfo;
-    uint32_t setInd; //index of set that is recording
+    void increaseDescriptorsCount(vk::DescriptorType descrType, int descrCount);
+
+    std::vector<vk::DescriptorSet> _descriptorSets;
+    DescriptorSetInfo _descriptorSetInfo;
+    uint32_t _setInd; //index of set that is recording
 };

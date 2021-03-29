@@ -18,7 +18,7 @@ public:
     bool isFull() const { return _setCount == _maxSetCount; }
     vk::DescriptorSet allocateSet(vk::DescriptorSetLayout layout);
     //can return less descriptors than was required if pool gets full
-    std::vector<VkDescriptorSet> allocateSets(vk::DescriptorSetLayout layout, uint32_t count);
+    std::vector<vk::DescriptorSet> allocateSets(vk::DescriptorSetLayout layout, uint32_t count);
 
 private:
     vk::Device _device;

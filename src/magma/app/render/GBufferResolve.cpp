@@ -29,12 +29,12 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
 }
 
 void GBufferResolve::initDescriptorSetLayout() {
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
+    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
+    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
+    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
+    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
+    _descriptorSetLayout.addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment);
+    _descriptorSetLayout.addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment);
     _descriptorSetLayout.createLayout(_device);
 }
 
@@ -109,7 +109,7 @@ vk::UniqueSampler GBufferResolve::createImageSampler() {
 
 void GBufferResolve::writeDescriptorSets(
         const GBuffer &gBuffer,
-        VkImageView shadowMapView, VkSampler shadowMapSampler,
+        vk::ImageView shadowMapView, vk::Sampler shadowMapSampler,
         const Buffer &fragmentUniform, uint32_t fuboSize,
         const Buffer &lightSpaceUniform, uint32_t luboSize
 ) {

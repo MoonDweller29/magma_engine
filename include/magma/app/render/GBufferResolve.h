@@ -22,7 +22,7 @@ public:
 
     void writeDescriptorSets(
             const GBuffer &gBuffer,
-            VkImageView shadowMapView, VkSampler shadowMapSampler,
+            vk::ImageView shadowMapView, vk::Sampler shadowMapSampler,
             const Buffer &fragmentUniform, uint32_t fuboSize,
             const Buffer &lightSpaceUniform, uint32_t luboSize);
     void recordCmdBuffers();

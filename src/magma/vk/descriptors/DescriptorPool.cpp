@@ -59,10 +59,10 @@ vk::DescriptorSet DescriptorPool::allocateSet(vk::DescriptorSetLayout layout) {
 }
 
 //can return less descriptors than was required if pool gets full
-std::vector<VkDescriptorSet> DescriptorPool::allocateSets(vk::DescriptorSetLayout layout, uint32_t count) {
+std::vector<vk::DescriptorSet> DescriptorPool::allocateSets(vk::DescriptorSetLayout layout, uint32_t count) {
     uint32_t descriptorSetCount = std::min(count, _maxSetCount - _setCount);
     if (descriptorSetCount == 0) {
-        return std::vector<VkDescriptorSet>();
+        return std::vector<vk::DescriptorSet>();
     }
     std::vector<vk::DescriptorSetLayout> layouts(descriptorSetCount, layout);
 
@@ -72,12 +72,6 @@ std::vector<VkDescriptorSet> DescriptorPool::allocateSets(vk::DescriptorSetLayou
     VK_CHECK_ERR(result, "failed to allocate descriptor sets!");
     _setCount += descriptorSetCount;
 
-    //@TODO: remove C API
-    std::vector<VkDescriptorSet> c_descriptorSets;
-    for (auto &descrSet : descriptorSets) {
-        c_descriptorSets.push_back(descrSet);
-    }
-
-    return c_descriptorSets;
+    return descriptorSets;
 }
 

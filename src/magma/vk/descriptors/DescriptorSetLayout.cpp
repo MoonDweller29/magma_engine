@@ -1,203 +1,177 @@
 #include "magma/vk/descriptors/DescriptorSetLayout.h"
-#include "magma/vk/vulkan_common.h"
-#include <sstream>
 
-DescriptorSetLayout::DescriptorSetLayout():
-        layout(VK_NULL_HANDLE), device(VK_NULL_HANDLE), setInd(0)
-{
-}
+#include <sstream>
+#include "magma/vk/vulkan_common.h"
+
+DescriptorSetLayout::DescriptorSetLayout() : _setInd(0)
+{}
 
 DescriptorSetLayout::~DescriptorSetLayout() {
-    pools.clear();
-    poolSizes.clear();
-    bindings.clear();
-    vkDestroyDescriptorSetLayout(device, layout, nullptr);
+    _pools.clear();
+    _poolSizes.clear();
+    _bindings.clear();
+    _device.destroyDescriptorSetLayout(_layout);
 }
 
-const VkDescriptorSetLayout &DescriptorSetLayout::createLayout(VkDevice device)
-{
-    this->device = device;
+void DescriptorSetLayout::createLayout(vk::Device device) {
+    _device = device;
 
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
+    vk::DescriptorSetLayoutCreateInfo layoutInfo({}, _bindings);
 
-    VkResult result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &layout);
+    vk::Result result;
+    std::tie(result, _layout) = _device.createDescriptorSetLayout(layoutInfo);
     VK_CHECK_ERR(result, "failed to create descriptor set layout!");
 
-    pools.push_back(DescriptorPool(device, poolSizes, DescriptorPool::DEFAULT_SET_COUNT));
-
-    return layout;
+    _pools.emplace_back(device, _poolSizes, DescriptorPool::DEFAULT_SET_COUNT);
 }
 
-void DescriptorSetLayout::increaseDescriptorsCount(vk::DescriptorType desc_type, int desc_count)
-{
-    if (poolSizes.find(desc_type) != poolSizes.end()) {
-        poolSizes[desc_type] += desc_count;
+void DescriptorSetLayout::increaseDescriptorsCount(vk::DescriptorType descrType, int descrCount) {
+    if (_poolSizes.find(descrType) != _poolSizes.end()) {
+        _poolSizes[descrType] += descrCount;
     } else {
-        poolSizes[desc_type] = desc_count;
+        _poolSizes[descrType] = descrCount;
     }
 }
 
-void DescriptorSetLayout::addUniformBuffer(uint32_t buf_size, VkShaderStageFlags stage_flags)
-{
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = bindings.size();
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.descriptorCount = buf_size;
-    uboLayoutBinding.stageFlags = stage_flags;
-    uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+void DescriptorSetLayout::addUniformBuffer(uint32_t bufSize, vk::ShaderStageFlags stageFlags) {
+    vk::DescriptorSetLayoutBinding uboLayoutBinding;
+    uboLayoutBinding.binding = _bindings.size();
+    uboLayoutBinding.descriptorType = vk::DescriptorType::eUniformBuffer;
+    uboLayoutBinding.descriptorCount = bufSize;
+    uboLayoutBinding.stageFlags = stageFlags;
 
-    bindings.push_back(uboLayoutBinding);
-    increaseDescriptorsCount(vk::DescriptorType::eUniformBuffer, buf_size);
+    _bindings.push_back(uboLayoutBinding);
+    increaseDescriptorsCount(vk::DescriptorType::eUniformBuffer, bufSize);
 }
 
-void DescriptorSetLayout::addCombinedImageSampler(VkShaderStageFlags stage_flags)
-{
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = bindings.size();
+void DescriptorSetLayout::addCombinedImageSampler(vk::ShaderStageFlags stageFlags) {
+    vk::DescriptorSetLayoutBinding samplerLayoutBinding;
+    samplerLayoutBinding.binding = _bindings.size();
+    samplerLayoutBinding.descriptorType = vk::DescriptorType::eCombinedImageSampler;
     samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = stage_flags;
+    samplerLayoutBinding.pImmutableSamplers = nullptr; //Optional
+    samplerLayoutBinding.stageFlags = stageFlags;
 
-    bindings.push_back(samplerLayoutBinding);
+    _bindings.push_back(samplerLayoutBinding);
     increaseDescriptorsCount(vk::DescriptorType::eCombinedImageSampler, 1);
 }
 
-void DescriptorSetLayout::addStorageImage(VkShaderStageFlags stage_flags) {
-    VkDescriptorSetLayoutBinding storageImageLayoutBinding{};
-    storageImageLayoutBinding.binding = bindings.size();
+void DescriptorSetLayout::addStorageImage(vk::ShaderStageFlags stageFlags) {
+    vk::DescriptorSetLayoutBinding storageImageLayoutBinding;
+    storageImageLayoutBinding.binding = _bindings.size();
+    storageImageLayoutBinding.descriptorType = vk::DescriptorType::eStorageImage;
     storageImageLayoutBinding.descriptorCount = 1;
-    storageImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    storageImageLayoutBinding.pImmutableSamplers = nullptr;
-    storageImageLayoutBinding.stageFlags = stage_flags;
+    storageImageLayoutBinding.pImmutableSamplers = nullptr; //Optional
+    storageImageLayoutBinding.stageFlags = stageFlags;
 
-    bindings.push_back(storageImageLayoutBinding);
+    _bindings.push_back(storageImageLayoutBinding);
     increaseDescriptorsCount(vk::DescriptorType::eStorageImage, 1);
 }
 
-void DescriptorSetLayout::freePool()
-{
-    pools.clear();
-    pools.push_back(DescriptorPool(device, poolSizes, DescriptorPool::DEFAULT_SET_COUNT));
+void DescriptorSetLayout::freePool() {
+    _pools.clear();
+    _pools.emplace_back(_device, _poolSizes, DescriptorPool::DEFAULT_SET_COUNT);
 }
 
-void DescriptorSetLayout::allocateSets(uint32_t count)
-{
-    descriptorSetInfo.clear();
-    descriptorSets.clear();
+void DescriptorSetLayout::allocateSets(uint32_t count) {
+    _descriptorSetInfo.clear();
+    _descriptorSets.clear();
     //iteration over existing pools
-    for (uint32_t i = 0; i < pools.size() && count > 0; ++i)
-    {
-        if (pools[i].isFull())
+    for (uint32_t i = 0; i < _pools.size() && count > 0; ++i) {
+        if (_pools[i].isFull()) {
             continue;
-        auto newSets = pools[i].allocateSets(layout, count);
+        }
+        auto newSets = _pools[i].allocateSets(_layout, count);
         count -= newSets.size();
-        descriptorSets.insert(descriptorSets.end(), newSets.begin(), newSets.end());
+        _descriptorSets.insert(_descriptorSets.end(), newSets.begin(), newSets.end());
     }
-    //allocation new pools if needed
-    while (count > 0)
-    {
-        pools.push_back(DescriptorPool(device, poolSizes, DescriptorPool::DEFAULT_SET_COUNT));
-        auto newSets = pools.back().allocateSets(layout, count);
+    //allocation of new pools if needed
+    while (count > 0) {
+        _pools.emplace_back(_device, _poolSizes, DescriptorPool::DEFAULT_SET_COUNT);
+        auto newSets = _pools.back().allocateSets(_layout, count);
         count -= newSets.size();
-        descriptorSets.insert(descriptorSets.end(), newSets.begin(), newSets.end());
+        _descriptorSets.insert(_descriptorSets.end(), newSets.begin(), newSets.end());
     }
 }
 
-void DescriptorSetLayout::beginSet(uint32_t ind)
-{
-    if (ind > descriptorSets.size())
+void DescriptorSetLayout::beginSet(uint32_t ind) {
+    if (ind > _descriptorSets.size()) {
         LOG_AND_THROW std::runtime_error("beginSet: wrong descriptorSet index");
-    setInd = ind;
+    }
+    _setInd = ind;
 }
 
-void DescriptorSetLayout::bindUniformBuffer(uint32_t binding, VkBuffer buf, VkDeviceSize offset, VkDeviceSize range)
-{
-    if (bindings[binding].descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-    {
+void DescriptorSetLayout::bindUniformBuffer(
+        uint32_t binding, vk::Buffer buf, vk::DeviceSize offset, vk::DeviceSize range
+) {
+    if (_bindings[binding].descriptorType != vk::DescriptorType::eUniformBuffer) {
         std::stringstream message;
         message << "bindUniformBuffer: binding index mismatch:\n binding <" << binding <<
-        "> has type <" << bindings[binding].descriptorType << "> which is not VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER";
+        "> has type <" << to_string(_bindings[binding].descriptorType) << "> which is not VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER";
         LOG_AND_THROW std::runtime_error(message.str());
     }
 
-    VkDescriptorBufferInfo *bufferInfo = descriptorSetInfo.newBufferInfo();
+    vk::DescriptorBufferInfo *bufferInfo = _descriptorSetInfo.newBufferInfo();
     bufferInfo->buffer = buf;
     bufferInfo->offset = offset;
     bufferInfo->range = range; //size of all buffer (not the size of one elem)
 
-    VkWriteDescriptorSet &descriptorWrite = descriptorSetInfo.newDescriptorWriteInfo();
-
-    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite.dstSet = descriptorSets[setInd];
+    vk::WriteDescriptorSet &descriptorWrite = _descriptorSetInfo.newDescriptorWriteInfo();
+    descriptorWrite.dstSet = _descriptorSets[_setInd];
     descriptorWrite.dstBinding = binding;
     descriptorWrite.dstArrayElement = 0; //first index in array
-    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorWrite.descriptorCount = bindings[binding].descriptorCount;
+    descriptorWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
+    descriptorWrite.descriptorCount = _bindings[binding].descriptorCount;
     descriptorWrite.pBufferInfo = bufferInfo;
 }
 
-void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, VkImageView imageView, VkSampler sampler)
-{
-    if (bindings[binding].descriptorType != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-    {
+void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, vk::ImageView imageView, vk::Sampler sampler) {
+    if (_bindings[binding].descriptorType != vk::DescriptorType::eCombinedImageSampler) {
         std::stringstream message;
         message << "bindCombinedImageSampler: binding index mismatch:\n binding <" << binding <<
-                "> has type <" << bindings[binding].descriptorType << "> which is not VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER";
+                "> has type <" << to_string(_bindings[binding].descriptorType) << "> which is not VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER";
         LOG_AND_THROW std::runtime_error(message.str());
     }
 
-    VkDescriptorImageInfo *imageInfo = descriptorSetInfo.newImageInfo();
-    imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    vk::DescriptorImageInfo *imageInfo = _descriptorSetInfo.newImageInfo();
+    imageInfo->imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
     imageInfo->imageView = imageView;
     imageInfo->sampler = sampler;
 
-    VkWriteDescriptorSet &descriptorWrite = descriptorSetInfo.newDescriptorWriteInfo();
-
-    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite.dstSet = descriptorSets[setInd];
+    vk::WriteDescriptorSet &descriptorWrite = _descriptorSetInfo.newDescriptorWriteInfo();
+    descriptorWrite.dstSet = _descriptorSets[_setInd];
     descriptorWrite.dstBinding = binding;
     descriptorWrite.dstArrayElement = 0;
-    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
     descriptorWrite.descriptorCount = 1;
     descriptorWrite.pImageInfo = imageInfo;
 }
 
-void DescriptorSetLayout::bindStorageImage(uint32_t binding, VkImageView imageView, VkImageLayout imageLayout)
-{
-    if (bindings[binding].descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
-    {
+void DescriptorSetLayout::bindStorageImage(uint32_t binding, vk::ImageView imageView, vk::ImageLayout imageLayout) {
+    if (_bindings[binding].descriptorType != vk::DescriptorType::eStorageImage) {
         std::stringstream message;
         message << "bindStorageImage: binding index mismatch:\n binding <" << binding <<
-                "> has type <" << bindings[binding].descriptorType << "> which is not VK_DESCRIPTOR_TYPE_STORAGE_IMAGE";
+                "> has type <" << to_string(_bindings[binding].descriptorType) << "> which is not VK_DESCRIPTOR_TYPE_STORAGE_IMAGE";
         LOG_AND_THROW std::runtime_error(message.str());
     }
 
-    VkDescriptorImageInfo *imageInfo = descriptorSetInfo.newImageInfo();
+    vk::DescriptorImageInfo *imageInfo = _descriptorSetInfo.newImageInfo();
     imageInfo->imageLayout = imageLayout;
     imageInfo->imageView = imageView;
-    imageInfo->sampler = VK_NULL_HANDLE;
+    imageInfo->sampler = vk::Sampler();
 
-    VkWriteDescriptorSet &descriptorWrite = descriptorSetInfo.newDescriptorWriteInfo();
-
-    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite.dstSet = descriptorSets[setInd];
+    vk::WriteDescriptorSet &descriptorWrite = _descriptorSetInfo.newDescriptorWriteInfo();
+    descriptorWrite.dstSet = _descriptorSets[_setInd];
     descriptorWrite.dstBinding = binding;
     descriptorWrite.dstArrayElement = 0;
-    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    descriptorWrite.descriptorType = vk::DescriptorType::eStorageImage;
     descriptorWrite.descriptorCount = 1;
     descriptorWrite.pImageInfo = imageInfo;
 }
 
-std::vector<VkDescriptorSet> DescriptorSetLayout::recordAndReturnSets()
-{
-    const std::vector<VkWriteDescriptorSet> &descriptorWrites = descriptorSetInfo.getDescriptorWrites();
-    vkUpdateDescriptorSets(device,
-                           static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),
-                           0, nullptr);
+std::vector<vk::DescriptorSet> DescriptorSetLayout::recordAndReturnSets() {
+    const auto &descriptorWrites = _descriptorSetInfo.getDescriptorWrites();
+    _device.updateDescriptorSets(descriptorWrites,nullptr);
 
-    return descriptorSets;
+    return _descriptorSets;
 }

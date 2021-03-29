@@ -33,7 +33,7 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
 
 void DepthPass::initDescriptorSetLayout()
 {
-    descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
+    descriptorSetLayout.addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex);
     descriptorSetLayout.createLayout(device.c_getDevice());
 }
 

@@ -40,8 +40,8 @@ MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue qu
 }
 
 void MainColorPass::initDescriptorSetLayout() {
-    _descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
+    _descriptorSetLayout.addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex);
+    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
     _descriptorSetLayout.createLayout(_device);
 }
 
@@ -116,7 +116,7 @@ vk::UniqueRenderPass MainColorPass::createRenderPass() {
 
 void MainColorPass::writeDescriptorSets(
         const Buffer &uniformBuffer, uint32_t uboSize,
-        VkImageView albedoTexView, VkSampler sampler
+        vk::ImageView albedoTexView, vk::Sampler sampler
 ) {
     _descriptorSetLayout.allocateSets(1);
     _descriptorSetLayout.beginSet(0);

@@ -30,7 +30,7 @@ SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView 
 }
 
 void SwapChainImageSupplier::initDescriptorSetLayout() {
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
+    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
     _descriptorSetLayout.createLayout(_device);
 }
 
