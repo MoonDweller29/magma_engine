@@ -29,11 +29,11 @@ void DescriptorSetLayout::allocateSets(uint32_t count) {
     _descriptorSetInfo.clear();
     _descriptorSets.clear();
     //iteration over existing pools
-    for (uint32_t i = 0; i < _pools.size() && count > 0; ++i) {
-        if (_pools[i].isFull()) {
+    for (auto &pool : _pools) {
+        if (pool.isFull()) {
             continue;
         }
-        auto newSets = _pools[i].allocateSets(_layout, count);
+        auto newSets = pool.allocateSets(_layout, count);
         count -= newSets.size();
         _descriptorSets.insert(_descriptorSets.end(), newSets.begin(), newSets.end());
     }

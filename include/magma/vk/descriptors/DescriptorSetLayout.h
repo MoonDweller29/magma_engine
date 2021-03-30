@@ -6,29 +6,25 @@
 #include "magma/vk/descriptors/DescriptorPool.h"
 #include "magma/vk/descriptors/DescriptorSetInfo.h"
 #include "magma/vk/descriptors/DescriptorSetLayoutInfo.h"
+#include "magma/vk/vulkan_common.h"
 
 class DescriptorSetLayout {
 public:
     DescriptorSetLayout(vk::Device device, const DescriptorSetLayoutInfo &layoutInfo);
-    DescriptorSetLayout(const DescriptorSetLayout &) = delete;
+    NON_COPYABLE(DescriptorSetLayout);
     ~DescriptorSetLayout();
 
     void freePool();
 
     const vk::DescriptorSetLayout &getLayout() const { return _layout; }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    // descriptorSet recording
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
     void allocateSets(uint32_t count);
     void beginSet(uint32_t ind);
     void bindUniformBuffer(uint32_t binding, vk::Buffer buf, vk::DeviceSize offset, vk::DeviceSize range);
     void bindCombinedImageSampler(uint32_t binding, vk::ImageView imageView, vk::Sampler sampler);
     void bindStorageImage(uint32_t binding, vk::ImageView imageView, vk::ImageLayout imageLayout);
     std::vector<vk::DescriptorSet> recordAndReturnSets();
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
+
 private:
     vk::Device _device;
     DescriptorSetLayoutInfo _layoutInfo;

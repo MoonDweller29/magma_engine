@@ -1,12 +1,14 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include <list>
 #include <vector>
+#include <memory>
+
+#include "magma/vk/vulkan_common.h"
 
 class DescriptorSetInfo {
 public:
     DescriptorSetInfo() = default;
-    DescriptorSetInfo(const DescriptorSetInfo &) = delete;
+    NON_COPYABLE(DescriptorSetInfo);
     ~DescriptorSetInfo() = default;
 
     vk::DescriptorBufferInfo *newBufferInfo();
@@ -16,7 +18,7 @@ public:
     void clear();
 
 private:
-    std::list<vk::DescriptorBufferInfo> _bufferInfo;
-    std::list<vk::DescriptorImageInfo>  _imageInfo;
+    std::vector<std::unique_ptr<vk::DescriptorBufferInfo>> _bufferInfo;
+    std::vector<std::unique_ptr<vk::DescriptorImageInfo>>  _imageInfo;
     std::vector<vk::WriteDescriptorSet> _descriptorWrites;
 };
