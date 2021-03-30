@@ -11,10 +11,9 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
     _imgSampler(createImageSampler()),
     _renderPass(std::move(createRenderPass())),
     _frameBuffer(_device, {_renderTarget.getView()},
-                 _renderPass.get(), _extent)
+                 _renderPass.get(), _extent),
+    _descriptorSetLayout(_device, createDescriptorSetLayoutInfo())
 {
-    initDescriptorSetLayout();
-
     PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
     PipelineInfo pipelineInfo(_extent);
     pipelineInfo.setLayout(pipelineLayoutInfo);
@@ -28,14 +27,16 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
 }
 
-void GBufferResolve::initDescriptorSetLayout() {
-    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-    _descriptorSetLayout.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-    _descriptorSetLayout.addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment);
-    _descriptorSetLayout.addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment);
-    _descriptorSetLayout.createLayout(_device);
+DescriptorSetLayoutInfo GBufferResolve::createDescriptorSetLayoutInfo() {
+    DescriptorSetLayoutInfo layoutInfo;
+    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
+    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
+    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
+    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
+    layoutInfo.addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment);
+    layoutInfo.addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment);
+
+    return layoutInfo;
 }
 
 vk::UniqueRenderPass GBufferResolve::createRenderPass() {

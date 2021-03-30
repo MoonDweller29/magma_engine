@@ -43,6 +43,6 @@ private:
     FrameBuffer _frameBuffer;
 
 
-    void initDescriptorSetLayout();
+    DescriptorSetLayoutInfo createDescriptorSetLayoutInfo();
     vk::UniqueRenderPass createRenderPass();
 };

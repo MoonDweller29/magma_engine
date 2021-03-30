@@ -3,29 +3,19 @@
 #include <vector>
 #include <unordered_map>
 
-#include "DescriptorPool.h"
-#include "DescriptorSetInfo.h"
+#include "magma/vk/descriptors/DescriptorPool.h"
+#include "magma/vk/descriptors/DescriptorSetInfo.h"
+#include "magma/vk/descriptors/DescriptorSetLayoutInfo.h"
 
 class DescriptorSetLayout {
 public:
-    DescriptorSetLayout();
+    DescriptorSetLayout(vk::Device device, const DescriptorSetLayoutInfo &layoutInfo);
     DescriptorSetLayout(const DescriptorSetLayout &) = delete;
     ~DescriptorSetLayout();
 
-    void createLayout(vk::Device device);
     void freePool();
 
     const vk::DescriptorSetLayout &getLayout() const { return _layout; }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    // adding bindings to layout
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    void addUniformBuffer(uint32_t bufSize, vk::ShaderStageFlags stageFlags);
-    void addCombinedImageSampler(vk::ShaderStageFlags stageFlags);
-    void addStorageImage(vk::ShaderStageFlags stageFlags);
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     // descriptorSet recording
@@ -41,16 +31,13 @@ public:
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
     vk::Device _device;
-    std::vector<vk::DescriptorSetLayoutBinding> _bindings;
-    std::unordered_map<vk::DescriptorType, uint32_t> _poolSizes;
+    DescriptorSetLayoutInfo _layoutInfo;
     vk::DescriptorSetLayout _layout;
 
     std::vector<DescriptorPool> _pools;
-
-    void increaseDescriptorsCount(vk::DescriptorType descrType, int descrCount);
-    void checkBindingIndex(uint32_t bindingInd, vk::DescriptorType descriptorType);
-
     std::vector<vk::DescriptorSet> _descriptorSets;
     DescriptorSetInfo _descriptorSetInfo;
     uint32_t _setInd; //index of set that is recording
+
+    void checkBindingIndex(uint32_t bindingInd, vk::DescriptorType descriptorType);
 };
