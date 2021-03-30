@@ -42,7 +42,5 @@ private:
 
     FrameBuffer _frameBuffer;
 
-
-    DescriptorSetLayoutInfo createDescriptorSetLayoutInfo();
     vk::UniqueRenderPass createRenderPass();
 };

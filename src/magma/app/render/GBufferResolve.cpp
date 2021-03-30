@@ -12,7 +12,14 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
     _renderPass(std::move(createRenderPass())),
     _frameBuffer(_device, {_renderTarget.getView()},
                  _renderPass.get(), _extent),
-    _descriptorSetLayout(_device, createDescriptorSetLayoutInfo())
+    _descriptorSetLayout(_device, DescriptorSetLayoutInfo()
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+        .addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment)
+        .addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment)
+    )
 {
     PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
     PipelineInfo pipelineInfo(_extent);
@@ -25,18 +32,6 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
             fragShader.getStageInfo()
     };
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
-}
-
-DescriptorSetLayoutInfo GBufferResolve::createDescriptorSetLayoutInfo() {
-    DescriptorSetLayoutInfo layoutInfo;
-    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-    layoutInfo.addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment);
-    layoutInfo.addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment);
-
-    return layoutInfo;
 }
 
 vk::UniqueRenderPass GBufferResolve::createRenderPass() {

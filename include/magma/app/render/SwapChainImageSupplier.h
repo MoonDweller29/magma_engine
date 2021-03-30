@@ -43,7 +43,6 @@ private:
 
     std::vector<FrameBuffer> _frameBuffers;
 
-    DescriptorSetLayoutInfo createDescriptorSetLayoutInfo();
     void writeDescriptorSets(vk::ImageView inputImageView);
     vk::UniqueRenderPass createRenderPass();
     vk::UniqueSampler createImageSampler();

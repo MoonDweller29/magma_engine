@@ -1,7 +1,7 @@
 #include "magma/vk/descriptors/DescriptorSetLayoutInfo.h"
 
 
-void DescriptorSetLayoutInfo::addUniformBuffer(uint32_t bufSize, vk::ShaderStageFlags stageFlags) {
+DescriptorSetLayoutInfo &DescriptorSetLayoutInfo::addUniformBuffer(uint32_t bufSize, vk::ShaderStageFlags stageFlags) {
     vk::DescriptorSetLayoutBinding uboLayoutBinding;
     uboLayoutBinding.binding = _bindings.size();
     uboLayoutBinding.descriptorType = vk::DescriptorType::eUniformBuffer;
@@ -10,9 +10,11 @@ void DescriptorSetLayoutInfo::addUniformBuffer(uint32_t bufSize, vk::ShaderStage
 
     _bindings.push_back(uboLayoutBinding);
     increaseDescriptorsCount(vk::DescriptorType::eUniformBuffer, bufSize);
+
+    return *this;
 }
 
-void DescriptorSetLayoutInfo::addCombinedImageSampler(vk::ShaderStageFlags stageFlags) {
+DescriptorSetLayoutInfo &DescriptorSetLayoutInfo::addCombinedImageSampler(vk::ShaderStageFlags stageFlags) {
     vk::DescriptorSetLayoutBinding samplerLayoutBinding;
     samplerLayoutBinding.binding = _bindings.size();
     samplerLayoutBinding.descriptorType = vk::DescriptorType::eCombinedImageSampler;
@@ -22,9 +24,11 @@ void DescriptorSetLayoutInfo::addCombinedImageSampler(vk::ShaderStageFlags stage
 
     _bindings.push_back(samplerLayoutBinding);
     increaseDescriptorsCount(vk::DescriptorType::eCombinedImageSampler, 1);
+
+    return *this;
 }
 
-void DescriptorSetLayoutInfo::addStorageImage(vk::ShaderStageFlags stageFlags) {
+DescriptorSetLayoutInfo &DescriptorSetLayoutInfo::addStorageImage(vk::ShaderStageFlags stageFlags) {
     vk::DescriptorSetLayoutBinding storageImageLayoutBinding;
     storageImageLayoutBinding.binding = _bindings.size();
     storageImageLayoutBinding.descriptorType = vk::DescriptorType::eStorageImage;
@@ -34,6 +38,8 @@ void DescriptorSetLayoutInfo::addStorageImage(vk::ShaderStageFlags stageFlags) {
 
     _bindings.push_back(storageImageLayoutBinding);
     increaseDescriptorsCount(vk::DescriptorType::eStorageImage, 1);
+
+    return *this;
 }
 
 void DescriptorSetLayoutInfo::increaseDescriptorsCount(vk::DescriptorType descrType, int descrCount) {

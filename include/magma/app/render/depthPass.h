@@ -27,7 +27,6 @@ class DepthPass
     CmdSync renderFinished;
 
     void createRenderPass();
-    DescriptorSetLayoutInfo createDescriptorSetLayoutInfo();
 public:
     DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout);
     void writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size);

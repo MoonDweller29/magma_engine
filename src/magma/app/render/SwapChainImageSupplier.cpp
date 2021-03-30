@@ -7,7 +7,9 @@ SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView 
     _renderFinished(device),
     _imgSampler(createImageSampler()),
     _renderPass(std::move(createRenderPass())),
-    _descriptorSetLayout(_device, createDescriptorSetLayoutInfo())
+    _descriptorSetLayout(_device, DescriptorSetLayoutInfo()
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+    )
 {
     for (int i = 0; i < _swapChain.imgCount(); ++i) {
         std::vector<vk::ImageView> attachments{ _swapChain.getView(i) };
@@ -27,13 +29,6 @@ SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView 
             fragShader.getStageInfo()
     };
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
-}
-
-DescriptorSetLayoutInfo SwapChainImageSupplier::createDescriptorSetLayoutInfo() {
-    DescriptorSetLayoutInfo layoutInfo;
-    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-
-    return layoutInfo;
 }
 
 void SwapChainImageSupplier::writeDescriptorSets(vk::ImageView inputImageView) {

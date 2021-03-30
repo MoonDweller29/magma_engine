@@ -12,7 +12,9 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
         depthFinalLayout(depthFinalLayout), 
         _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool),
         renderFinished(device.getDevice()),
-        descriptorSetLayout(device.getDevice(), createDescriptorSetLayoutInfo())
+        descriptorSetLayout(device.getDevice(), DescriptorSetLayoutInfo()
+            .addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex)
+        )
 {
     createRenderPass();
 
@@ -29,13 +31,6 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
 
     std::vector<vk::ImageView> attachments = { depthTex.getView() };
     frameBuffer = std::make_unique<FrameBuffer>(device.c_getDevice(), attachments, renderPass, extent);
-}
-
-DescriptorSetLayoutInfo DepthPass::createDescriptorSetLayoutInfo() {
-    DescriptorSetLayoutInfo layoutInfo;
-    layoutInfo.addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex);
-
-    return layoutInfo;
 }
 
 void DepthPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size)

@@ -14,7 +14,10 @@ MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue qu
                  {_gBuffer.getAlbedo().getView(), _gBuffer.getNormals().getView(),
                   _gBuffer.getGlobalPos().getView(), _gBuffer.getDepth().getView()},
                  _renderPass.get(), _gBuffer.getExtent()),
-    _descriptorSetLayout(_device, createDescriptorSetLayoutInfo())
+    _descriptorSetLayout(_device, DescriptorSetLayoutInfo()
+        .addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex)
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+    )
 {
     PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
     PipelineVertexInputInfo pipelineVertexInputInfo(Vertex::getBindingDescription(), Vertex::getAttributeDescriptions());
@@ -36,14 +39,6 @@ MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue qu
             fragShader.getStageInfo()
     };
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
-}
-
-DescriptorSetLayoutInfo MainColorPass::createDescriptorSetLayoutInfo() {
-    DescriptorSetLayoutInfo layoutInfo;
-    layoutInfo.addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex);
-    layoutInfo.addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment);
-
-    return layoutInfo;
 }
 
 vk::UniqueRenderPass MainColorPass::createRenderPass() {
