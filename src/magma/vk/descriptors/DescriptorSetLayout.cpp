@@ -30,15 +30,15 @@ void DescriptorSetLayout::allocateSets(uint32_t count) {
     _descriptorSets.clear();
     //iteration over existing pools
     for (auto &pool : _pools) {
+        if (count <= 0) {
+            break;
+        }
         if (pool.isFull()) {
             continue;
         }
         auto newSets = pool.allocateSets(_layout, count);
         count -= newSets.size();
         _descriptorSets.insert(_descriptorSets.end(), newSets.begin(), newSets.end());
-        if (count == 0) {
-            break;
-        }
     }
     //allocation of new pools if needed
     while (count > 0) {
