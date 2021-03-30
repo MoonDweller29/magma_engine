@@ -117,12 +117,15 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/vk/buffers/Buffer.h
 		src/magma/vk/buffers/Buffer.cpp
 
-		include/magma/vk/descriptors/descriptorSetLayout.h
-		src/magma/vk/descriptors/descriptorSetLayout.cpp
-		include/magma/vk/descriptors/descriptorPool.h
-		src/magma/vk/descriptors/descriptorPool.cpp
-		include/magma/vk/descriptors/descriptorSetInfo.h
-		src/magma/vk/descriptors/descriptorSetInfo.cpp
+		include/magma/vk/descriptors/DescriptorPool.h
+		src/magma/vk/descriptors/DescriptorPool.cpp
+		include/magma/vk/descriptors/DescriptorSetInfo.h
+		src/magma/vk/descriptors/DescriptorSetInfo.cpp
+		include/magma/vk/descriptors/DescriptorSetLayout.h
+		src/magma/vk/descriptors/DescriptorSetLayout.cpp
+		include/magma/vk/descriptors/DescriptorSetLayoutInfo.h
+		src/magma/vk/descriptors/DescriptorSetLayoutInfo.cpp
+
 		include/magma/vk/CmdSync.h
 		src/magma/vk/CmdSync.cpp
 		include/magma/app/config/JSON.h

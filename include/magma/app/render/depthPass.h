@@ -5,7 +5,7 @@
 #include "magma/vk/CmdSync.h"
 #include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/textures/Texture.h"
-#include "magma/vk/descriptors/descriptorSetLayout.h"
+#include "magma/vk/descriptors/DescriptorSetLayout.h"
 #include "magma/vk/FrameBuffer.h"
 #include "magma/app/scene/mesh.h"
 #include <memory>
@@ -27,7 +27,6 @@ class DepthPass
     CmdSync renderFinished;
 
     void createRenderPass();
-    void initDescriptorSetLayout();
 public:
     DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout);
     void writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size);

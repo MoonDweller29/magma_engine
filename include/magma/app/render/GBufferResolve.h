@@ -6,7 +6,7 @@
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/CmdSync.h"
 #include "magma/vk/commands/CommandBuffer.h"
-#include "magma/vk/descriptors/descriptorSetLayout.h"
+#include "magma/vk/descriptors/DescriptorSetLayout.h"
 #include "magma/vk/pipeline/GraphicsPipeline.h"
 #include "magma/vk/FrameBuffer.h"
 
@@ -16,13 +16,13 @@ class GBuffer;
 class GBufferResolve {
 public:
     GBufferResolve(vk::Device device, Texture renderTarget, Queue queue);
-    ~GBufferResolve();
+    ~GBufferResolve() = default;
 
     const CmdSync &getSync() const { return _renderFinished; }
 
     void writeDescriptorSets(
             const GBuffer &gBuffer,
-            VkImageView shadowMapView, VkSampler shadowMapSampler,
+            vk::ImageView shadowMapView, vk::Sampler shadowMapSampler,
             const Buffer &fragmentUniform, uint32_t fuboSize,
             const Buffer &lightSpaceUniform, uint32_t luboSize);
     void recordCmdBuffers();
@@ -46,7 +46,6 @@ private:
 
     FrameBuffer _frameBuffer;
 
-    void initDescriptorSetLayout();
     vk::UniqueRenderPass createRenderPass();
     vk::UniqueSampler createImageSampler();
 };

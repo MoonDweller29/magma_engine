@@ -8,7 +8,7 @@
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/CmdSync.h"
 #include "magma/vk/commands/CommandBufferArr.h"
-#include "magma/vk/descriptors/descriptorSetLayout.h"
+#include "magma/vk/descriptors/DescriptorSetLayout.h"
 #include "magma/vk/pipeline/GraphicsPipeline.h"
 #include "magma/vk/FrameBuffer.h"
 
@@ -16,7 +16,7 @@
 class SwapChainImageSupplier {
 public:
     SwapChainImageSupplier(vk::Device device, vk::ImageView inputImageView, SwapChain &swapChain, Queue queue);
-    ~SwapChainImageSupplier();
+    ~SwapChainImageSupplier() = default;
 
     const CmdSync &getSync() const { return _renderFinished; }
 
@@ -43,7 +43,6 @@ private:
 
     std::vector<FrameBuffer> _frameBuffers;
 
-    void initDescriptorSetLayout();
     void writeDescriptorSets(vk::ImageView inputImageView);
     vk::UniqueRenderPass createRenderPass();
     vk::UniqueSampler createImageSampler();

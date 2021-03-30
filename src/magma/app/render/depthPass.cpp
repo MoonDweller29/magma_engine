@@ -11,9 +11,11 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
         extent(extent),
         depthFinalLayout(depthFinalLayout), 
         _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool),
-        renderFinished(device.getDevice())
+        renderFinished(device.getDevice()),
+        descriptorSetLayout(device.getDevice(), DescriptorSetLayoutInfo()
+            .addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex)
+        )
 {
-    initDescriptorSetLayout();
     createRenderPass();
 
     PipelineLayoutInfo pipelineLayoutInfo(descriptorSetLayout.getLayout());
@@ -29,12 +31,6 @@ DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D 
 
     std::vector<vk::ImageView> attachments = { depthTex.getView() };
     frameBuffer = std::make_unique<FrameBuffer>(device.c_getDevice(), attachments, renderPass, extent);
-}
-
-void DepthPass::initDescriptorSetLayout()
-{
-    descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_VERTEX_BIT);
-    descriptorSetLayout.createLayout(device.c_getDevice());
 }
 
 void DepthPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size)
@@ -175,5 +171,4 @@ DepthPass::~DepthPass()
 {
     vkDestroyRenderPass(device.c_getDevice(), renderPass, nullptr);
     graphicsPipeline.reset();
-    descriptorSetLayout.clear();
 }

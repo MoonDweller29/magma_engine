@@ -11,10 +11,16 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
     _imgSampler(createImageSampler()),
     _renderPass(std::move(createRenderPass())),
     _frameBuffer(_device, {_renderTarget.getView()},
-                 _renderPass.get(), _extent)
+                 _renderPass.get(), _extent),
+    _descriptorSetLayout(_device, DescriptorSetLayoutInfo()
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+        .addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment)
+        .addUniformBuffer(1, vk::ShaderStageFlagBits::eFragment)
+    )
 {
-    initDescriptorSetLayout();
-
     PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
     PipelineInfo pipelineInfo(_extent);
     pipelineInfo.setLayout(pipelineLayoutInfo);
@@ -26,20 +32,6 @@ GBufferResolve::GBufferResolve(vk::Device device, Texture renderTarget, Queue qu
             fragShader.getStageInfo()
     };
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
-}
-
-GBufferResolve::~GBufferResolve() {
-    _descriptorSetLayout.clear();
-}
-
-void GBufferResolve::initDescriptorSetLayout() {
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.addUniformBuffer(1, VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.createLayout(_device);
 }
 
 vk::UniqueRenderPass GBufferResolve::createRenderPass() {
@@ -113,17 +105,17 @@ vk::UniqueSampler GBufferResolve::createImageSampler() {
 
 void GBufferResolve::writeDescriptorSets(
         const GBuffer &gBuffer,
-        VkImageView shadowMapView, VkSampler shadowMapSampler,
+        vk::ImageView shadowMapView, vk::Sampler shadowMapSampler,
         const Buffer &fragmentUniform, uint32_t fuboSize,
         const Buffer &lightSpaceUniform, uint32_t luboSize
 ) {
     _descriptorSetLayout.allocateSets(1);
     _descriptorSetLayout.beginSet(0);
     {
-        _descriptorSetLayout.bindCombinedImageSampler(0, gBuffer.getAlbedo().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(1, gBuffer.getNormals().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(2, gBuffer.getGlobalPos().getView(), _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        _descriptorSetLayout.bindCombinedImageSampler(3, shadowMapView, shadowMapSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        _descriptorSetLayout.bindCombinedImageSampler(0, gBuffer.getAlbedo().getView(), _imgSampler.get());
+        _descriptorSetLayout.bindCombinedImageSampler(1, gBuffer.getNormals().getView(), _imgSampler.get());
+        _descriptorSetLayout.bindCombinedImageSampler(2, gBuffer.getGlobalPos().getView(), _imgSampler.get());
+        _descriptorSetLayout.bindCombinedImageSampler(3, shadowMapView, shadowMapSampler);
         _descriptorSetLayout.bindUniformBuffer(4, fragmentUniform.getBuf(), 0, fuboSize);
         _descriptorSetLayout.bindUniformBuffer(5, lightSpaceUniform.getBuf(), 0, luboSize);
     }

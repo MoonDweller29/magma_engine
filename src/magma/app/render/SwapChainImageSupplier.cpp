@@ -6,14 +6,16 @@ SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView 
     _cmdBufArr(device, queue.cmdPool, _swapChain.imgCount()),
     _renderFinished(device),
     _imgSampler(createImageSampler()),
-    _renderPass(std::move(createRenderPass()))
+    _renderPass(std::move(createRenderPass())),
+    _descriptorSetLayout(_device, DescriptorSetLayoutInfo()
+        .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
+    )
 {
     for (int i = 0; i < _swapChain.imgCount(); ++i) {
         std::vector<vk::ImageView> attachments{ _swapChain.getView(i) };
         _frameBuffers.emplace_back(_device, attachments, _renderPass.get(), _extent);
     }
 
-    initDescriptorSetLayout();
     writeDescriptorSets(inputImageView);
 
     PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
@@ -29,20 +31,11 @@ SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView 
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
 }
 
-SwapChainImageSupplier::~SwapChainImageSupplier() {
-    _descriptorSetLayout.clear();
-}
-
-void SwapChainImageSupplier::initDescriptorSetLayout() {
-    _descriptorSetLayout.addCombinedImageSampler(VK_SHADER_STAGE_FRAGMENT_BIT);
-    _descriptorSetLayout.createLayout(_device);
-}
-
 void SwapChainImageSupplier::writeDescriptorSets(vk::ImageView inputImageView) {
     _descriptorSetLayout.allocateSets(1);
     _descriptorSetLayout.beginSet(0);
     {
-        _descriptorSetLayout.bindCombinedImageSampler(0, inputImageView, _imgSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        _descriptorSetLayout.bindCombinedImageSampler(0, inputImageView, _imgSampler.get());
     }
     _descriptorSet = _descriptorSetLayout.recordAndReturnSets()[0];
 }

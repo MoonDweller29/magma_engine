@@ -6,7 +6,7 @@
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/CmdSync.h"
 #include "magma/vk/commands/CommandBuffer.h"
-#include "magma/vk/descriptors/descriptorSetLayout.h"
+#include "magma/vk/descriptors/DescriptorSetLayout.h"
 #include "magma/vk/pipeline/GraphicsPipeline.h"
 #include "magma/vk/FrameBuffer.h"
 
@@ -16,13 +16,13 @@ class GBuffer;
 class MainColorPass {
 public:
     MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue queue);
-    ~MainColorPass();
+    ~MainColorPass() = default;
 
     const CmdSync &getSync() const { return _renderFinished; }
 
     void writeDescriptorSets(
             const Buffer &uniformBuffer, uint32_t uboSize,
-            VkImageView albedoTexView, VkSampler sampler);
+            vk::ImageView albedoTexView, vk::Sampler sampler);
     void recordCmdBuffers(vk::Buffer indexBuffer, vk::Buffer vertexBuffer, uint32_t vertexCount);
     const CmdSync &draw(
             const std::vector<vk::Semaphore> &waitSemaphores,
@@ -42,7 +42,5 @@ private:
 
     FrameBuffer _frameBuffer;
 
-
-    void initDescriptorSetLayout();
     vk::UniqueRenderPass createRenderPass();
 };

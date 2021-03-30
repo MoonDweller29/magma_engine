@@ -14,3 +14,7 @@ bool isSuccess(vk::Result result);
     }
 
 vk::Extent2D toExtent2D(const vk::Extent3D &extent3D);
+
+#define NON_COPYABLE(Type)                          \
+    Type(const Type &another) = delete;             \
+    Type &operator=(const Type &another) = delete;
