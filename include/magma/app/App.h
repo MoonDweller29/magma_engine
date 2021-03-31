@@ -75,6 +75,9 @@ private:
     void initFromConfig();
     void cleanupSwapChain();
     void recreateSwapChain();
+    void createResolutionDependentRenderModules();
+    void clearResolutionDependentRenderModules();
+
 
     void loadScene();
     void initVulkan();

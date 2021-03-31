@@ -200,38 +200,50 @@ void App::initVulkan() {
     _indexBuffer = bufferManager.createIndexBuffer("indexBuffer", _indices);
 
     _swapChain = std::make_unique<SwapChain>(*_device, *_window);
+    createSyncObjects();
     createUniformBuffers();
     _gBuffer = std::make_unique<GBuffer>(_device->getTextureManager(), _window->getResolution());
     createMainRenderTarget();
     _textureSampler = createDefaultTextureSampler(vk::Filter::eLinear, vk::Filter::eLinear);
 
     createShadowMapResources();
+    createResolutionDependentRenderModules();
+}
 
+void App::createResolutionDependentRenderModules() {
     _depthPass = std::make_unique<DepthPass>(_device->getDevice(), _gBuffer->getDepth(),
-                                            vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                                            _device->getGraphicsQueue());
+                                             vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                                             _device->getGraphicsQueue());
     _depthPass->writeDescriptorSets(_uniformBuffer, sizeof(UniformBufferObject));
     _depthPass->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
 
-
     _mainColorPass = std::make_unique<MainColorPass>(_device->getDevice(), *_gBuffer, _device->getGraphicsQueue());
     _mainColorPass->writeDescriptorSets(_uniformBuffer, sizeof(UniformBufferObject),
-                                       _texture.getView(), _textureSampler);
+                                        _texture.getView(), _textureSampler);
     _mainColorPass->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
+
     _gBufferResolve = std::make_unique<GBufferResolve>(_device->getDevice(), _mainRenderTarget, _device->getGraphicsQueue());
     _gBufferResolve->writeDescriptorSets(*_gBuffer, _shadowMap.getView(), _shadowMapSampler,
-                                        _fragmentUniform, sizeof(FragmentUniform),
-                                        _lightSpaceUniform, sizeof(LightSpaceUniform));
+                                         _fragmentUniform, sizeof(FragmentUniform),
+                                         _lightSpaceUniform, sizeof(LightSpaceUniform));
     _gBufferResolve->recordCmdBuffers();
+
     _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
             _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
     );
     _swapChainImageSupplier->recordCmdBuffers();
+}
 
-    createSyncObjects();
+void App::clearResolutionDependentRenderModules() {
+    _depthPass.reset();
+    _mainColorPass.reset();
+    _gBufferResolve.reset();
+    _swapChainImageSupplier.reset();
 }
 
 void App::cleanupSwapChain() {
+    clearResolutionDependentRenderModules();
+
     BufferManager& bufferManager = _device->getBufferManager();
     bufferManager.deleteBuffer(_uniformBuffer);
     bufferManager.deleteBuffer(_fragmentUniform);
@@ -239,10 +251,6 @@ void App::cleanupSwapChain() {
     _gBuffer.reset();
     _device->getTextureManager().deleteTexture(_mainRenderTarget);
 
-    _mainColorPass.reset();
-    _gBufferResolve.reset();
-    _swapChainImageSupplier.reset();
-    _depthPass.reset();
     _swapChain.reset();
 }
 
@@ -254,33 +262,14 @@ void App::recreateSwapChain() {
     vk::Extent2D res = _window->getResolution();
     WIN_WIDTH = res.width;
     WIN_HEIGHT = res.height;
+    _mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
 
     _swapChain = std::make_unique<SwapChain>(*_device, *_window);
     createUniformBuffers();
     _gBuffer = std::make_unique<GBuffer>(_device->getTextureManager(), _window->getResolution());
     createMainRenderTarget();
 
-    _depthPass = std::make_unique<DepthPass>(_device->getDevice(), _gBuffer->getDepth(),
-                                            vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                                            _device->getGraphicsQueue());
-    _depthPass->writeDescriptorSets(_uniformBuffer, sizeof(UniformBufferObject));
-    _depthPass->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
-
-
-    _mainColorPass = std::make_unique<MainColorPass>(_device->getDevice(), *_gBuffer, _device->getGraphicsQueue());
-    _mainColorPass->writeDescriptorSets(_uniformBuffer, sizeof(UniformBufferObject),
-                                       _texture.getView(), _textureSampler);
-    _mainColorPass->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
-    _gBufferResolve = std::make_unique<GBufferResolve>(_device->getDevice(), _mainRenderTarget, _device->getGraphicsQueue());
-    _gBufferResolve->writeDescriptorSets(*_gBuffer, _shadowMap.getView(), _shadowMapSampler,
-                                        _fragmentUniform, sizeof(FragmentUniform),
-                                        _lightSpaceUniform, sizeof(LightSpaceUniform));
-    _gBufferResolve->recordCmdBuffers();
-    _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
-            _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
-    );
-    _swapChainImageSupplier->recordCmdBuffers();
-    _mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
+    createResolutionDependentRenderModules();
 }
 
 void App::drawFrame() {
