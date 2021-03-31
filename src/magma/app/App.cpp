@@ -44,7 +44,6 @@ int App::run() {
     try {
         initFromConfig();
         initVulkan();
-        _mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
         mainLoop();
         cleanUp();
     } catch (const std::exception& e) {
@@ -107,6 +106,7 @@ void App::loadScene() {
     _light = std::make_unique<DirectLight>(
             glm::vec3(1,1,0), glm::vec3(0,0,0) - glm::vec3(1,1,0),
             0.1f, 20.f);
+    _mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
 }
 
 vk::Sampler App::createDefaultTextureSampler(vk::Filter minFilter, vk::Filter magFilter) {
