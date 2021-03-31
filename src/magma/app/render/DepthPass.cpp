@@ -1,4 +1,4 @@
-#include "magma/app/render/depthPass.h"
+#include "magma/app/render/DepthPass.h"
 
 #include <array>
 

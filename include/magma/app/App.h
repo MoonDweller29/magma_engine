@@ -10,7 +10,7 @@
 #include "magma/app/scene/mesh.h"
 #include "magma/app/scene/meshReader.h"
 #include "magma/app/scene/directLight.h"
-#include "magma/app/render/depthPass.h"
+#include "magma/app/render/DepthPass.h"
 #include "magma/app/render/MainColorPass.h"
 #include "magma/app/render/GBufferResolve.h"
 #include "magma/app/render/SwapChainImageSupplier.h"
