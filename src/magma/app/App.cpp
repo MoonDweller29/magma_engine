@@ -12,24 +12,6 @@
 #include "magma/app/config/JSON.h"
 
 
-//const std::vector<Vertex> vertices = {
-//        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-//        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-//        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-//        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-//
-//        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-//        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-//        {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-//        {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-//};
-//
-//const std::vector<uint32_t> indices = {
-//        0, 1, 2, 2, 3, 0,
-//        4, 5, 6, 6, 7, 4
-//};
-
-// Why is this still here? Just to suffer?
 struct UniformBufferObject {
     glm::mat4 model;
     glm::mat4 view;
@@ -55,14 +37,14 @@ static std::string joinPath(const std::string &s1, const std::string &s2) {
 
 
 bool App::isClosed() {
-	return keyBoard->wasPressed(GLFW_KEY_ESCAPE);
+	return _keyBoard->wasPressed(GLFW_KEY_ESCAPE);
 }
 
 int App::run() {
     try {
         initFromConfig();
         initVulkan();
-        mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
+        _mainCamera = std::make_unique<Camera>(0.1, 100, WIN_WIDTH, WIN_HEIGHT, 90.0f);
         mainLoop();
         cleanUp();
     } catch (const std::exception& e) {
@@ -75,11 +57,11 @@ int App::run() {
 
 
 void App::initFromConfig() {
-    JSON buildInfo = json::load<JSON>(buildInfoFilename);
-    dataPath = joinPath(buildInfo["build_info"]["src_dir"], "data");
-    texturePath = joinPath(dataPath, "textures/viking_room.png");
-    modelPath = joinPath(dataPath, "models/viking_room.obj");
-    JSON main_config = json::load<JSON>(joinPath(dataPath, "config.json"));
+    JSON buildInfo = json::load<JSON>(_buildInfoFilename);
+    _dataPath = joinPath(buildInfo["build_info"]["src_dir"], "data");
+    _texturePath = joinPath(_dataPath, "textures/viking_room.png");
+    _modelPath = joinPath(_dataPath, "models/viking_room.obj");
+    JSON main_config = json::load<JSON>(joinPath(_dataPath, "config.json"));
 
     Log::Config log_config = main_config["logger"].get<Log::Config>();
     Log::initFromConfig(log_config);
@@ -93,38 +75,38 @@ void App::initFromConfig() {
 }
 
 void App::initWindow() {
-    window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT, instance->instance());
-    keyBoard = window->getKeyboard();
-    mouse = window->getMouse();
+    _window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT, _instance->instance());
+    _keyBoard = _window->getKeyboard();
+    _mouse = _window->getMouse();
 }
 
 void App::createSyncObjects() {
-    imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    _imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        VkResult result = vkCreateSemaphore(device->c_getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
+        VkResult result = vkCreateSemaphore(_device->c_getDevice(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]);
         VK_CHECK_ERR(result, "failed to create semaphores!");
     }
 }
 
 void App::createUniformBuffers() {
-    uint32_t imgCount = swapChain->imgCount();
+    uint32_t imgCount = _swapChain->imgCount();
 
-    BufferManager& bufferManager = device->getBufferManager();
-    uniformBuffer = bufferManager.createUniformBuffer("uniformBuffer", sizeof(UniformBufferObject));
-    fragmentUniform = bufferManager.createUniformBuffer("fragmentUniform", sizeof(FragmentUniform));
+    BufferManager& bufferManager = _device->getBufferManager();
+    _uniformBuffer = bufferManager.createUniformBuffer("uniformBuffer", sizeof(UniformBufferObject));
+    _fragmentUniform = bufferManager.createUniformBuffer("fragmentUniform", sizeof(FragmentUniform));
 }
 
 void App::loadScene() {
-    texture = device->getTextureManager().loadTexture("input_texture", texturePath);
-    scene = meshReader.load_scene(modelPath);
-    vertices = scene[0].getVertices();
-    indices = scene[0].getIndices();
+    _texture = _device->getTextureManager().loadTexture("input_texture", _texturePath);
+    _scene = _meshReader.load_scene(_modelPath);
+    _vertices = _scene[0].getVertices();
+    _indices = _scene[0].getIndices();
 
-    light = std::make_unique<DirectLight>(
+    _light = std::make_unique<DirectLight>(
             glm::vec3(1,1,0), glm::vec3(0,0,0) - glm::vec3(1,1,0),
             0.1f, 20.f);
 }
@@ -149,48 +131,48 @@ vk::Sampler App::createDefaultTextureSampler(vk::Filter minFilter, vk::Filter ma
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
 
-    auto[result, sampler] = device->getDevice().createSampler(samplerInfo);
+    auto[result, sampler] = _device->getDevice().createSampler(samplerInfo);
     VK_CHECK_ERR(result, "failed to create texture sampler!");
 
     return sampler;
 }
 
 void App::createShadowMapTex() {
-    shadowMap = device->getTextureManager().createTexture2D("shadowMap_texture",
+    _shadowMap = _device->getTextureManager().createTexture2D("shadowMap_texture",
         vk::Format::eD32Sfloat,
         vk::Extent2D{2048, 2048},
         vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled,
         vk::ImageAspectFlagBits::eDepth);
-    shadowMapSampler = createDefaultTextureSampler(vk::Filter::eNearest, vk::Filter::eNearest);
+    _shadowMapSampler = createDefaultTextureSampler(vk::Filter::eNearest, vk::Filter::eNearest);
 }
 
 void App::createShadowMapResources() {
     createShadowMapTex();
 
-    BufferManager& bufferManager = device->getBufferManager();
-    shadowUniform = bufferManager.createUniformBuffer("shadowUniform", sizeof(UniformBufferObject));
-    lightSpaceUniform = bufferManager.createUniformBuffer("lightSpaceUniform", sizeof(LightSpaceUniform));
+    BufferManager& bufferManager = _device->getBufferManager();
+    _shadowUniform = bufferManager.createUniformBuffer("shadowUniform", sizeof(UniformBufferObject));
+    _lightSpaceUniform = bufferManager.createUniformBuffer("lightSpaceUniform", sizeof(LightSpaceUniform));
 
-    renderShadow = std::make_unique<DepthPass>(device->getDevice(), shadowMap,
+    _renderShadow = std::make_unique<DepthPass>(_device->getDevice(), _shadowMap,
                                                vk::ImageLayout::eShaderReadOnlyOptimal,
-                                               device->getGraphicsQueue());
-    renderShadow->writeDescriptorSets(shadowUniform, sizeof(UniformBufferObject));
-    renderShadow->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
+                                               _device->getGraphicsQueue());
+    _renderShadow->writeDescriptorSets(_shadowUniform, sizeof(UniformBufferObject));
+    _renderShadow->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
 }
 
 void App::createMainRenderTarget() {
-    mainRenderTarget = device->getTextureManager().createTexture2D("main_render_target",
-        vk::Format::eR16G16B16A16Unorm, gBuffer->getExtent(),
+    _mainRenderTarget = _device->getTextureManager().createTexture2D("main_render_target",
+        vk::Format::eR16G16B16A16Unorm, _gBuffer->getExtent(),
         vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled,
         vk::ImageAspectFlagBits::eColor);
 }
 
 
 void App::initDevice() {
-    HardwareManager hardwareMGR(instance->instance());
+    HardwareManager hardwareMGR(_instance->instance());
 
     DeviceRequirements deviceRequirements;
-    deviceRequirements.surface.require(window->getSurface());
+    deviceRequirements.surface.require(_window->getSurface());
     deviceRequirements.deviceType.recommend(vk::PhysicalDeviceType::eDiscreteGpu);
     deviceRequirements.graphicsSupport.require(true);
     deviceRequirements.computeSupport.require(true);
@@ -201,119 +183,119 @@ void App::initDevice() {
 
     auto physDevice = hardwareMGR.selectBestSuitableDevice(deviceRequirements);
 
-    device = std::make_unique<LogicalDevice>(
+    _device = std::make_unique<LogicalDevice>(
             physDevice,
             deviceRequirements.features.getValue(),
             deviceRequirements.requiredExtensions());
 }
 
 void App::initVulkan() {
-    instance = std::make_unique<Context>();
-    debugMessenger = std::make_unique<DebugMessenger>(instance->c_instance());
+    _instance = std::make_unique<Context>();
+    _debugMessenger = std::make_unique<DebugMessenger>(_instance->c_instance());
     initWindow();
     initDevice();
 
     loadScene();
 
-    BufferManager& bufferManager = device->getBufferManager();
-    vertexBuffer = bufferManager.createVertexBuffer("vertexBuffer", vertices);
-    indexBuffer = bufferManager.createIndexBuffer("indexBuffer", indices);
+    BufferManager& bufferManager = _device->getBufferManager();
+    _vertexBuffer = bufferManager.createVertexBuffer("vertexBuffer", _vertices);
+    _indexBuffer = bufferManager.createIndexBuffer("indexBuffer", _indices);
 
-    swapChain = std::make_unique<SwapChain>(*device, *window);
+    _swapChain = std::make_unique<SwapChain>(*_device, *_window);
     createUniformBuffers();
-    gBuffer = std::make_unique<GBuffer>(device->getTextureManager(), window->getResolution());
+    _gBuffer = std::make_unique<GBuffer>(_device->getTextureManager(), _window->getResolution());
     createMainRenderTarget();
-    textureSampler = createDefaultTextureSampler(vk::Filter::eLinear, vk::Filter::eLinear);
+    _textureSampler = createDefaultTextureSampler(vk::Filter::eLinear, vk::Filter::eLinear);
 
     createShadowMapResources();
 
-    depthPass = std::make_unique<DepthPass>(device->getDevice(), gBuffer->getDepth(),
+    _depthPass = std::make_unique<DepthPass>(_device->getDevice(), _gBuffer->getDepth(),
                                             vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                                            device->getGraphicsQueue());
-    depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
-    depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
+                                            _device->getGraphicsQueue());
+    _depthPass->writeDescriptorSets(_uniformBuffer, sizeof(UniformBufferObject));
+    _depthPass->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
 
 
-    mainColorPass = std::make_unique<MainColorPass>(device->getDevice(), *gBuffer, device->getGraphicsQueue());
-    mainColorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
-                                       texture.getView(), textureSampler);
-    mainColorPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
-    gBufferResolve = std::make_unique<GBufferResolve>(device->getDevice(), mainRenderTarget, device->getGraphicsQueue());
-    gBufferResolve->writeDescriptorSets(*gBuffer, shadowMap.getView(), shadowMapSampler,
-                                        fragmentUniform, sizeof(FragmentUniform),
-                                        lightSpaceUniform, sizeof(LightSpaceUniform));
-    gBufferResolve->recordCmdBuffers();
-    swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
-            device->getDevice(), mainRenderTarget.getView(), *swapChain, device->getGraphicsQueue()
+    _mainColorPass = std::make_unique<MainColorPass>(_device->getDevice(), *_gBuffer, _device->getGraphicsQueue());
+    _mainColorPass->writeDescriptorSets(_uniformBuffer, sizeof(UniformBufferObject),
+                                       _texture.getView(), _textureSampler);
+    _mainColorPass->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
+    _gBufferResolve = std::make_unique<GBufferResolve>(_device->getDevice(), _mainRenderTarget, _device->getGraphicsQueue());
+    _gBufferResolve->writeDescriptorSets(*_gBuffer, _shadowMap.getView(), _shadowMapSampler,
+                                        _fragmentUniform, sizeof(FragmentUniform),
+                                        _lightSpaceUniform, sizeof(LightSpaceUniform));
+    _gBufferResolve->recordCmdBuffers();
+    _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
+            _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
     );
-    swapChainImageSupplier->recordCmdBuffers();
+    _swapChainImageSupplier->recordCmdBuffers();
 
     createSyncObjects();
 }
 
 void App::cleanupSwapChain() {
-    BufferManager& bufferManager = device->getBufferManager();
-    bufferManager.deleteBuffer(uniformBuffer);
-    bufferManager.deleteBuffer(fragmentUniform);
+    BufferManager& bufferManager = _device->getBufferManager();
+    bufferManager.deleteBuffer(_uniformBuffer);
+    bufferManager.deleteBuffer(_fragmentUniform);
 
-    gBuffer.reset();
-    device->getTextureManager().deleteTexture(mainRenderTarget);
+    _gBuffer.reset();
+    _device->getTextureManager().deleteTexture(_mainRenderTarget);
 
-    mainColorPass.reset();
-    gBufferResolve.reset();
-    swapChainImageSupplier.reset();
-    depthPass.reset();
-    swapChain.reset();
+    _mainColorPass.reset();
+    _gBufferResolve.reset();
+    _swapChainImageSupplier.reset();
+    _depthPass.reset();
+    _swapChain.reset();
 }
 
 void App::recreateSwapChain() {
-    device->waitIdle();
+    _device->waitIdle();
     cleanupSwapChain();
 
-    window->updateResolution();
-    VkExtent2D res = window->getResolution();
+    _window->updateResolution();
+    VkExtent2D res = _window->getResolution();
     WIN_WIDTH = res.width;
     WIN_HEIGHT = res.height;
 
-    swapChain = std::make_unique<SwapChain>(*device, *window);
+    _swapChain = std::make_unique<SwapChain>(*_device, *_window);
     createUniformBuffers();
-    gBuffer = std::make_unique<GBuffer>(device->getTextureManager(), window->getResolution());
+    _gBuffer = std::make_unique<GBuffer>(_device->getTextureManager(), _window->getResolution());
     createMainRenderTarget();
 
-    depthPass = std::make_unique<DepthPass>(device->getDevice(), gBuffer->getDepth(),
+    _depthPass = std::make_unique<DepthPass>(_device->getDevice(), _gBuffer->getDepth(),
                                             vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                                            device->getGraphicsQueue());
-    depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
-    depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
+                                            _device->getGraphicsQueue());
+    _depthPass->writeDescriptorSets(_uniformBuffer, sizeof(UniformBufferObject));
+    _depthPass->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
 
 
-    mainColorPass = std::make_unique<MainColorPass>(device->getDevice(), *gBuffer, device->getGraphicsQueue());
-    mainColorPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject),
-                                       texture.getView(), textureSampler);
-    mainColorPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
-    gBufferResolve = std::make_unique<GBufferResolve>(device->getDevice(), mainRenderTarget, device->getGraphicsQueue());
-    gBufferResolve->writeDescriptorSets(*gBuffer, shadowMap.getView(), shadowMapSampler,
-                                        fragmentUniform, sizeof(FragmentUniform),
-                                        lightSpaceUniform, sizeof(LightSpaceUniform));
-    gBufferResolve->recordCmdBuffers();
-    swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
-            device->getDevice(), mainRenderTarget.getView(), *swapChain, device->getGraphicsQueue()
+    _mainColorPass = std::make_unique<MainColorPass>(_device->getDevice(), *_gBuffer, _device->getGraphicsQueue());
+    _mainColorPass->writeDescriptorSets(_uniformBuffer, sizeof(UniformBufferObject),
+                                       _texture.getView(), _textureSampler);
+    _mainColorPass->recordCmdBuffers(_indexBuffer.getBuf(), _vertexBuffer.getBuf(), _indices.size());
+    _gBufferResolve = std::make_unique<GBufferResolve>(_device->getDevice(), _mainRenderTarget, _device->getGraphicsQueue());
+    _gBufferResolve->writeDescriptorSets(*_gBuffer, _shadowMap.getView(), _shadowMapSampler,
+                                        _fragmentUniform, sizeof(FragmentUniform),
+                                        _lightSpaceUniform, sizeof(LightSpaceUniform));
+    _gBufferResolve->recordCmdBuffers();
+    _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
+            _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
     );
-    swapChainImageSupplier->recordCmdBuffers();
-    mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
+    _swapChainImageSupplier->recordCmdBuffers();
+    _mainCamera->updateScreenSize(WIN_WIDTH, WIN_HEIGHT);
 }
 
 void App::drawFrame() {
-    swapChainImageSupplier->getSync().waitForFence();
+    _swapChainImageSupplier->getSync().waitForFence();
 
-    if (window->wasResized()) {
+    if (_window->wasResized()) {
         recreateSwapChain();
     }
 
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
-            device->c_getDevice(), swapChain->getSwapChain(),
-            UINT64_MAX/*timeout off*/, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+            _device->c_getDevice(), _swapChain->getSwapChain(),
+            UINT64_MAX/*timeout off*/, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         recreateSwapChain();
@@ -325,16 +307,16 @@ void App::drawFrame() {
     updateUniformBuffer(imageIndex);
     updateShadowUniform();
 
-    CmdSync depthPassSync = depthPass->draw({}, {});
-    CmdSync shadowPassSync = renderShadow->draw({}, {});
-    const CmdSync &mainColorPassSync = mainColorPass->draw(
+    CmdSync depthPassSync = _depthPass->draw({}, {});
+    CmdSync shadowPassSync = _renderShadow->draw({}, {});
+    const CmdSync &mainColorPassSync = _mainColorPass->draw(
             { depthPassSync.getSemaphore() }, {}
     );
-    const CmdSync &gBufferResolveSync = gBufferResolve->draw(
+    const CmdSync &gBufferResolveSync = _gBufferResolve->draw(
             { mainColorPassSync.getSemaphore(), shadowPassSync.getSemaphore() }, {}
     );
-    const CmdSync &swapChainImageSupplierSync = swapChainImageSupplier->draw(
-            imageIndex, { imageAvailableSemaphores[currentFrame], gBufferResolveSync.getSemaphore() }, {}
+    const CmdSync &swapChainImageSupplierSync = _swapChainImageSupplier->draw(
+            imageIndex, { _imageAvailableSemaphores[_currentFrame], gBufferResolveSync.getSemaphore() }, {}
     );
 
 
@@ -345,102 +327,102 @@ void App::drawFrame() {
     VkSemaphore colorPassSemaphore = swapChainImageSupplierSync.getSemaphore();
     presentInfo.pWaitSemaphores = &colorPassSemaphore;
 
-    VkSwapchainKHR swapChains[] = {swapChain->getSwapChain()};
+    VkSwapchainKHR swapChains[] = {_swapChain->getSwapChain()};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    result = vkQueuePresentKHR(device->getPresentQueue().queue, &presentInfo);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->wasResized()) {
+    result = vkQueuePresentKHR(_device->getPresentQueue().queue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _window->wasResized()) {
         recreateSwapChain();
     } else if (result != VK_SUCCESS) {
         LOG_AND_THROW std::runtime_error("failed to present swap chain image!");
     }
 
-    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    _currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 
 void App::updateUniformBuffer(uint32_t currentImage) {
-    float time = global_clock.getTime();
+    float time = _global_clock.getTime();
     static bool light_view = false;
 
-    if (keyBoard->wasPressed(GLFW_KEY_2))
+    if (_keyBoard->wasPressed(GLFW_KEY_2))
         light_view = !light_view;
 
     UniformBufferObject ubo{};
 //    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.model = glm::mat4x4( 1.0f );
-    ubo.view = mainCamera->getViewMat();
-    ubo.proj = mainCamera->getProjMat();
+    ubo.view = _mainCamera->getViewMat();
+    ubo.proj = _mainCamera->getProjMat();
     if (light_view) {
-        ubo.view = light->getView();
-        ubo.proj = light->getProj();
+        ubo.view = _light->getView();
+        ubo.proj = _light->getProj();
     }
 
 
     FragmentUniform fu{};
-    fu.cameraPos = mainCamera->getPos();
-    fu.lightPos = light->getPos();
+    fu.cameraPos = _mainCamera->getPos();
+    fu.lightPos = _light->getPos();
 
-    BufferManager& bufferManager = device->getBufferManager();
-    bufferManager.copyDataToBuffer(uniformBuffer, &ubo, sizeof(ubo));
-    bufferManager.copyDataToBuffer(fragmentUniform, &fu, sizeof(fu));
+    BufferManager& bufferManager = _device->getBufferManager();
+    bufferManager.copyDataToBuffer(_uniformBuffer, &ubo, sizeof(ubo));
+    bufferManager.copyDataToBuffer(_fragmentUniform, &fu, sizeof(fu));
 }
 
 void App::updateShadowUniform() {
     UniformBufferObject ubo{};
     ubo.model = glm::mat4x4( 1.0f );
-    ubo.view = light->getView();
-    ubo.proj = light->getProj();
+    ubo.view = _light->getView();
+    ubo.proj = _light->getProj();
 
     LightSpaceUniform lu{};
     lu.lightSpaceMat = ubo.proj * ubo.view;
 
-    BufferManager& bufferManager = device->getBufferManager();
-    bufferManager.copyDataToBuffer(shadowUniform, &ubo, sizeof(ubo));
-    bufferManager.copyDataToBuffer(lightSpaceUniform, &lu, sizeof(lu));
+    BufferManager& bufferManager = _device->getBufferManager();
+    bufferManager.copyDataToBuffer(_shadowUniform, &ubo, sizeof(ubo));
+    bufferManager.copyDataToBuffer(_lightSpaceUniform, &lu, sizeof(lu));
 }
 
 void App::mainLoop() {
-    float prev_time = global_clock.restart();
+    float prev_time = _global_clock.restart();
     int frames_count = 0;
 
-    mainCamera->setPos({1, 1, 1});
-    mainCamera->lookAt({0, 0, 0});
+    _mainCamera->setPos({1, 1, 1});
+    _mainCamera->lookAt({0, 0, 0});
 
-    while (!glfwWindowShouldClose(window->getGlfwWindow())) {
-        float time = global_clock.getTime();
+    while (!glfwWindowShouldClose(_window->getGlfwWindow())) {
+        float time = _global_clock.getTime();
         float frameTime = time-prev_time;
         prev_time = time;
 
         if(frames_count % 100 == 0) {
             std::stringstream ss;
             ss << "MAGMA ENGINE | FPS: " << 1 / frameTime;
-            window->setTitle(ss.str());
+            _window->setTitle(ss.str());
         }
         frames_count++;
 
-        keyBoard->flush();
+        _keyBoard->flush();
         glfwPollEvents();
-        mouse->update();
-        mainCamera->update(*keyBoard, *mouse, frameTime);
+        _mouse->update();
+        _mainCamera->update(*_keyBoard, *_mouse, frameTime);
 //        light->lookAt(glm::vec3(0,0,0), glm::vec3(sin(time), 0.4f, cos(time)));
-        light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
+        _light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
 
         // @TODO Move this to input class
-        bool isLeftMouseButtonPressed  = glfwGetMouseButton(window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
-        bool isLeftMouseButtonReleased = glfwGetMouseButton(window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
+        bool isLeftMouseButtonPressed  = glfwGetMouseButton(_window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+        bool isLeftMouseButtonReleased = glfwGetMouseButton(_window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE;
 
         // @TODO Add window focus handling
-        if (mouse->isLocked()) {
+        if (_mouse->isLocked()) {
             if (isLeftMouseButtonReleased) {
-                mouse->unlock();
+                _mouse->unlock();
             }
         } else {
             if (isLeftMouseButtonPressed) {
-                mouse->lock();
+                _mouse->lock();
             }
         }
 
@@ -451,32 +433,32 @@ void App::mainLoop() {
         drawFrame();
     }
 
-    device->waitIdle();
+    _device->waitIdle();
 }
 
 void App::cleanUp() {
     std::cout << "CLEAN UP\n";
-    BufferManager& bufferManager = device->getBufferManager();
+    BufferManager& bufferManager = _device->getBufferManager();
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroySemaphore(device->c_getDevice(), imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(_device->c_getDevice(), _imageAvailableSemaphores[i], nullptr);
     }
 
     cleanupSwapChain();
-    bufferManager.deleteBuffer(shadowUniform);
-    bufferManager.deleteBuffer(lightSpaceUniform);
-    renderShadow.reset();
-    vkDestroySampler(device->c_getDevice(), textureSampler, nullptr);
-    vkDestroySampler(device->c_getDevice(), shadowMapSampler, nullptr);
-    device->getTextureManager().deleteTexture(shadowMap);
-    device->getTextureManager().deleteTexture(texture);
-    bufferManager.deleteBuffer(indexBuffer);
-    bufferManager.deleteBuffer(vertexBuffer);
-    device.reset();
-    window.reset();
-    debugMessenger.reset();
-    instance.reset();
+    bufferManager.deleteBuffer(_shadowUniform);
+    bufferManager.deleteBuffer(_lightSpaceUniform);
+    _renderShadow.reset();
+    vkDestroySampler(_device->c_getDevice(), _textureSampler, nullptr);
+    vkDestroySampler(_device->c_getDevice(), _shadowMapSampler, nullptr);
+    _device->getTextureManager().deleteTexture(_shadowMap);
+    _device->getTextureManager().deleteTexture(_texture);
+    bufferManager.deleteBuffer(_indexBuffer);
+    bufferManager.deleteBuffer(_vertexBuffer);
+    _device.reset();
+    _window.reset();
+    _debugMessenger.reset();
+    _instance.reset();
 
     Window::closeContext();
 }

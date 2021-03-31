@@ -27,45 +27,49 @@ public:
 private:
     uint32_t WIN_WIDTH = 960, WIN_HEIGHT = 540;
     const int MAX_FRAMES_IN_FLIGHT = 2;
-    const std::string buildInfoFilename = "build_info.config";
-    std::string dataPath;
-    std::string texturePath;
-    std::string modelPath;
-    MeshReader meshReader;
-    std::vector<Mesh> scene;
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
+    const std::string _buildInfoFilename = "build_info.config";
+    std::string _dataPath;
+    std::string _texturePath;
+    std::string _modelPath;
 
-    std::unique_ptr<Context>              instance;
-    std::unique_ptr<DebugMessenger>       debugMessenger;
-    std::unique_ptr<LogicalDevice>        device;
-    std::unique_ptr<Window>               window;
-    Keyboard *keyBoard;
-    Mouse *mouse;
-    std::unique_ptr<Camera> mainCamera;
-    std::unique_ptr<DirectLight> light;
-    std::unique_ptr<SwapChain>            swapChain;
-    std::unique_ptr<DepthPass> depthPass;
-    std::unique_ptr<MainColorPass> mainColorPass;
-    std::unique_ptr<GBufferResolve> gBufferResolve;
-    std::unique_ptr<SwapChainImageSupplier> swapChainImageSupplier;
-    std::unique_ptr<DepthPass> renderShadow;
-    Buffer vertexBuffer;
-    Buffer indexBuffer;
-    Buffer uniformBuffer;
-    Buffer shadowUniform;
-    Buffer fragmentUniform;
-    Buffer lightSpaceUniform;
-    std::vector<VkSemaphore> imageAvailableSemaphores;
-    size_t currentFrame = 0;
-    Texture texture;
-    VkSampler textureSampler;
-    VkSampler shadowMapSampler;
-    std::unique_ptr<GBuffer> gBuffer;
-    Texture mainRenderTarget;
-    Texture shadowMap;
+    MeshReader _meshReader;
+    std::vector<Mesh> _scene;
+    std::vector<Vertex>   _vertices;
+    std::vector<uint32_t> _indices;
+    std::unique_ptr<Camera>      _mainCamera;
+    std::unique_ptr<DirectLight> _light;
 
-    Clock global_clock;
+    std::unique_ptr<Context>            _instance;
+    std::unique_ptr<DebugMessenger>     _debugMessenger;
+    std::unique_ptr<LogicalDevice>      _device;
+    std::unique_ptr<Window>             _window;
+    Keyboard                           *_keyBoard;
+    Mouse                              *_mouse;
+    std::unique_ptr<SwapChain>          _swapChain;
+
+    std::vector<VkSemaphore> _imageAvailableSemaphores;
+    size_t                   _currentFrame = 0;
+
+    std::unique_ptr<DepthPass>              _depthPass;
+    std::unique_ptr<DepthPass>              _renderShadow;
+    std::unique_ptr<MainColorPass>          _mainColorPass;
+    std::unique_ptr<GBufferResolve>         _gBufferResolve;
+    std::unique_ptr<SwapChainImageSupplier> _swapChainImageSupplier;
+
+    Buffer _vertexBuffer;
+    Buffer _indexBuffer;
+    Buffer _uniformBuffer;
+    Buffer _shadowUniform;
+    Buffer _fragmentUniform;
+    Buffer _lightSpaceUniform;
+    Texture   _texture;
+    VkSampler _textureSampler;
+    Texture   _shadowMap;
+    VkSampler _shadowMapSampler;
+    std::unique_ptr<GBuffer> _gBuffer;
+    Texture _mainRenderTarget;
+
+    Clock _global_clock;
 
     void initWindow();
     void initFromConfig();
