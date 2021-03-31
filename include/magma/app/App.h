@@ -47,8 +47,8 @@ private:
     Mouse                              *_mouse;
     std::unique_ptr<SwapChain>          _swapChain;
 
-    std::vector<VkSemaphore> _imageAvailableSemaphores;
-    size_t                   _currentFrame = 0;
+    std::vector<vk::Semaphore> _imageAvailableSemaphores;
+    size_t                     _currentFrame = 0;
 
     std::unique_ptr<DepthPass>              _depthPass;
     std::unique_ptr<DepthPass>              _renderShadow;
@@ -62,10 +62,10 @@ private:
     Buffer _shadowUniform;
     Buffer _fragmentUniform;
     Buffer _lightSpaceUniform;
-    Texture   _texture;
-    VkSampler _textureSampler;
-    Texture   _shadowMap;
-    VkSampler _shadowMapSampler;
+    Texture     _texture;
+    vk::Sampler _textureSampler;
+    Texture     _shadowMap;
+    vk::Sampler _shadowMapSampler;
     std::unique_ptr<GBuffer> _gBuffer;
     Texture _mainRenderTarget;
 

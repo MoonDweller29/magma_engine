@@ -83,11 +83,9 @@ void App::initWindow() {
 void App::createSyncObjects() {
     _imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
+    vk::Result result;
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        VkResult result = vkCreateSemaphore(_device->c_getDevice(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]);
+        std::tie(result, _imageAvailableSemaphores[i]) = _device->getDevice().createSemaphore({});
         VK_CHECK_ERR(result, "failed to create semaphores!");
     }
 }
@@ -191,7 +189,7 @@ void App::initDevice() {
 
 void App::initVulkan() {
     _instance = std::make_unique<Context>();
-    _debugMessenger = std::make_unique<DebugMessenger>(_instance->c_instance());
+    _debugMessenger = std::make_unique<DebugMessenger>(_instance->instance());
     initWindow();
     initDevice();
 
@@ -253,7 +251,7 @@ void App::recreateSwapChain() {
     cleanupSwapChain();
 
     _window->updateResolution();
-    VkExtent2D res = _window->getResolution();
+    vk::Extent2D res = _window->getResolution();
     WIN_WIDTH = res.width;
     WIN_HEIGHT = res.height;
 
@@ -292,15 +290,13 @@ void App::drawFrame() {
         recreateSwapChain();
     }
 
-    uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(
-            _device->c_getDevice(), _swapChain->getSwapChain(),
-            UINT64_MAX/*timeout off*/, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &imageIndex);
+    auto [result, imageIndex] = _device->getDevice().acquireNextImageKHR(_swapChain->getSwapChain(),
+            UINT64_MAX/*timeout off*/, _imageAvailableSemaphores[_currentFrame], {});
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    if (result == vk::Result::eErrorOutOfDateKHR) {
         recreateSwapChain();
         return;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    } else if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
         LOG_AND_THROW std::runtime_error("failed to acquire swap chain image!");
     }
 
@@ -320,23 +316,21 @@ void App::drawFrame() {
     );
 
 
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    vk::PresentInfoKHR presentInfo;
 
     presentInfo.waitSemaphoreCount = 1;
-    VkSemaphore colorPassSemaphore = swapChainImageSupplierSync.getSemaphore();
-    presentInfo.pWaitSemaphores = &colorPassSemaphore;
+    presentInfo.pWaitSemaphores = &swapChainImageSupplierSync.getSemaphore();
 
-    VkSwapchainKHR swapChains[] = {_swapChain->getSwapChain()};
+    vk::SwapchainKHR swapChains[] = {_swapChain->getSwapChain()};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    result = vkQueuePresentKHR(_device->getPresentQueue().queue, &presentInfo);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _window->wasResized()) {
+    result = _device->getPresentQueue().queue.presentKHR(presentInfo);
+    if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || _window->wasResized()) {
         recreateSwapChain();
-    } else if (result != VK_SUCCESS) {
+    } else if (result != vk::Result::eSuccess) {
         LOG_AND_THROW std::runtime_error("failed to present swap chain image!");
     }
 
@@ -348,8 +342,9 @@ void App::updateUniformBuffer(uint32_t currentImage) {
     float time = _global_clock.getTime();
     static bool light_view = false;
 
-    if (_keyBoard->wasPressed(GLFW_KEY_2))
+    if (_keyBoard->wasPressed(GLFW_KEY_2)) {
         light_view = !light_view;
+    }
 
     UniformBufferObject ubo{};
 //    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -437,20 +432,19 @@ void App::mainLoop() {
 }
 
 void App::cleanUp() {
-    std::cout << "CLEAN UP\n";
+    LOG_INFO("CLEAN UP");
     BufferManager& bufferManager = _device->getBufferManager();
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        vkDestroySemaphore(_device->c_getDevice(), _imageAvailableSemaphores[i], nullptr);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        _device->getDevice().destroySemaphore(_imageAvailableSemaphores[i]);
     }
 
     cleanupSwapChain();
     bufferManager.deleteBuffer(_shadowUniform);
     bufferManager.deleteBuffer(_lightSpaceUniform);
     _renderShadow.reset();
-    vkDestroySampler(_device->c_getDevice(), _textureSampler, nullptr);
-    vkDestroySampler(_device->c_getDevice(), _shadowMapSampler, nullptr);
+    _device->getDevice().destroySampler(_textureSampler);
+    _device->getDevice().destroySampler(_shadowMapSampler);
     _device->getTextureManager().deleteTexture(_shadowMap);
     _device->getTextureManager().deleteTexture(_texture);
     bufferManager.deleteBuffer(_indexBuffer);
