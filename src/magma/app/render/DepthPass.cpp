@@ -15,6 +15,7 @@ DepthPass::DepthPass(vk::Device device, const Texture &depthTex, vk::ImageLayout
     _cmdBuf(_device, _queue.cmdPool),
     _renderFinished(_device),
     _renderPass(std::move(createRenderPass())),
+    _frameBuffer(_device, { depthTex.getView() }, _renderPass.get(), _extent),
     _descriptorSetLayout(_device, DescriptorSetLayoutInfo()
         .addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex)
     )
@@ -28,9 +29,6 @@ DepthPass::DepthPass(vk::Device device, const Texture &depthTex, vk::ImageLayout
     Shader vertShader("depthVertShader", _device, "shaders/depth.vert.spv", Shader::Stage::VERT_SH);
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages = { vertShader.getStageInfo() };
     _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
-
-    std::vector<vk::ImageView> attachments = { depthTex.getView() };
-    _frameBuffer = std::make_unique<FrameBuffer>(_device, attachments, _renderPass.get(), _extent);
 }
 
 vk::UniqueRenderPass DepthPass::createRenderPass() {
@@ -89,7 +87,7 @@ void DepthPass::recordCmdBuffers(vk::Buffer indexBuffer, vk::Buffer vertexBuffer
     {
         vk::RenderPassBeginInfo renderPassInfo;
         renderPassInfo.renderPass = _renderPass.get();
-        renderPassInfo.framebuffer = _frameBuffer->getFrameBuf();
+        renderPassInfo.framebuffer = _frameBuffer.getFrameBuf();
 
         renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
         renderPassInfo.renderArea.extent = _extent;
