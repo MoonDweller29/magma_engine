@@ -46,8 +46,8 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/app/scene/directLight.h
 		src/magma/app/scene/directLight.cpp
 
-		include/magma/app/render/depthPass.h
-		src/magma/app/render/depthPass.cpp
+		include/magma/app/render/DepthPass.h
+		src/magma/app/render/DepthPass.cpp
 		include/magma/app/render/GBuffer.h
 		src/magma/app/render/GBuffer.cpp
 		include/magma/app/render/MainColorPass.h
