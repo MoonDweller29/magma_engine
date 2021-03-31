@@ -3,172 +3,157 @@
 #include <array>
 
 #include "magma/vk/ShaderModule.h"
-#include "magma/vk/vulkan_common.h"
+#include "magma/app/scene/mesh.h"
 
-DepthPass::DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout)
-        : device(device),
-        depthTex(depthTex),
-        extent(extent),
-        depthFinalLayout(depthFinalLayout), 
-        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool),
-        renderFinished(device.getDevice()),
-        descriptorSetLayout(device.getDevice(), DescriptorSetLayoutInfo()
-            .addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex)
-        )
+
+DepthPass::DepthPass(vk::Device device, const Texture &depthTex, vk::ImageLayout depthFinalLayout, Queue queue) :
+    _device(device),
+    _queue(queue),
+    _depthTex(depthTex),
+    _depthFinalLayout(depthFinalLayout),
+    _extent(toExtent2D(_depthTex.getInfo()->imageInfo.extent)),
+    _cmdBuf(_device, _queue.cmdPool),
+    _renderFinished(_device),
+    _renderPass(std::move(createRenderPass())),
+    _descriptorSetLayout(_device, DescriptorSetLayoutInfo()
+        .addUniformBuffer(1, vk::ShaderStageFlagBits::eVertex)
+    )
 {
-    createRenderPass();
-
-    PipelineLayoutInfo pipelineLayoutInfo(descriptorSetLayout.getLayout());
+    PipelineInfo pipelineInfo(_extent);
     PipelineVertexInputInfo pipelineVertexInputInfo(Vertex::getBindingDescription(), Vertex::getAttributeDescriptions());
-
-    PipelineInfo pipelineInfo(extent);
     pipelineInfo.setVertexInputInfo(pipelineVertexInputInfo);
+    PipelineLayoutInfo pipelineLayoutInfo(_descriptorSetLayout.getLayout());
     pipelineInfo.setLayout(pipelineLayoutInfo);
 
-    Shader vertShader("depthVertShader", device.getDevice(), "shaders/depth.vert.spv", Shader::Stage::VERT_SH);
+    Shader vertShader("depthVertShader", _device, "shaders/depth.vert.spv", Shader::Stage::VERT_SH);
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages = { vertShader.getStageInfo() };
-    graphicsPipeline = std::make_unique<GraphicsPipeline>(device.getDevice(), shaderStages, pipelineInfo, vk::RenderPass(renderPass));
+    _graphicsPipeline = std::make_unique<GraphicsPipeline>(_device, shaderStages, pipelineInfo, _renderPass.get());
 
     std::vector<vk::ImageView> attachments = { depthTex.getView() };
-    frameBuffer = std::make_unique<FrameBuffer>(device.c_getDevice(), attachments, renderPass, extent);
+    _frameBuffer = std::make_unique<FrameBuffer>(_device, attachments, _renderPass.get(), _extent);
 }
 
-void DepthPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size)
-{
-    descriptorSetLayout.allocateSets(1);
-    descriptorSetLayout.beginSet(0);
-    descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.getBuf(), 0, ubo_size);
-    descriptorSet = descriptorSetLayout.recordAndReturnSets()[0];
-}
+vk::UniqueRenderPass DepthPass::createRenderPass() {
+    vk::AttachmentDescription depthAttachment;
+    depthAttachment.format = _depthTex.getInfo()->imageInfo.format;
+    depthAttachment.samples = vk::SampleCountFlagBits::e1;
+    depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+    depthAttachment.storeOp = vk::AttachmentStoreOp::eStore;
+    depthAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+    depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+    depthAttachment.initialLayout = vk::ImageLayout::eUndefined;
+    depthAttachment.finalLayout = _depthFinalLayout;
 
-void DepthPass::createRenderPass()
-{
-    VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = (VkFormat)depthTex.getInfo()->imageInfo.format;
-    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = depthFinalLayout;
+    vk::AttachmentReference depthAttachmentRef(0, vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
-    VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = 0;
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpass = {};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    vk::SubpassDescription subpass;
+    subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
     subpass.colorAttachmentCount = 0;
     subpass.pColorAttachments = nullptr;
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-    std::array<VkAttachmentDescription, 1> attachments = { depthAttachment };
-    VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    std::array<vk::AttachmentDescription, 1> attachments = { depthAttachment };
+    vk::RenderPassCreateInfo renderPassInfo;
     renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
     renderPassInfo.pAttachments = attachments.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
     //external dependency subpass
-    VkSubpassDependency dependency = {};
+    vk::SubpassDependency dependency;
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0; //this subpass
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependency.srcAccessMask = vk::AccessFlags();
+    dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    VkResult result = vkCreateRenderPass(device.c_getDevice(), &renderPassInfo, nullptr, &renderPass);
+    auto [result, renderPass] = _device.createRenderPassUnique(renderPassInfo);
     VK_CHECK_ERR(result, "failed to create render pass!");
+
+    return std::move(renderPass);
 }
 
-void DepthPass::recordCmdBuffers(
-        VkBuffer indexBuffer,
-        VkBuffer vertexBuffer,
-        uint32_t vertexCount)
-{
-    VkCommandBuffer cmdBuf = _commandBuffer.begin();
+void DepthPass::writeDescriptorSets(const Buffer &uniformBuffer, uint32_t uboSize) {
+    _descriptorSetLayout.allocateSets(1);
+    _descriptorSetLayout.beginSet(0);
+    _descriptorSetLayout.bindUniformBuffer(0, uniformBuffer.getBuf(), 0, uboSize);
+    _descriptorSet = _descriptorSetLayout.recordAndReturnSets()[0];
+}
+
+void DepthPass::recordCmdBuffers(vk::Buffer indexBuffer, vk::Buffer vertexBuffer, uint32_t vertexCount) {
+    vk::CommandBuffer cmdBuf = _cmdBuf.begin();
     {
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderPass;
-        renderPassInfo.framebuffer = frameBuffer->getFrameBuf();
+        vk::RenderPassBeginInfo renderPassInfo;
+        renderPassInfo.renderPass = _renderPass.get();
+        renderPassInfo.framebuffer = _frameBuffer->getFrameBuf();
 
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = extent;
+        renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
+        renderPassInfo.renderArea.extent = _extent;
 
-        std::array<VkClearValue, 1> clearValues{};
-        clearValues[0].depthStencil = {1.0f, 0};
+        std::array<vk::ClearValue, 1> clearValues{};
+        clearValues[0].setDepthStencil(vk::ClearDepthStencilValue(1.0f, 0));
+
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
-        vkCmdBeginRenderPass(cmdBuf, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        cmdBuf.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
         {
-            vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)graphicsPipeline->getPipeline());
+            cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, _graphicsPipeline->getPipeline());
 
-            VkBuffer vertexBuffers[] = {vertexBuffer};
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(cmdBuf, 0, 1, vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(cmdBuf, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdBindDescriptorSets(cmdBuf,
-                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    graphicsPipeline->getPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
+            vk::Buffer vertexBuffers[] = { vertexBuffer };
+            vk::DeviceSize offsets[] = { 0 };
+            cmdBuf.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+            cmdBuf.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint32);
+            cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                                      _graphicsPipeline->getPipelineLayout(), 0, 1, &_descriptorSet, 0, nullptr);
 
-            vkCmdDrawIndexed(cmdBuf, vertexCount, 1, 0, 0, 0);
+            cmdBuf.drawIndexed(vertexCount, 1, 0, 0, 0);
         }
-        vkCmdEndRenderPass(cmdBuf);
+        cmdBuf.endRenderPass();
     }
-    _commandBuffer.end();
+    _cmdBuf.end();
 }
 
 CmdSync DepthPass::draw(
-        const std::vector<VkSemaphore> &waitSemaphores,
-        const std::vector<VkFence> &waitFences)
-{
-    if (waitFences.size() > 0)
-    {
-        vkWaitForFences(device.c_getDevice(), waitFences.size(), waitFences.data(), VK_TRUE, UINT64_MAX);
+        const std::vector<vk::Semaphore> &waitSemaphores,
+        const std::vector<vk::Fence> &waitFences
+) {
+    vk::Result result;
+    if (!waitFences.empty()) {
+        result = _device.waitForFences(waitFences, VK_TRUE, UINT64_MAX);
     }
 
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    vk::SubmitInfo submitInfo;
 
-    std::vector<VkPipelineStageFlags> waitStages(waitSemaphores.size(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    if (waitSemaphores.size() == 0)
-    {
+    std::vector<vk::PipelineStageFlags> waitStages(waitSemaphores.size(), vk::PipelineStageFlagBits::eColorAttachmentOutput);
+    if (waitSemaphores.empty()) {
         submitInfo.waitSemaphoreCount = 0;
         submitInfo.pWaitSemaphores = nullptr;
-    }
-    else if (waitSemaphores[0] != renderFinished.getSemaphore())
-    {
+    } else if (
+            std::find(waitSemaphores.begin(), waitSemaphores.end(), _renderFinished.getSemaphore()) == waitSemaphores.end()
+            ) {
         submitInfo.waitSemaphoreCount = waitSemaphores.size();
         submitInfo.pWaitSemaphores = waitSemaphores.data();
+
+        submitInfo.pWaitDstStageMask = waitStages.data();
+    } else {
+        LOG_AND_THROW std::logic_error("cyclic dependency in render graph");
     }
-    submitInfo.pWaitDstStageMask = waitStages.data();
 
     submitInfo.commandBufferCount = 1;
-    VkCommandBuffer commandBuffer = _commandBuffer.c_getCmdBuf();
-    submitInfo.pCommandBuffers = &commandBuffer;
+    submitInfo.pCommandBuffers = &_cmdBuf.getCmdBuf();
 
     submitInfo.signalSemaphoreCount = 1;
-    VkSemaphore renderFinishedSemaphore = renderFinished.getSemaphore();
-    submitInfo.pSignalSemaphores = &renderFinishedSemaphore;
+    submitInfo.pSignalSemaphores = &_renderFinished.getSemaphore();
 
-    renderFinished.resetFence();
+    _renderFinished.resetFence();
 
-    VkResult result = vkQueueSubmit(device.getGraphicsQueue().queue, 1, &submitInfo, renderFinished.getFence());
+    result = _queue.queue.submit(1, &submitInfo, _renderFinished.getFence());
     VK_CHECK_ERR(result, "failed to submit draw command buffer!");
 
-    return renderFinished;
-}
-
-DepthPass::~DepthPass()
-{
-    vkDestroyRenderPass(device.c_getDevice(), renderPass, nullptr);
-    graphicsPipeline.reset();
+    return _renderFinished;
 }

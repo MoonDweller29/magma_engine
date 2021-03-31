@@ -1,5 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
+#include <memory>
+
 #include "magma/vk/pipeline/GraphicsPipeline.h"
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/CmdSync.h"
@@ -7,38 +9,36 @@
 #include "magma/vk/textures/Texture.h"
 #include "magma/vk/descriptors/DescriptorSetLayout.h"
 #include "magma/vk/FrameBuffer.h"
-#include "magma/app/scene/mesh.h"
-#include <memory>
+#include "magma/vk/vulkan_common.h"
 
-class DepthPass
-{
-    LogicalDevice &device;
-    const Texture &depthTex;
-    std::unique_ptr<FrameBuffer> frameBuffer;
-    VkImageLayout depthFinalLayout;
 
-    DescriptorSetLayout descriptorSetLayout;
-    VkDescriptorSet descriptorSet;
-    VkRenderPass renderPass;
-    std::unique_ptr<GraphicsPipeline> graphicsPipeline;
-    CommandBuffer _commandBuffer;
-
-    const VkExtent2D extent;
-    CmdSync renderFinished;
-
-    void createRenderPass();
+class DepthPass {
 public:
-    DepthPass(LogicalDevice &device, const Texture &depthTex, VkExtent2D extent, VkImageLayout depthFinalLayout);
-    void writeDescriptorSets(const Buffer &uniformBuffer, uint32_t ubo_size);
-    VkRenderPass getRenderPass() const { return renderPass; }
-    void recordCmdBuffers(
-            VkBuffer indexBuffer,
-            VkBuffer vertexBuffer,
-            uint32_t vertexCount);
+    DepthPass(vk::Device device, const Texture &depthTex, vk::ImageLayout depthFinalLayout, Queue queue);
+    NON_COPYABLE(DepthPass);
+    void writeDescriptorSets(const Buffer &uniformBuffer, uint32_t uboSize);
+    void recordCmdBuffers(vk::Buffer indexBuffer, vk::Buffer vertexBuffer, uint32_t vertexCount);
 
     CmdSync draw(
-            const std::vector<VkSemaphore> &waitSemaphores,
-            const std::vector<VkFence> &waitFences);
-    const CmdSync &getSync() { return renderFinished; }
-    ~DepthPass();
+            const std::vector<vk::Semaphore> &waitSemaphores,
+            const std::vector<vk::Fence> &waitFences);
+    const CmdSync &getSync() { return _renderFinished; }
+
+private:
+    vk::Device _device;
+    const Queue _queue;
+    const Texture &_depthTex;
+    vk::ImageLayout _depthFinalLayout;
+    std::unique_ptr<FrameBuffer> _frameBuffer;
+    const vk::Extent2D _extent;
+
+    DescriptorSetLayout _descriptorSetLayout;
+    vk::DescriptorSet _descriptorSet;
+    vk::UniqueRenderPass _renderPass;
+    std::unique_ptr<GraphicsPipeline> _graphicsPipeline;
+    CommandBuffer _cmdBuf;
+
+    CmdSync _renderFinished;
+
+    vk::UniqueRenderPass createRenderPass();
 };

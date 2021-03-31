@@ -171,8 +171,9 @@ void App::createShadowMapResources() {
     shadowUniform = bufferManager.createUniformBuffer("shadowUniform", sizeof(UniformBufferObject));
     lightSpaceUniform = bufferManager.createUniformBuffer("lightSpaceUniform", sizeof(LightSpaceUniform));
 
-    renderShadow = std::make_unique<DepthPass>(*device, shadowMap, VkExtent2D{2048, 2048},
-                                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    renderShadow = std::make_unique<DepthPass>(device->getDevice(), shadowMap,
+                                               vk::ImageLayout::eShaderReadOnlyOptimal,
+                                               device->getGraphicsQueue());
     renderShadow->writeDescriptorSets(shadowUniform, sizeof(UniformBufferObject));
     renderShadow->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 }
@@ -226,8 +227,9 @@ void App::initVulkan() {
 
     createShadowMapResources();
 
-    depthPass = std::make_unique<DepthPass>(*device, gBuffer->getDepth(), VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
-                                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    depthPass = std::make_unique<DepthPass>(device->getDevice(), gBuffer->getDepth(),
+                                            vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                                            device->getGraphicsQueue());
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
     depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 
@@ -278,8 +280,9 @@ void App::recreateSwapChain() {
     gBuffer = std::make_unique<GBuffer>(device->getTextureManager(), window->getResolution());
     createMainRenderTarget();
 
-    depthPass = std::make_unique<DepthPass>(*device, gBuffer->getDepth(), VkExtent2D{WIN_WIDTH, WIN_HEIGHT},
-                                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    depthPass = std::make_unique<DepthPass>(device->getDevice(), gBuffer->getDepth(),
+                                            vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                                            device->getGraphicsQueue());
     depthPass->writeDescriptorSets(uniformBuffer, sizeof(UniformBufferObject));
     depthPass->recordCmdBuffers(indexBuffer.getBuf(), vertexBuffer.getBuf(), indices.size());
 
