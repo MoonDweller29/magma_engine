@@ -43,7 +43,7 @@ LogicalDevice::LogicalDevice(
     }
 
     vk::Result result;
-    std::tie(result, _device) = _physDevice.device().createDevice(createInfo);
+    std::tie(result, _device) = _physDevice.getDevice().createDevice(createInfo);
     VK_CHECK_ERR(result, "failed to create logical device!");
     LOG_INFO("Logical Device is created");
 

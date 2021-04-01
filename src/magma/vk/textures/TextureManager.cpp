@@ -10,7 +10,7 @@
 
 TextureManager::TextureManager(LogicalDevice &device)
         : _device(device),
-        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
+        _commandBuffer(device.getDevice(), device.getGraphicsQueue().cmdPool)
 {}
 
 TextureManager::~TextureManager() {
@@ -97,7 +97,7 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     VK_CHECK_ERR(result, "Failed to create image view!");
 
     TextureInfo* textureInfo = new TextureInfo;
-    textureInfo->device = _device.c_getDevice();
+    textureInfo->device = _device.getDevice();
     textureInfo->imageInfo = imageInfo;
     textureInfo->viewInfo = viewInfo;
     textureInfo->curLayout = vk::ImageLayout::eUndefined;
@@ -221,7 +221,7 @@ vk::Format TextureManager::findSupportedFormat(
         vk::ImageTiling tiling, vk::FormatFeatureFlags features
 ) {
     for (vk::Format format : candidates) {
-        vk::FormatProperties props = _device.getPhysDevice().device().getFormatProperties(format);
+        vk::FormatProperties props = _device.getPhysDevice().getDevice().getFormatProperties(format);
         if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
             return format;
         } else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {

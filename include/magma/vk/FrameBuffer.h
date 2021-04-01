@@ -1,6 +1,7 @@
 #pragma once
 #include "vulkan/vulkan.hpp"
 #include <vector>
+#include "magma/vk/vulkan_common.h"
 
 class FrameBuffer {
 public:
@@ -10,7 +11,7 @@ public:
             vk::RenderPass renderPass,
             vk::Extent2D extent);
     FrameBuffer(FrameBuffer&& other);
-    FrameBuffer(const FrameBuffer &other) = delete;
+    NON_COPYABLE(FrameBuffer);
     ~FrameBuffer();
 
     VkFramebuffer getFrameBuf() const { return _frameBuffer; }

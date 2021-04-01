@@ -22,7 +22,7 @@ public:
     PhysicalDevice(vk::PhysicalDevice physDevice);
     ~PhysicalDevice() = default;
 
-    vk::PhysicalDevice device()   const { return _physicalDevice; }
+    vk::PhysicalDevice getDevice()   const { return _physicalDevice; }
 
     uint32_t findMemoryTypeInd(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 
