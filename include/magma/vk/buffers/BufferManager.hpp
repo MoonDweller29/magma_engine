@@ -1,6 +1,6 @@
 /**
  * @file BufferManager.hpp
- * @brief Template methods implementation BufferManager
+ * @brief Implementation of BufferManager template methods
  * @version 0.1
  * @date 2021-02-19
  */

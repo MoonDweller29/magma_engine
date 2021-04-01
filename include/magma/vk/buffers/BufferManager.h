@@ -1,5 +1,5 @@
 /**
- * @file BifferManager.h
+ * @file BufferManager.h
  * @brief Tool for buffers creation and control
  * @version 0.1
  * @date 2021-02-18
@@ -11,12 +11,14 @@
 #include "magma/app/log.hpp"
 #include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/buffers/Buffer.h"
+#include "magma/vk/vulkan_common.h"
 
 class LogicalDevice;
 
 class BufferManager {
 public:
     BufferManager(LogicalDevice &device);
+    NON_COPYABLE(BufferManager);
     ~BufferManager();
 
     bool bufferExists(const std::string &name) const;
