@@ -185,10 +185,6 @@ void TextureManager::setLayout(Texture &texture, vk::ImageLayout newLayout) {
     texture.getInfo()->curLayout = newLayout;
 }
 
-[[deprecated]] void TextureManager::setLayout(Texture &texture, VkImageLayout c_newLayout) {
-    setLayout(texture, vk::ImageLayout(c_newLayout));
-}
-
 void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
     vk::ImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
     _commandBuffer.reset();
@@ -210,10 +206,6 @@ void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
         cmdBuf.copyBufferToImage(buffer, texture.getImage(), vk::ImageLayout::eTransferDstOptimal, region);
     }
     _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue().queue);
-}
-
-[[deprecated]] void TextureManager::copyBufToTex(Texture &texture, VkBuffer c_buffer) {
-    copyBufToTex(texture, vk::Buffer(c_buffer));
 }
 
 vk::Format TextureManager::findSupportedFormat(

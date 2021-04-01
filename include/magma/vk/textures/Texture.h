@@ -32,10 +32,6 @@ public:
     const ImageView     &getImageView() const { return _defaultImageView;           }
     TextureInfo*        getInfo()       const { return _info;                       }
 
-    [[deprecated]]  VkImage         c_getImage()    const { return (VkImage)_image;                           }
-    [[deprecated]]  VkDeviceMemory  c_getMemory()   const { return (VkDeviceMemory)_imageMemory;              }
-    [[deprecated]]  VkImageView     c_getView()     const { return (VkImageView)_defaultImageView.getView();  }
-
 private:
     Texture(vk::Image img, vk::DeviceMemory mem, ImageView defaultImageView, TextureInfo* info);
 

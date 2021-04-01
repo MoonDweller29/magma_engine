@@ -54,11 +54,3 @@ CustomImageView::CustomImageView(CustomImageView &&other)
     other._device = vk::Device();
     other._imageView = vk::ImageView();
 }
-
-[[deprecated]] CustomImageView::CustomImageView(Texture &texture, VkImageAspectFlags c_aspectMask)
-        : CustomImageView(texture, vk::ImageAspectFlags(c_aspectMask))
-{}
-
-[[deprecated]] CustomImageView::CustomImageView(VkDevice c_device, VkImage c_image, VkFormat c_format, VkImageAspectFlags c_aspectMask)
-        : CustomImageView(vk::Device(c_device), vk::Image(c_image), vk::Format(c_format), vk::ImageAspectFlags(c_aspectMask))
-{}
