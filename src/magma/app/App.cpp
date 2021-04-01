@@ -74,7 +74,7 @@ void App::initFromConfig() {
 }
 
 void App::initWindow() {
-    _window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT, _instance->instance());
+    _window = std::make_unique<Window>(WIN_WIDTH, WIN_HEIGHT, _instance->getInstance());
     _keyBoard = _window->getKeyboard();
     _mouse = _window->getMouse();
 }
@@ -167,7 +167,7 @@ void App::createMainRenderTarget() {
 
 
 void App::initDevice() {
-    HardwareManager hardwareMGR(_instance->instance());
+    HardwareManager hardwareMGR(_instance->getInstance());
 
     DeviceRequirements deviceRequirements;
     deviceRequirements.surface.require(_window->getSurface());
@@ -189,7 +189,7 @@ void App::initDevice() {
 
 void App::initVulkan() {
     _instance = std::make_unique<Context>();
-    _debugMessenger = std::make_unique<DebugMessenger>(_instance->instance());
+    _debugMessenger = std::make_unique<DebugMessenger>(_instance->getInstance());
     initWindow();
     initDevice();
 
