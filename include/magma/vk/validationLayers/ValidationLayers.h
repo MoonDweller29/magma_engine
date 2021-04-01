@@ -5,6 +5,8 @@
 
 class ValidationLayers {
 public:
+    ValidationLayers() = delete;
+
     static const bool ENABLED;
     static const std::vector<const char*> validationLayers;
 

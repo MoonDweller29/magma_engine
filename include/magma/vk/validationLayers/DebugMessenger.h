@@ -2,6 +2,7 @@
 #include "magma/vk/validationLayers/ValidationLayers.h"
 #include "magma/app/log.hpp"
 #include "magma/app/config/JSON.h"
+#include "magma/vk/vulkan_common.h"
 
 class DebugMessenger {
 public:
@@ -24,6 +25,7 @@ public:
     );
 
     DebugMessenger(const vk::Instance &instance);
+    NON_COPYABLE(DebugMessenger);
     ~DebugMessenger();
 private:
     vk::DebugUtilsMessengerEXT _debugMessenger;
