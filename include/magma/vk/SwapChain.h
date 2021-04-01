@@ -6,16 +6,18 @@
 #include "magma/vk/LogicalDevice.h"
 #include "magma/vk/Window.h"
 #include "magma/vk/textures/CustomImageView.h"
+#include "magma/vk/vulkan_common.h"
 
 class SwapChain {
 public:
     SwapChain(LogicalDevice &device, const Window &window);
+    NON_COPYABLE(SwapChain);
     ~SwapChain();
 
     vk::SwapchainKHR     getSwapChain()   const { return _swapChain;                    }
     vk::Format           getImageFormat() const { return _imageFormat;                  }
     vk::Extent2D         getExtent()      const { return _extent;                       }
-    size_t               imgCount()       const { return _imageViews.size();            }
+    size_t               getImgCount()       const { return _imageViews.size();            }
     vk::ImageView        getView(int i)   const { return _imageViews.at(i).getView();   }
 
 private:

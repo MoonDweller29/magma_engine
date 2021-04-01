@@ -9,10 +9,12 @@
 #include "magma/app/keyboard.h"
 #include "magma/app/mouse.h"
 #include "magma/glm_inc.h"
+#include "magma/vk/vulkan_common.h"
 
 class Window {
 public:
     Window(uint32_t width, uint32_t height, vk::Instance instance);
+    NON_COPYABLE(Window);
     ~Window();
 
     static void initContext();

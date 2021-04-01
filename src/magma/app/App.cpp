@@ -90,8 +90,6 @@ void App::createSyncObjects() {
 }
 
 void App::createUniformBuffers() {
-    uint32_t imgCount = _swapChain->imgCount();
-
     BufferManager& bufferManager = _device->getBufferManager();
     _uniformBuffer = bufferManager.createUniformBuffer("uniformBuffer", sizeof(UniformBufferObject));
     _fragmentUniform = bufferManager.createUniformBuffer("fragmentUniform", sizeof(FragmentUniform));
