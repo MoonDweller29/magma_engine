@@ -8,6 +8,7 @@
 #include "magma/vk/textures/TextureManager.h"
 #include "magma/vk/physicalDevice/PhysicalDevice.h"
 #include "magma/vk/buffers/BufferManager.h"
+#include "magma/vk/vulkan_common.h"
 
 struct Queue {
     vk::Queue queue;
@@ -21,9 +22,9 @@ public:
             const PhysicalDevice              &physicalDevice,
             const vk::PhysicalDeviceFeatures  &physicalDeviceFeatures,
             const std::vector<const char*>    &deviceExtensions);
+    NON_COPYABLE(LogicalDevice);
     ~LogicalDevice();
 
-    VkDevice              c_getDevice()        const { return VkDevice(_device);      } //only for Vulkan C API
     vk::Device            getDevice()          const { return _device;                }
     const PhysicalDevice &getPhysDevice()      const { return _physDevice;            }
 

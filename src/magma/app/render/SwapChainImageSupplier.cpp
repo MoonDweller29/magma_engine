@@ -3,7 +3,7 @@
 SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView inputImageView, SwapChain &swapChain, Queue queue) :
     _device(device), _swapChain(swapChain), _queue(queue),
     _extent(_swapChain.getExtent()),
-    _cmdBufArr(device, queue.cmdPool, _swapChain.imgCount()),
+    _cmdBufArr(device, queue.cmdPool, _swapChain.getImgCount()),
     _renderFinished(device),
     _imgSampler(createImageSampler()),
     _renderPass(std::move(createRenderPass())),
@@ -11,7 +11,7 @@ SwapChainImageSupplier::SwapChainImageSupplier(vk::Device device, vk::ImageView 
         .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
     )
 {
-    for (int i = 0; i < _swapChain.imgCount(); ++i) {
+    for (int i = 0; i < _swapChain.getImgCount(); ++i) {
         std::vector<vk::ImageView> attachments{ _swapChain.getView(i) };
         _frameBuffers.emplace_back(_device, attachments, _renderPass.get(), _extent);
     }
@@ -109,7 +109,7 @@ vk::UniqueSampler SwapChainImageSupplier::createImageSampler() {
 }
 
 void SwapChainImageSupplier::recordCmdBuffers() {
-    for (int i = 0; i < _swapChain.imgCount(); ++i) {
+    for (int i = 0; i < _swapChain.getImgCount(); ++i) {
         vk::CommandBuffer cmdBuf = _cmdBufArr.begin(i);
         {
             vk::RenderPassBeginInfo renderPassInfo;

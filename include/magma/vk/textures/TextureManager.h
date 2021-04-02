@@ -10,12 +10,14 @@
 
 #include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/textures/Texture.h"
+#include "magma/vk/vulkan_common.h"
 
 class LogicalDevice;
 
 class TextureManager {
 public:
     TextureManager(LogicalDevice &device);
+    NON_COPYABLE(TextureManager);
     ~TextureManager();
 
     bool textureExists(const std::string &name) const;
@@ -29,15 +31,12 @@ public:
     void setLayout(Texture &texture, vk::ImageLayout newLayout);
     void copyBufToTex(Texture &texture, vk::Buffer buffer);
 
-    [[deprecated]] void setLayout(Texture &texture, VkImageLayout c_newLayout);
-    [[deprecated]] void copyBufToTex(Texture &texture, VkBuffer c_buffer);
-
     vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates,
                                     vk::ImageTiling tiling, vk::FormatFeatureFlags features);
     vk::Format findDepthFormat();
 
-
     void deleteTexture(Texture &texture);
+
 private:
     LogicalDevice &_device;
     CommandBuffer _commandBuffer;

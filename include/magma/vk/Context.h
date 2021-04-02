@@ -1,14 +1,14 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
+#include "magma/vk/vulkan_common.h"
 
 class Context {
 public:
     Context();
+    NON_COPYABLE(Context);
     ~Context();
 
-    const vk::Instance &instance()   { return _instance; }
-    const VkInstance   &c_instance() { return _c_instance; } //only for Vulkan C API
+    const vk::Instance &getInstance()   { return _instance; }
 private:
     vk::Instance _instance;
-    VkInstance _c_instance;
 };

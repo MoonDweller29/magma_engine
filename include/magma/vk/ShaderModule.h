@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>
+#include "magma/vk/vulkan_common.h"
 
 class Shader {
 public:
@@ -13,6 +14,7 @@ public:
     };
 
     Shader(const std::string &name, vk::Device device, const std::string &path, Stage stage);
+    NON_COPYABLE(Shader);
     ~Shader();
 
     vk::ShaderModule                    getModule()     { return _shaderModule; }

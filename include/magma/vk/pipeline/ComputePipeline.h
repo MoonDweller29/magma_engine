@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "magma/vk/pipeline/PipelineInfo.h"
+#include "magma/vk/vulkan_common.h"
 
 class ComputePipeline {
 public:
@@ -9,9 +10,8 @@ public:
             vk::Device device,
             const vk::PipelineShaderStageCreateInfo &shaderStage,
             const PipelineLayoutInfo &pipelineLayoutInfo);
+    NON_COPYABLE(ComputePipeline);
     ~ComputePipeline();
-
-    ComputePipeline(const ComputePipeline &) = delete;
 
     vk::Pipeline          getPipeline()       const { return _pipeline;       }
     vk::PipelineLayout    getPipelineLayout() const { return _pipelineLayout; }

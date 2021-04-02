@@ -10,7 +10,7 @@
 
 TextureManager::TextureManager(LogicalDevice &device)
         : _device(device),
-        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
+        _commandBuffer(device.getDevice(), device.getGraphicsQueue().cmdPool)
 {}
 
 TextureManager::~TextureManager() {
@@ -97,7 +97,7 @@ Texture& TextureManager::createTexture2D(const std::string &name, vk::Format for
     VK_CHECK_ERR(result, "Failed to create image view!");
 
     TextureInfo* textureInfo = new TextureInfo;
-    textureInfo->device = _device.c_getDevice();
+    textureInfo->device = _device.getDevice();
     textureInfo->imageInfo = imageInfo;
     textureInfo->viewInfo = viewInfo;
     textureInfo->curLayout = vk::ImageLayout::eUndefined;
@@ -185,10 +185,6 @@ void TextureManager::setLayout(Texture &texture, vk::ImageLayout newLayout) {
     texture.getInfo()->curLayout = newLayout;
 }
 
-[[deprecated]] void TextureManager::setLayout(Texture &texture, VkImageLayout c_newLayout) {
-    setLayout(texture, vk::ImageLayout(c_newLayout));
-}
-
 void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
     vk::ImageCreateInfo imageInfo = texture.getInfo()->imageInfo;
     _commandBuffer.reset();
@@ -212,16 +208,12 @@ void TextureManager::copyBufToTex(Texture &texture, vk::Buffer buffer) {
     _commandBuffer.endAndSubmit_sync(_device.getGraphicsQueue().queue);
 }
 
-[[deprecated]] void TextureManager::copyBufToTex(Texture &texture, VkBuffer c_buffer) {
-    copyBufToTex(texture, vk::Buffer(c_buffer));
-}
-
 vk::Format TextureManager::findSupportedFormat(
         const std::vector<vk::Format>& candidates,
         vk::ImageTiling tiling, vk::FormatFeatureFlags features
 ) {
     for (vk::Format format : candidates) {
-        vk::FormatProperties props = _device.getPhysDevice().device().getFormatProperties(format);
+        vk::FormatProperties props = _device.getPhysDevice().getDevice().getFormatProperties(format);
         if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
             return format;
         } else if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {

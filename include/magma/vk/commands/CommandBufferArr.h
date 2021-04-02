@@ -8,6 +8,7 @@
 class CommandBufferArr {
 public:
     CommandBufferArr(vk::Device device, vk::CommandPool commandPool, uint32_t count);
+    NON_COPYABLE(CommandBufferArr);
     ~CommandBufferArr();
 
     uint32_t                    size()      const               { return _commandBuffers.size();    }

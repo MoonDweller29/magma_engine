@@ -8,6 +8,7 @@
 class CommandBuffer {
 public:
     CommandBuffer(vk::Device device, vk::CommandPool commandPool);
+    NON_COPYABLE(CommandBuffer);
     ~CommandBuffer();
 
     const vk::CommandBuffer &getCmdBuf() const { return _commandBuffer; }
@@ -17,8 +18,6 @@ public:
     void submit_sync(vk::Queue queue);
     void endAndSubmit_sync(vk::Queue queue);
     void reset(vk::CommandBufferResetFlags flag=vk::CommandBufferResetFlags());
-
-    [[deprecated]] VkCommandBuffer c_getCmdBuf() const { return (VkCommandBuffer)_commandBuffer; }
 
 private:
     vk::Device          _device;

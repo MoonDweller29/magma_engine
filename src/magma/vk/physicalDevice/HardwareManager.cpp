@@ -11,7 +11,7 @@ HardwareManager::HardwareManager(vk::Instance instance) :
 {}
 
 bool HardwareManager::checkQueueFamilies(const PhysicalDevice &device, const DeviceRequirements &requirements) {
-    std::vector<vk::QueueFamilyProperties> queueFamilies = device.device().getQueueFamilyProperties();
+    std::vector<vk::QueueFamilyProperties> queueFamilies = device.getDevice().getQueueFamilyProperties();
     int graphicsFamiliesCount = 0;
     int computeFamiliesCount = 0;
     int presentFamiliesCount = 0;

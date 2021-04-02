@@ -9,7 +9,7 @@
 
 BufferManager::BufferManager(LogicalDevice &device)
         : _device(device),
-        _commandBuffer(device.c_getDevice(), device.getGraphicsQueue().cmdPool)
+        _commandBuffer(device.getDevice(), device.getGraphicsQueue().cmdPool)
 {}
 
 BufferManager::~BufferManager() {
@@ -53,7 +53,7 @@ Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size
     VK_CHECK_ERR(result, "Failed to bind buffer!");
 
     BufferInfo* info = new BufferInfo;
-    info->device = _device.c_getDevice();
+    info->device = _device.getDevice();
     info->bufferInfo = bufferInfo;
     info->memoryProperty = properties;
     info->name = name;
