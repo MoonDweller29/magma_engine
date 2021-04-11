@@ -1,8 +1,11 @@
 #include "magma/app/Camera.h"
 
 #include <algorithm>
+#include <unistd.h>
 
+#include "glm/fwd.hpp"
 #include "magma/app/keyboard.h"
+#include "magma/app/log.hpp"
 #include "magma/app/mouse.h"
 
 Camera::Camera(float zNear, float zFar, int width, int height, float FOV):
@@ -18,7 +21,14 @@ Camera::Camera(float zNear, float zFar, int width, int height, float FOV):
     _pitch(0),
     _yaw(180),
     _sensitivity(0.2f),
-    _speed(5.f)
+    _speed(5.f),
+    _pixelSize(0.2 / 960, 0.2 / 540),
+    _jitterShift( {
+        glm::vec2( 0.25, -0.25) * _pixelSize,
+        glm::vec2(-0.25, -0.25) * _pixelSize,
+        glm::vec2(-0.25,  0.25) * _pixelSize,
+        glm::vec2( 0.25,  0.25) * _pixelSize
+    } )
 {
     updateViewMat();
     updateProjMat();
@@ -113,7 +123,10 @@ void Camera::updateProjMat() {
     _proj[1][1] *= -1; //OpenGL legacy in glm
 }
 
+//! @todo noraml calculate _jitterShift
 void Camera::updateViewMat() {
     // return glm::translate(glm::mat4(), -pos);
-    _view = glm::lookAt(_pos, _pos + _forward, _up);
+    glm::vec3 newPos = _pos + _right * _jitterShift[_ind % 4].x + _up * _jitterShift[_ind % 4].y;
+    _view = glm::lookAt(newPos, newPos + _forward, _up);
+    _ind = (_ind + 1) % 4;
 }

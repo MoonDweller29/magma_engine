@@ -30,7 +30,8 @@ public:
 
     void updateUniformBuffer(glm::mat4 view);
     void recordCmdBuffers();
-    CmdSync computeMotionVector();
+    CmdSync computeMotionVector(const std::vector<vk::Semaphore> &waitSemaphores,
+        const std::vector<vk::Fence> &waitFences);
 
 private:
     struct UBOMotionVector {
@@ -43,7 +44,7 @@ private:
     vk::Extent2D                    _textureExtent;
     vk::Sampler                     _sourceSampler;
 
-    vk::Format                      _textureTargetFormat = vk::Format::eR8G8B8A8Unorm;
+    vk::Format                      _textureTargetFormat = vk::Format::eR16G16B16A16Unorm;
     Texture                         _textureTarget;
 
     glm::mat4                       _proj;

@@ -1,8 +1,10 @@
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 #include "magma/app/App.h"
+#include "magma/app/postProcess/TemporalReproject.h"
 #include "magma/vk/CmdSync.h"
 #include "magma/vk/buffers/BufferManager.h"
 #include "magma/vk/textures/TextureManager.h"
@@ -212,6 +214,8 @@ void App::initVulkan() {
 void App::createPostProcess() {
     _motionVector = std::make_unique<MotionVector>(*_device, _gBuffer->getDepth(), _mainCamera->getProjMat());
     _motionVector->recordCmdBuffers();
+    _temporalReproject = std::make_unique<TemporalReproject>(*_device, _mainRenderTarget, _gBuffer->getDepth(), _mainCamera->getProjMat());
+    _temporalReproject->recordCmdBuffers();
 }
 
 void App::createResolutionDependentRenderModules() {
@@ -232,14 +236,19 @@ void App::createResolutionDependentRenderModules() {
                                          _lightSpaceUniform, sizeof(LightSpaceUniform));
     _gBufferResolve->recordCmdBuffers();
 
-    _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
-            _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
-    );
-    _swapChainImageSupplier->recordCmdBuffers();
     createPostProcess();
+    _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
+            _device->getDevice(), _temporalReproject->getResolve().getView(), *_swapChain, _device->getGraphicsQueue()
+    );
+    // _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
+    //         _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
+    // );
+    _swapChainImageSupplier->recordCmdBuffers();
+    
 }
 
 void App::clearResolutionDependentRenderModules() {
+    _temporalReproject.reset();
     _motionVector.reset();
     _depthPass.reset();
     _mainColorPass.reset();
@@ -297,20 +306,23 @@ void App::drawFrame() {
 
     updateUniformBuffer(imageIndex);
     updateShadowUniform();
-    _motionVector->updateUniformBuffer(_mainCamera->getViewMat());
+    _temporalReproject->updateUniformBuffers(_mainCamera->getViewMat(), _mainCamera->getJitter());
 
-    CmdSync motionVectorSync = _motionVector->computeMotionVector();
-    CmdSync depthPassSync = _depthPass->draw({}, {motionVectorSync.getFence()});
+    CmdSync depthPassSync = _depthPass->draw({}, {});
     CmdSync shadowPassSync = _renderShadow->draw({}, {});
     const CmdSync &mainColorPassSync = _mainColorPass->draw(
             { depthPassSync.getSemaphore() }, {}
     );
     const CmdSync &gBufferResolveSync = _gBufferResolve->draw(
-            { mainColorPassSync.getSemaphore(), shadowPassSync.getSemaphore() }, {}
+            { shadowPassSync.getSemaphore(), mainColorPassSync.getSemaphore() }, {}
     );
+    CmdSync temporalReprojectSync = _temporalReproject->reproject({ gBufferResolveSync.getSemaphore() }, {});
     const CmdSync &swapChainImageSupplierSync = _swapChainImageSupplier->draw(
-            imageIndex, { _imageAvailableSemaphores[_currentFrame], gBufferResolveSync.getSemaphore() }, {}
+        imageIndex, { _imageAvailableSemaphores[_currentFrame], temporalReprojectSync.getSemaphore() }, {}
     );
+    // const CmdSync &swapChainImageSupplierSync = _swapChainImageSupplier->draw(
+    //     imageIndex, { _imageAvailableSemaphores[_currentFrame], gBufferResolveSync.getSemaphore() }, {}
+    // );
 
 
     vk::PresentInfoKHR presentInfo;
@@ -401,7 +413,8 @@ void App::mainLoop() {
         _mouse->update();
         _mainCamera->update(*_keyBoard, *_mouse, frameTime);
 //        light->lookAt(glm::vec3(0,0,0), glm::vec3(sin(time), 0.4f, cos(time)));
-        _light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
+        // _light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f*sin(time), 5.0f, 5.0f*cos(time)));
+        _light->lookAt(glm::vec3(0,0,0), glm::vec3(5.0f, 5.0f, 5.0f));
 
         // @TODO Move this to input class
         bool isLeftMouseButtonPressed  = glfwGetMouseButton(_window->getGlfwWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;

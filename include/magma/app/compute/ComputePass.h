@@ -19,7 +19,8 @@ public:
     CommandBuffer         & getCommandBuffer() { return _commandBuffer; }
     CmdSync               & getCmdSync() { return _cmdSync; }
 
-    CmdSync                 compute();
+    CmdSync compute(const std::vector<vk::Semaphore> &waitSemaphores,
+        const std::vector<vk::Fence> &waitFences);
 
 private:
     LogicalDevice &_device;

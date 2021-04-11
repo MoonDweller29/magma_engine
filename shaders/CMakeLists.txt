@@ -16,6 +16,10 @@ set(SHADERS
         imageTransfer.frag
         gBufferResolve.frag
         motionVector.comp
+        temporalReproject.comp
+        temporalAddData.comp
+        temporalReproject2.comp
+        temporalResolve.comp
 )
 
 set(COMPILED_SHADERS)

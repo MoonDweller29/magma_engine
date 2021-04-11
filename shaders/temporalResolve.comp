@@ -1,0 +1,25 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (binding = 0, rgba16) uniform image2D targetColor;
+layout (binding = 1, rgba16) uniform image2D resolveColor;
+
+void main()
+{
+    vec4 color = vec4(0);
+    float count = 0;
+
+    ivec2 shift[4] = {ivec2(0, 0), ivec2(0, 1), ivec2(1, 0), ivec2(1, 1)};
+    for (int i = 0; i < 4; i++) {
+        vec4 tColor = imageLoad(targetColor, ivec2(gl_GlobalInvocationID.xy) * 2 + shift[i]);
+        if (tColor.w > 0.1) {
+            color += tColor;
+            count += 1;
+        }
+    }
+
+    color /= count;
+    color.w = 1.0f;
+
+    imageStore(resolveColor, ivec2(gl_GlobalInvocationID.xy), color);
+}

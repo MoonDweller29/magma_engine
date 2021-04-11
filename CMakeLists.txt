@@ -62,6 +62,8 @@ add_library(${LIBRARY_NAME} STATIC
 
 		include/magma/app/postProcess/MotionVector.h
 		src/magma/app/postProcess/MotionVector.cpp
+		include/magma/app/postProcess/TemporalReproject.h
+		src/magma/app/postProcess/TemporalReproject.cpp
 
 		include/magma/vk/vulkan_common.h
 		src/magma/vk/vulkan_common.cpp

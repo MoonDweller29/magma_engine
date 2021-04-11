@@ -1,0 +1,39 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (binding = 0) uniform sampler2D sourceColor;
+layout (binding = 1) uniform sampler2D sourceDepth;
+layout (binding = 2) uniform sampler2D prevTargetColor;
+layout (binding = 3) uniform sampler2D prevTargetDepth;
+layout (binding = 4, rgba16) uniform image2D targetColor;
+layout (binding = 5, r16) uniform image2D targetDepth;
+layout(binding = 6) uniform UniformBufferObject {
+    mat4 transform;
+} ubo;
+
+void main()
+{
+    ivec2 sourceSize = textureSize(sourceColor, 0);
+    ivec2 targetSize = textureSize(prevTargetColor, 0);
+
+
+    float depth = texture(prevTargetDepth, ivec2(gl_GlobalInvocationID.xy)).r;
+    vec4 color = texture(prevTargetColor, ivec2(gl_GlobalInvocationID.xy));
+    vec2 tmp = vec2(gl_GlobalInvocationID) / targetSize;
+    vec4 res = ubo.transform * vec4((vec2(gl_GlobalInvocationID) / targetSize - 0.5f) * 2.0f, depth, 1.0);
+    res = res / res.w;
+    res.xy = res.xy / 2.0f + 0.5f;
+    color.w = color.w * 0.25;
+
+    imageStore(targetColor, ivec2(round(res.xy * sourceSize)), color);
+    imageStore(targetDepth, ivec2(round(res.xy * sourceSize)), res.zzzz);
+
+    vec4 sColor = texture(sourceColor, ivec2(gl_GlobalInvocationID.xy));
+    vec4 sDepth = texture(sourceDepth, ivec2(gl_GlobalInvocationID.xy));
+    imageStore(targetColor, ivec2(gl_GlobalInvocationID.xy * 2), sColor);
+    imageStore(targetDepth, ivec2(gl_GlobalInvocationID.xy * 2), sDepth);
+
+    // vec4 color = texture(colorImage, ivec2(gl_GlobalInvocationID.xy));
+    // vec2 mv = texture(mvImage, ivec2(gl_GlobalInvocationID.xy)).rg;
+    // imageStore(targetImage, ivec2(round(mv.x * xSize), round(mv.y * ySize)), color);
+}

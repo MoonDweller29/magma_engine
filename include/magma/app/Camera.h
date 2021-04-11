@@ -1,5 +1,6 @@
 #pragma once
 #include "magma/glm_inc.h"
+#include <vector>
 
 class Keyboard;
 class Mouse;
@@ -16,6 +17,7 @@ public:
     const glm::mat4 &getProjMat() const { return _proj; }
     const glm::mat4 &getViewMat() const { return _view; }
     const glm::vec3 &getPos()     const { return _pos;  }
+    const int       &getJitter()  const { return _ind;  }
 
 private:
     glm::mat4 _proj;
@@ -38,6 +40,9 @@ private:
     float _sensitivity;
     float _speed;
 
+    int                     _ind = 0;
+    glm::vec2               _pixelSize;
+    std::vector<glm::vec2>  _jitterShift;
 
     void updateProjMat();
     void updateViewMat();

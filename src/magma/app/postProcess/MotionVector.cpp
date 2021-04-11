@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2021
  */
 #include "magma/app/postProcess/MotionVector.h"
+#include "magma/app/log.hpp"
 #include "magma/vk/commands/CommandBuffer.h"
 #include "magma/vk/descriptors/DescriptorSetLayout.h"
 #include "magma/vk/descriptors/DescriptorSetLayoutInfo.h"
@@ -24,10 +25,9 @@
 MotionVector::MotionVector(LogicalDevice &device, const Texture &textureSource, glm::mat4 proj)
         : _device(device),
         _textureSource(textureSource),
+        _textureExtent(toExtent2D(_textureSource.getInfo()->imageInfo.extent)),
         _proj(proj),
         _inverseProj(computeInverseProj(proj)) {
-    VkExtent3D source_extent = _textureSource.getInfo()->imageInfo.extent;
-    _textureExtent = VkExtent2D{source_extent.width, source_extent.height};
     createUniformBuffer();
     createSourceSampler();
     createTextureTarget();
@@ -122,8 +122,11 @@ void MotionVector::recordCmdBuffers() {
  *
  * @return CmdSync Execution dependency between compute & graphic submission
  */
-CmdSync MotionVector::computeMotionVector() {
-    return _compute->compute();
+CmdSync MotionVector::computeMotionVector(
+        const std::vector<vk::Semaphore> &waitSemaphores,
+        const std::vector<vk::Fence> &waitFences
+) {
+    return _compute->compute(waitSemaphores, waitFences);
 }
 
 /**
@@ -181,21 +184,46 @@ a00 * (a11 * a22 - a21 * a12) -
     a01 * (a10 * a22 - a12 * a20) +
     a02 * (a10 * a21 - a11 * a20)
 */
+// glm::mat4 MotionVector::computeInverseView(const glm::mat4 view) {
+//     float det_A00 = view[1][1] * view[2][2] - view[2][1] * view[1][2];
+//     float det_A01 = view[1][0] * view[2][2] - view[1][2] * view[2][0];
+//     float det_A02 = view[1][0] * view[2][1] - view[1][1] * view[2][0];
+//     float det_A = view[0][0] * det_A00 - view[0][1] * det_A01 + view[0][2] * det_A02;
+//     glm::mat3 inverse_A(0);
+//     inverse_A[0][0] = det_A00 / det_A;
+//     inverse_A[0][1] = (view[0][2] * view[2][1] - view[0][1] * view[2][2]) / det_A;
+//     inverse_A[0][2] = (view[0][1] * view[1][2] - view[0][2] * view[1][1]) / det_A;
+//     inverse_A[1][0] = -det_A01 / det_A;
+//     inverse_A[1][1] = (view[0][0] * view[2][2] - view[0][2] * view[2][0]) / det_A;
+//     inverse_A[1][2] = (view[1][0] * view[0][2] - view[0][0] * view[1][2]) / det_A;
+//     inverse_A[2][0] = det_A02 / det_A;
+//     inverse_A[2][1] = (view[2][0] * view[0][1] - view[0][0] * view[2][1]) / det_A;
+//     inverse_A[2][2] = (view[0][0] * view[1][1] - view[1][0] * view[0][1]) / det_A;
+
+
+//     glm::vec3 b(view[3][0], view[3][1], view[3][2]);
+//     glm::vec3 inverse_b = -inverse_A * b;
+//     glm::mat4 inverse_view(1);
+//     for (int i = 0; i < 3; i++) {
+//         for (int j = 0; j < 3; j++) {
+//             inverse_view[i][j] = inverse_A[i][j];
+//         }
+//         inverse_view[3][i] = inverse_b[i];
+//     }
+//     return inverse_view;
+// }
+
 glm::mat4 MotionVector::computeInverseView(const glm::mat4 view) {
-    float det_A00 = view[1][1] * view[2][2] - view[2][1] * view[1][2];
-    float det_A01 = view[1][0] * view[2][2] - view[1][2] * view[2][0];
-    float det_A02 = view[1][0] * view[2][1] - view[1][1] * view[2][0];
-    float det_A = view[0][0] * det_A00 - view[0][1] * det_A01 + view[0][2] * det_A02;
     glm::mat3 inverse_A(0);
-    inverse_A[0][0] = det_A00 / det_A;
-    inverse_A[0][1] = (view[0][2] * view[2][1] - view[0][1] * view[2][2]) / det_A;
-    inverse_A[0][2] = (view[0][1] * view[1][2] - view[0][2] * view[1][1]) / det_A;
-    inverse_A[1][0] = -det_A01 / det_A;
-    inverse_A[1][1] = (view[0][0] * view[2][2] - view[0][2] * view[2][0]) / det_A;
-    inverse_A[1][2] = (view[1][0] * view[0][2] - view[0][0] * view[1][2]) / det_A;
-    inverse_A[2][0] = det_A02 / det_A;
-    inverse_A[2][1] = (view[2][0] * view[0][1] - view[0][0] * view[2][1]) / det_A;
-    inverse_A[2][2] = (view[0][0] * view[1][1] - view[1][0] * view[0][1]) / det_A;
+    inverse_A[0][0] = view[0][0];
+    inverse_A[0][1] = view[1][0];
+    inverse_A[0][2] = view[2][0];
+    inverse_A[1][0] = view[0][1];
+    inverse_A[1][1] = view[1][1];
+    inverse_A[1][2] = view[2][1];
+    inverse_A[2][0] = view[0][2];
+    inverse_A[2][1] = view[1][2];
+    inverse_A[2][2] = view[2][2];
 
 
     glm::vec3 b(view[3][0], view[3][1], view[3][2]);
