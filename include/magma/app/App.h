@@ -14,6 +14,7 @@
 #include "magma/app/render/MainColorPass.h"
 #include "magma/app/render/GBufferResolve.h"
 #include "magma/app/render/SwapChainImageSupplier.h"
+#include "magma/app/render/ssao/HBAO.h"
 #include "magma/glm_inc.h"
 #include "magma/app/Camera.h"
 #include "clock.h"
@@ -55,6 +56,7 @@ private:
     std::unique_ptr<MainColorPass>          _mainColorPass;
     std::unique_ptr<GBufferResolve>         _gBufferResolve;
     std::unique_ptr<SwapChainImageSupplier> _swapChainImageSupplier;
+    std::unique_ptr<HBAO>                   _hbao;
 
     Buffer _vertexBuffer;
     Buffer _indexBuffer;
@@ -62,12 +64,14 @@ private:
     Buffer _shadowUniform;
     Buffer _fragmentUniform;
     Buffer _lightSpaceUniform;
+    Buffer _inverseProjUniform;
     Texture     _texture;
     vk::Sampler _textureSampler;
     Texture     _shadowMap;
     vk::Sampler _shadowMapSampler;
     std::unique_ptr<GBuffer> _gBuffer;
     Texture _mainRenderTarget;
+    Texture _ssaoTex;
 
     Clock _global_clock;
 
@@ -88,6 +92,7 @@ private:
     void createShadowMapTex();
     void createShadowMapResources();
     void updateShadowUniform();
+    void updateInverseProjUniform();
     void createMainRenderTarget();
     void createSyncObjects();
     void mainLoop();

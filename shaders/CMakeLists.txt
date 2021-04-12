@@ -3,6 +3,7 @@
 # create dir for shaders
 set(SHADER_EXE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 file(MAKE_DIRECTORY ${SHADER_EXE_DIR})
+file(MAKE_DIRECTORY ${SHADER_EXE_DIR}/ssao)
 
 # shaders_compilation for linux
 set(SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/shaders)
@@ -15,6 +16,8 @@ set(SHADERS
         imageProcess.vert
         imageTransfer.frag
         gBufferResolve.frag
+
+        ssao/hbao.frag
 )
 
 set(COMPILED_SHADERS)

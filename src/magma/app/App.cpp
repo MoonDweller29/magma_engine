@@ -27,6 +27,12 @@ struct LightSpaceUniform {
     glm::mat4 lightSpaceMat;
 };
 
+struct InverseProjUniform {
+    glm::vec2 zNearFar;
+    alignas(16) glm::mat4 invProj;
+    alignas(16) glm::mat4 invView;
+};
+
 static std::string joinPath(const std::string &s1, const std::string &s2) {
     if (s1[s1.size() - 1] == '/') {
         return s1 + s2;
@@ -93,6 +99,7 @@ void App::createUniformBuffers() {
     BufferManager& bufferManager = _device->getBufferManager();
     _uniformBuffer = bufferManager.createUniformBuffer("uniformBuffer", sizeof(UniformBufferObject));
     _fragmentUniform = bufferManager.createUniformBuffer("fragmentUniform", sizeof(FragmentUniform));
+    _inverseProjUniform = bufferManager.createUniformBuffer("inverseProjUniform", sizeof(InverseProjUniform));
 }
 
 void App::loadScene() {
@@ -158,7 +165,7 @@ void App::createShadowMapResources() {
 
 void App::createMainRenderTarget() {
     _mainRenderTarget = _device->getTextureManager().createTexture2D("main_render_target",
-        vk::Format::eR16G16B16A16Unorm, _gBuffer->getExtent(),
+        vk::Format::eR16G16B16A16Sfloat, _gBuffer->getExtent(),
         vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled,
         vk::ImageAspectFlagBits::eColor);
 }
@@ -206,6 +213,7 @@ void App::initVulkan() {
 
     createShadowMapResources();
     createResolutionDependentRenderModules();
+    updateInverseProjUniform();
 }
 
 void App::createResolutionDependentRenderModules() {
@@ -226,6 +234,16 @@ void App::createResolutionDependentRenderModules() {
                                          _lightSpaceUniform, sizeof(LightSpaceUniform));
     _gBufferResolve->recordCmdBuffers();
 
+    _ssaoTex = _device->getTextureManager().createTexture2D("ssao_tex",
+                                                            vk::Format::eR8Unorm, _gBuffer->getExtent(),
+                                                            vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled,
+                                                            vk::ImageAspectFlagBits::eColor);
+    _hbao = std::make_unique<HBAO>(_device->getDevice(), _mainRenderTarget, _device->getGraphicsQueue());
+    _hbao->writeDescriptorSets(*_gBuffer,
+                               _uniformBuffer, sizeof(UniformBufferObject),
+                               _inverseProjUniform, sizeof(InverseProjUniform));
+    _hbao->recordCmdBuffers();
+
     _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
             _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
     );
@@ -237,6 +255,8 @@ void App::clearResolutionDependentRenderModules() {
     _mainColorPass.reset();
     _gBufferResolve.reset();
     _swapChainImageSupplier.reset();
+    _device->getTextureManager().deleteTexture(_ssaoTex);
+    _hbao.reset();
 }
 
 void App::cleanupSwapChain() {
@@ -268,6 +288,7 @@ void App::recreateSwapChain() {
     createMainRenderTarget();
 
     createResolutionDependentRenderModules();
+    updateInverseProjUniform();
 }
 
 void App::drawFrame() {
@@ -298,8 +319,11 @@ void App::drawFrame() {
     const CmdSync &gBufferResolveSync = _gBufferResolve->draw(
             { mainColorPassSync.getSemaphore(), shadowPassSync.getSemaphore() }, {}
     );
+    const CmdSync &hbaoSync = _hbao->draw(
+            { gBufferResolveSync.getSemaphore() }, {}
+    );
     const CmdSync &swapChainImageSupplierSync = _swapChainImageSupplier->draw(
-            imageIndex, { _imageAvailableSemaphores[_currentFrame], gBufferResolveSync.getSemaphore() }, {}
+            imageIndex, { _imageAvailableSemaphores[_currentFrame], hbaoSync.getSemaphore() }, {}
     );
 
 
@@ -351,6 +375,7 @@ void App::updateUniformBuffer(uint32_t currentImage) {
     BufferManager& bufferManager = _device->getBufferManager();
     bufferManager.copyDataToBuffer(_uniformBuffer, &ubo, sizeof(ubo));
     bufferManager.copyDataToBuffer(_fragmentUniform, &fu, sizeof(fu));
+    updateInverseProjUniform();
 }
 
 void App::updateShadowUniform() {
@@ -367,11 +392,32 @@ void App::updateShadowUniform() {
     bufferManager.copyDataToBuffer(_lightSpaceUniform, &lu, sizeof(lu));
 }
 
+void print_mat(char *name, glm::mat4 matr) {
+    std::cout << "\n" << name << std::endl;
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            std::cout << matr[j][i] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void App::updateInverseProjUniform() {
+    InverseProjUniform ubo{};
+    ubo.zNearFar = {_mainCamera->getZNear(), _mainCamera->getZFar()};
+    ubo.invProj = glm::inverse(_mainCamera->getProjMat());
+    ubo.invView = glm::inverse(_mainCamera->getViewMat());
+
+
+    BufferManager& bufferManager = _device->getBufferManager();
+    bufferManager.copyDataToBuffer(_inverseProjUniform, &ubo, sizeof(ubo));
+}
+
 void App::mainLoop() {
     float prev_time = _global_clock.restart();
     int frames_count = 0;
 
-    _mainCamera->setPos({1, 1, 1});
+    _mainCamera->setPos({0.641971, 0.491366, -0.00887286});
     _mainCamera->lookAt({0, 0, 0});
 
     while (!glfwWindowShouldClose(_window->getGlfwWindow())) {
@@ -385,6 +431,10 @@ void App::mainLoop() {
             _window->setTitle(ss.str());
         }
         frames_count++;
+
+//        std::cout << _mainCamera->getPos().x << " "
+//        << _mainCamera->getPos().y << " "
+//        << _mainCamera->getPos().z << std::endl;
 
         _keyBoard->flush();
         glfwPollEvents();
@@ -429,6 +479,7 @@ void App::cleanUp() {
     cleanupSwapChain();
     bufferManager.deleteBuffer(_shadowUniform);
     bufferManager.deleteBuffer(_lightSpaceUniform);
+    bufferManager.deleteBuffer(_inverseProjUniform);
     _renderShadow.reset();
     _device->getDevice().destroySampler(_textureSampler);
     _device->getDevice().destroySampler(_shadowMapSampler);

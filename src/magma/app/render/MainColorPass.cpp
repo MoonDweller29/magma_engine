@@ -72,7 +72,7 @@ vk::UniqueRenderPass MainColorPass::createRenderPass() {
     depthAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
     depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
     depthAttachment.initialLayout   = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    depthAttachment.finalLayout     = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    depthAttachment.finalLayout     = vk::ImageLayout::eShaderReadOnlyOptimal;
 
     vk::AttachmentReference depthAttachmentRef(3, vk::ImageLayout::eDepthStencilAttachmentOptimal);
 

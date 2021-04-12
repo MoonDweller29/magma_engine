@@ -57,6 +57,9 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/app/render/SwapChainImageSupplier.h
 		src/magma/app/render/SwapChainImageSupplier.cpp
 
+		include/magma/app/render/ssao/HBAO.h
+		src/magma/app/render/ssao/HBAO.cpp
+
 		include/magma/vk/vulkan_common.h
 		src/magma/vk/vulkan_common.cpp
 		include/magma/vk/Context.h

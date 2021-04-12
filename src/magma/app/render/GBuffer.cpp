@@ -6,7 +6,7 @@ GBuffer::GBuffer(TextureManager &texMgr, vk::Extent2D extent) :
     _texMgr(texMgr), _extent(extent),
     _depthTex(texMgr.createTexture2D("g_buffer_depth",
             texMgr.findDepthFormat(), extent,
-            vk::ImageUsageFlagBits::eDepthStencilAttachment,
+            vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled,
             vk::ImageAspectFlagBits::eDepth)),
     _albedoTex(texMgr.createTexture2D("g_buffer_albedo",
                vk::Format::eR16G16B16A16Unorm, extent,

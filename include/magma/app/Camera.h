@@ -13,9 +13,11 @@ public:
     void setPos(glm::vec3 newPos);
     void lookAt(glm::vec3 point);
 
-    const glm::mat4 &getProjMat() const { return _proj; }
-    const glm::mat4 &getViewMat() const { return _view; }
-    const glm::vec3 &getPos()     const { return _pos;  }
+    const glm::mat4 &getProjMat() const { return _proj;  }
+    const glm::mat4 &getViewMat() const { return _view;  }
+    const glm::vec3 &getPos()     const { return _pos;   }
+    float            getZNear()   const { return _zNear; }
+    float            getZFar()    const { return _zFar;  }
 
 private:
     glm::mat4 _proj;
