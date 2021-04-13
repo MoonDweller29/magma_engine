@@ -22,19 +22,35 @@ TextureManager::~TextureManager() {
     }
 }
 
+int TextureManager::channelsInFormat(vk::Format format) {
+    switch (format) {
+        case vk::Format::eR8G8B8A8Srgb: return 4;
+        case vk::Format::eR8Unorm: return 1;
+        case vk::Format::eR8Snorm: return 1;
+        case vk::Format::eR8Uscaled: return 1;
+        case vk::Format::eR8Sscaled: return 1;
+        case vk::Format::eR8Uint: return 1;
+        case vk::Format::eR8Sint: return 1;
+        case vk::Format::eR8Srgb: return 1;
+        default:
+            LOG_AND_THROW std::runtime_error("unknown image format");
+    }
+}
+
 bool TextureManager::textureExists(const std::string &name) const {
     return _textures.find(name) != _textures.end();
 }
 
-Texture &TextureManager::loadTexture(const std::string &texName, const std::string &path) {
-    Image img(path.c_str(), 4);
+Texture &TextureManager::loadTexture(const std::string &texName, const std::string &path, vk::Format format) {
+    int requiredChannelCount = channelsInFormat(format);
+    Image img(path.c_str(), requiredChannelCount);
     int imageSize = img.size();
 
     Buffer& stagingBuffer = _device.getBufferManager().createBufferWithData("stagingBuffer", img.data(), imageSize,
         vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
     Texture& texture = createTexture2D(texName,
-        vk::Format::eR8G8B8A8Srgb,
+        format,
         vk::Extent2D{(uint)img.getWidth(), (uint)img.getHeight()},
         vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
         vk::ImageAspectFlagBits::eColor);

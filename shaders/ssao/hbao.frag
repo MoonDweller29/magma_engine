@@ -6,19 +6,23 @@ layout(location = 0) in  vec2 inUV;
 
 layout(binding = 0) uniform sampler2D depthTex;
 layout(binding = 1) uniform sampler2D normalsTex;
-layout(binding = 2) uniform UniformBufferObject {
+layout(binding = 2) uniform sampler2D blueNoiseTex; //size = 32x32
+layout(binding = 3) uniform UniformBufferObject {
     mat4 model;
     mat4 view;
     mat4 proj;
 } ubo;
-layout(binding = 3) uniform InverseProjUniform {
+layout(binding = 4) uniform InverseProjUniform {
+    vec2 screenSize;
     vec2 zNearFar;
     mat4 invProj;
     mat4 invView;
 } invProjUBO;
 
 // sampling directions for 1st sector
-vec2 dirs[16] = {
+#define DIR_COUNT 16
+#define PI 3.14159265
+vec2 const_dirs[DIR_COUNT] = {
 	vec2(1.0000, 0.0000),
 	vec2(0.9239, 0.3827),
 	vec2(0.7071, 0.7071),
@@ -38,7 +42,16 @@ vec2 dirs[16] = {
 };
 float stepSize = 2.0f/960.f;
 int stepCount = 10;
-float R = 1.f; // influence radius
+float R = 0.2f; // influence radius
+
+mat2 rotMat(float angle) {
+	float cos_a = cos(angle);
+	float sin_a = sin(angle);
+	return mat2(
+		cos_a, sin_a, //first  column
+		-sin_a, cos_a //second column
+	);
+}
 
 float linearizeDepth(float depth) {
 	float n = invProjUBO.zNearFar.x;
@@ -85,8 +98,20 @@ void main() {
 	float z = linearizeDepth(depth);
 	vec4 pos = vec4(inUV*2.0 - 1.0, depth, 1.0f);
 	pos = toViewSpace(pos, z);
-	
-	int dirCount = 16;
+
+
+	int dirCount = DIR_COUNT;
+
+	ivec2 screenCoord = ivec2(inUV*invProjUBO.screenSize);
+	vec2 noiseCoord = vec2(screenCoord/32.0f);
+	float rotAngle = texture(blueNoiseTex, noiseCoord).r * 2*PI/dirCount;
+	mat2 dirRotMat = rotMat(rotAngle);
+
+	vec2 dirs[DIR_COUNT];
+	for (int i = 0; i < dirCount; ++i) {
+		dirs[i] = dirRotMat * const_dirs[i];
+	}
+
 	float ao = 0.0f;
 	for (int i = 0; i < dirCount; ++i) {
 		ao += hbaoInDirection(dirs[i], pos.xyz+0.001*normal, normal, stepSize);
@@ -99,4 +124,5 @@ void main() {
 //	outAO = normal;
 //	outAO = vec4(pos.xyz, 1.0f);
 	outAO = vec4(ao.rrr, 1.0f);
+//	outAO = vec4(texture(blueNoiseTex, noiseCoord).rrr, 1.0f);
 }

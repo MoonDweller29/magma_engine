@@ -22,6 +22,7 @@ public:
 
     void writeDescriptorSets(
             const GBuffer &gBuffer,
+            vk::ImageView noiseTexView,
             const Buffer &uniformBuffer, uint32_t uboSize,
             const Buffer &inverseProjUniform, uint32_t invProjUboSize);
     void recordCmdBuffers();
@@ -36,6 +37,7 @@ private:
     CmdSync _renderFinished;
     const Texture _ssaoTex;
     vk::UniqueSampler _imgSampler;
+    vk::UniqueSampler _noiseSampler;
     vk::Extent2D _extent;
 
     DescriptorSetLayout  _descriptorSetLayout;
@@ -47,4 +49,5 @@ private:
 
     vk::UniqueRenderPass createRenderPass();
     vk::UniqueSampler createImageSampler();
+    vk::UniqueSampler createNoiseSampler();
 };

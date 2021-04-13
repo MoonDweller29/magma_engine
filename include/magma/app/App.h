@@ -65,6 +65,7 @@ private:
     Buffer _fragmentUniform;
     Buffer _lightSpaceUniform;
     Buffer _inverseProjUniform;
+    Texture     _blueNoise;
     Texture     _texture;
     vk::Sampler _textureSampler;
     Texture     _shadowMap;

@@ -28,6 +28,7 @@ struct LightSpaceUniform {
 };
 
 struct InverseProjUniform {
+    glm::vec2 screenSize;
     glm::vec2 zNearFar;
     alignas(16) glm::mat4 invProj;
     alignas(16) glm::mat4 invView;
@@ -103,7 +104,11 @@ void App::createUniformBuffers() {
 }
 
 void App::loadScene() {
-    _texture = _device->getTextureManager().loadTexture("input_texture", _texturePath);
+    _texture = _device->getTextureManager().loadTexture("input_texture", _texturePath, vk::Format::eR8G8B8A8Srgb);
+    _blueNoise = _device->getTextureManager().loadTexture(
+            "blue_noise_32",
+            joinPath(_dataPath, "textures/blue_noise_32.png"),
+            vk::Format::eR8Unorm);
     _scene = _meshReader.load_scene(_modelPath);
     _vertices = _scene[0].getVertices();
     _indices = _scene[0].getIndices();
@@ -240,6 +245,7 @@ void App::createResolutionDependentRenderModules() {
                                                             vk::ImageAspectFlagBits::eColor);
     _hbao = std::make_unique<HBAO>(_device->getDevice(), _mainRenderTarget, _device->getGraphicsQueue());
     _hbao->writeDescriptorSets(*_gBuffer,
+                               _blueNoise.getView(),
                                _uniformBuffer, sizeof(UniformBufferObject),
                                _inverseProjUniform, sizeof(InverseProjUniform));
     _hbao->recordCmdBuffers();
@@ -404,6 +410,7 @@ void print_mat(char *name, glm::mat4 matr) {
 
 void App::updateInverseProjUniform() {
     InverseProjUniform ubo{};
+    ubo.screenSize = { WIN_WIDTH, WIN_HEIGHT };
     ubo.zNearFar = {_mainCamera->getZNear(), _mainCamera->getZFar()};
     ubo.invProj = glm::inverse(_mainCamera->getProjMat());
     ubo.invView = glm::inverse(_mainCamera->getViewMat());
@@ -485,6 +492,7 @@ void App::cleanUp() {
     _device->getDevice().destroySampler(_shadowMapSampler);
     _device->getTextureManager().deleteTexture(_shadowMap);
     _device->getTextureManager().deleteTexture(_texture);
+    _device->getTextureManager().deleteTexture(_blueNoise);
     bufferManager.deleteBuffer(_indexBuffer);
     bufferManager.deleteBuffer(_vertexBuffer);
     _device.reset();

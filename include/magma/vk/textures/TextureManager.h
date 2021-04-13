@@ -20,10 +20,12 @@ public:
     NON_COPYABLE(TextureManager);
     ~TextureManager();
 
+    static int channelsInFormat(vk::Format format);
+
     bool textureExists(const std::string &name) const;
     Texture& getTexture(const std::string &name);
 
-    Texture& loadTexture(const std::string &texName, const std::string &path);
+    Texture& loadTexture(const std::string &texName, const std::string &path, vk::Format format);
 
     Texture& createTexture2D(const std::string &name, vk::Format format, vk::Extent2D extent,
         vk::ImageUsageFlags usage, vk::ImageAspectFlags aspectMask);
