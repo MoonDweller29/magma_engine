@@ -1,6 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 #include <stdexcept>
+#include <string>
 
 #include "magma/app/log.hpp"
 
@@ -14,6 +15,7 @@ bool isSuccess(vk::Result result);
     }
 
 vk::Extent2D toExtent2D(const vk::Extent3D &extent3D);
+std::string toString(const vk::Extent2D &extent);
 
 #define NON_COPYABLE(Type)                          \
     Type(const Type &another) = delete;             \

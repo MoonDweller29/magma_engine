@@ -18,6 +18,8 @@ set(SHADERS
         gBufferResolve.frag
 
         ssao/hbao.frag
+        ssao/depthGather.frag
+        ssao/depthGatherFirstStep.frag
 )
 
 set(COMPILED_SHADERS)

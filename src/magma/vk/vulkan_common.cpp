@@ -11,3 +11,8 @@ bool isSuccess(vk::Result result) {
 vk::Extent2D toExtent2D(const vk::Extent3D &extent3D) {
     return vk::Extent2D(extent3D.width, extent3D.height);
 }
+
+std::string toString(const vk::Extent2D &extent) {
+    return std::string("{ ") + std::to_string(extent.width) +
+        " " + std::to_string(extent.height) + " }";
+}

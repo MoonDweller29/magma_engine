@@ -48,6 +48,10 @@ add_library(${LIBRARY_NAME} STATIC
 
 		include/magma/app/render/DepthPass.h
 		src/magma/app/render/DepthPass.cpp
+		include/magma/app/render/ssao/DepthGather.h
+		src/magma/app/render/ssao/DepthGather.cpp
+		include/magma/app/render/ssao/DepthPyramidPass.h
+		src/magma/app/render/ssao/DepthPyramidPass.cpp
 		include/magma/app/render/GBuffer.h
 		src/magma/app/render/GBuffer.cpp
 		include/magma/app/render/MainColorPass.h
@@ -111,6 +115,8 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/vk/textures/CustomImageView.cpp
 		include/magma/vk/textures/ImageView.h
 		src/magma/vk/textures/ImageView.cpp
+		include/magma/vk/textures/TexPyramid.h
+		src/magma/vk/textures/TexPyramid.cpp
 		include/magma/vk/textures/Texture.h
 		src/magma/vk/textures/Texture.cpp
 
