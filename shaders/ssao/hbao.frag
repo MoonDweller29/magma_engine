@@ -60,6 +60,14 @@ float linearizeDepth(float depth) {
 	return n*f/(f - depth*(f - n));
 }
 
+ivec2 toIntCoords(vec2 coords, ivec2 screenSize) {
+	return ivec2(coords * screenSize - 0.45f);
+}
+
+vec2 toFloatCoords(ivec2 coords, vec2 pixelSize) {
+	return (coords + 0.5f) * pixelSize;
+}
+
 float attenuationFunc(float r) {
 	return max(0, 1 - r/R);
 }
@@ -102,8 +110,8 @@ void main() {
 
 	int dirCount = DIR_COUNT;
 
-	ivec2 screenCoord = ivec2(inUV*invProjUBO.screenSize);
-	vec2 noiseCoord = vec2(screenCoord/32.0f);
+	ivec2 screenCoord = toIntCoords(inUV, ivec2(invProjUBO.screenSize));
+	vec2 noiseCoord = toFloatCoords(screenCoord % 32, vec2(1.0f/32.0f));
 	float rotAngle = texture(blueNoiseTex, noiseCoord).r * 2*PI/dirCount;
 	mat2 dirRotMat = rotMat(rotAngle);
 
