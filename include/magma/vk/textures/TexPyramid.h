@@ -13,8 +13,8 @@ public:
     NON_COPYABLE(TexPyramid);
     ~TexPyramid();
 
-    const Texture &operator[](int i) { return _textures[i];     }
-    size_t         getSize()         { return _textures.size(); }
+    const Texture &operator[](int i) const { return _textures[i];     }
+    size_t         getSize()         const { return _textures.size(); }
 
 private:
     TextureManager      &_texMgr;

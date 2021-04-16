@@ -13,6 +13,7 @@ public:
 
     DescriptorSetLayoutInfo &addUniformBuffer(uint32_t bufSize, vk::ShaderStageFlags stageFlags);
     DescriptorSetLayoutInfo &addCombinedImageSampler(vk::ShaderStageFlags stageFlags);
+    DescriptorSetLayoutInfo &addArrayOfCombinedImageSamplers(vk::ShaderStageFlags stageFlags, int count);
     DescriptorSetLayoutInfo &addStorageImage(vk::ShaderStageFlags stageFlags);
 private:
     std::vector<vk::DescriptorSetLayoutBinding>      _bindings;

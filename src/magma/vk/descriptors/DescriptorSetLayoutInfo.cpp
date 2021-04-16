@@ -28,6 +28,21 @@ DescriptorSetLayoutInfo &DescriptorSetLayoutInfo::addCombinedImageSampler(vk::Sh
     return *this;
 }
 
+DescriptorSetLayoutInfo &DescriptorSetLayoutInfo::addArrayOfCombinedImageSamplers(vk::ShaderStageFlags stageFlags, int count) {
+    vk::DescriptorSetLayoutBinding samplerLayoutBinding;
+    samplerLayoutBinding.binding = _bindings.size();
+    samplerLayoutBinding.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+    samplerLayoutBinding.descriptorCount = count;
+    samplerLayoutBinding.pImmutableSamplers = nullptr; //Optional
+    samplerLayoutBinding.stageFlags = stageFlags;
+
+    _bindings.push_back(samplerLayoutBinding);
+    increaseDescriptorsCount(vk::DescriptorType::eCombinedImageSampler, count);
+
+    return *this;
+}
+
+
 DescriptorSetLayoutInfo &DescriptorSetLayoutInfo::addStorageImage(vk::ShaderStageFlags stageFlags) {
     vk::DescriptorSetLayoutBinding storageImageLayoutBinding;
     storageImageLayoutBinding.binding = _bindings.size();

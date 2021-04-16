@@ -16,6 +16,7 @@
 #include "magma/app/render/SwapChainImageSupplier.h"
 #include "magma/app/render/ssao/HBAO.h"
 #include "magma/app/render/ssao/DepthPyramidPass.h"
+#include "magma/app/render/ssao/PyramidSSAO.h"
 #include "magma/glm_inc.h"
 #include "magma/app/Camera.h"
 #include "clock.h"
@@ -59,6 +60,7 @@ private:
     std::unique_ptr<SwapChainImageSupplier> _swapChainImageSupplier;
     std::unique_ptr<HBAO>                   _hbao;
     std::unique_ptr<DepthPyramidPass>       _depthPyramidPass;
+    std::unique_ptr<PyramidSSAO>            _pyramidSSAO;
 
     Buffer _vertexBuffer;
     Buffer _indexBuffer;

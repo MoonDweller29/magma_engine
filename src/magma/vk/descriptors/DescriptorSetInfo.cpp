@@ -10,6 +10,10 @@ vk::DescriptorImageInfo *DescriptorSetInfo::newImageInfo() {
     return _imageInfo.back().get();
 }
 
+std::vector<vk::DescriptorImageInfo> &DescriptorSetInfo::newImageArrayInfo(int size) {
+    return _imageArrayInfo.emplace_back(size, vk::DescriptorImageInfo());
+}
+
 vk::WriteDescriptorSet &DescriptorSetInfo::newDescriptorWriteInfo() {
     _descriptorWrites.emplace_back();
     return _descriptorWrites.back();

@@ -6,6 +6,7 @@
 #include "magma/vk/descriptors/DescriptorPool.h"
 #include "magma/vk/descriptors/DescriptorSetInfo.h"
 #include "magma/vk/descriptors/DescriptorSetLayoutInfo.h"
+#include "magma/vk/textures/CombinedImageSampler.h"
 #include "magma/vk/vulkan_common.h"
 
 class DescriptorSetLayout {
@@ -22,6 +23,7 @@ public:
     void beginSet(uint32_t ind);
     void bindUniformBuffer(uint32_t binding, vk::Buffer buf, vk::DeviceSize offset, vk::DeviceSize range);
     void bindCombinedImageSampler(uint32_t binding, vk::ImageView imageView, vk::Sampler sampler);
+    void bindArrayOfCombinedImageSamplers(uint32_t binding, const std::vector<CombinedImageSampler> &combImgSamplers);
     void bindStorageImage(uint32_t binding, vk::ImageView imageView, vk::ImageLayout imageLayout);
     std::vector<vk::DescriptorSet> recordAndReturnSets();
 

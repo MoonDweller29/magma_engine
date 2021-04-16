@@ -20,6 +20,7 @@ set(SHADERS
         ssao/hbao.frag
         ssao/depthGather.frag
         ssao/depthGatherFirstStep.frag
+        ssao/pyramidSSAO.frag
 )
 
 set(COMPILED_SHADERS)

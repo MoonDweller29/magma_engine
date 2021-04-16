@@ -249,7 +249,14 @@ void App::createResolutionDependentRenderModules() {
                                _uniformBuffer, sizeof(UniformBufferObject),
                                _inverseProjUniform, sizeof(InverseProjUniform));
     _hbao->recordCmdBuffers();
+
     _depthPyramidPass = std::make_unique<DepthPyramidPass>(*_device, _gBuffer->getDepth(), 5, _device->getGraphicsQueue());
+    _pyramidSSAO = std::make_unique<PyramidSSAO>(_device->getDevice(), _mainRenderTarget,
+                                                 _depthPyramidPass->getDepthPyramid().getSize(), _device->getGraphicsQueue());
+    _pyramidSSAO->writeDescriptorSets(*_gBuffer, _depthPyramidPass->getDepthPyramid(),
+                                      _uniformBuffer, sizeof(UniformBufferObject),
+                                      _inverseProjUniform, sizeof(InverseProjUniform));
+    _pyramidSSAO->recordCmdBuffers();
 
     _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
             _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
@@ -265,6 +272,7 @@ void App::clearResolutionDependentRenderModules() {
     _device->getTextureManager().deleteTexture(_ssaoTex);
     _hbao.reset();
     _depthPyramidPass.reset();
+    _pyramidSSAO.reset();
 }
 
 void App::cleanupSwapChain() {
@@ -333,8 +341,11 @@ void App::drawFrame() {
     const CmdSync &depthPyramidPassSync = _depthPyramidPass->draw(
             { hbaoSync.getSemaphore() }, {}
     );
+    const CmdSync &pyramidSSAOSync = _pyramidSSAO->draw(
+            { depthPyramidPassSync.getSemaphore() }, {}
+    );
     const CmdSync &swapChainImageSupplierSync = _swapChainImageSupplier->draw(
-            imageIndex, { _imageAvailableSemaphores[_currentFrame], depthPyramidPassSync.getSemaphore() }, {}
+            imageIndex, { _imageAvailableSemaphores[_currentFrame], pyramidSSAOSync.getSemaphore() }, {}
     );
 
 

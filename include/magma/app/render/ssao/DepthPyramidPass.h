@@ -10,6 +10,8 @@ class DepthPyramidPass {
 public:
     DepthPyramidPass(LogicalDevice &device, Texture depthTex, int pyramidSize, Queue queue);
 
+    const TexPyramid &getDepthPyramid() const { return _depthPyramid; }
+
     const CmdSync &draw(
             const std::vector<vk::Semaphore> &waitSemaphores,
             const std::vector<vk::Fence> &waitFences);

@@ -92,6 +92,28 @@ void DescriptorSetLayout::bindCombinedImageSampler(uint32_t binding, vk::ImageVi
     descriptorWrite.pImageInfo = imageInfo;
 }
 
+void DescriptorSetLayout::bindArrayOfCombinedImageSamplers(
+        uint32_t binding, const std::vector<CombinedImageSampler> &combImgSamplers
+) {
+    checkBindingIndex(binding, vk::DescriptorType::eCombinedImageSampler);
+    int imgCount = combImgSamplers.size();
+    auto &imageArrayInfo = _descriptorSetInfo.newImageArrayInfo(imgCount);
+    for (int i = 0; i < imgCount; ++i) {
+        imageArrayInfo[i].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        imageArrayInfo[i].imageView = combImgSamplers[i].getImageView();
+        imageArrayInfo[i].sampler = combImgSamplers[i].getSampler();
+    }
+
+    vk::WriteDescriptorSet &descriptorWrite = _descriptorSetInfo.newDescriptorWriteInfo();
+    descriptorWrite.dstSet = _descriptorSets[_setInd];
+    descriptorWrite.dstBinding = binding;
+    descriptorWrite.dstArrayElement = 0;
+    descriptorWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+    descriptorWrite.descriptorCount = imgCount;
+    descriptorWrite.pImageInfo = imageArrayInfo.data();
+}
+
+
 void DescriptorSetLayout::bindStorageImage(uint32_t binding, vk::ImageView imageView, vk::ImageLayout imageLayout) {
     checkBindingIndex(binding, vk::DescriptorType::eStorageImage);
 

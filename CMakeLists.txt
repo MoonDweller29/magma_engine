@@ -45,13 +45,9 @@ add_library(${LIBRARY_NAME} STATIC
 		src/magma/app/scene/meshReader.cpp
 		include/magma/app/scene/directLight.h
 		src/magma/app/scene/directLight.cpp
-
 		include/magma/app/render/DepthPass.h
 		src/magma/app/render/DepthPass.cpp
-		include/magma/app/render/ssao/DepthGather.h
-		src/magma/app/render/ssao/DepthGather.cpp
-		include/magma/app/render/ssao/DepthPyramidPass.h
-		src/magma/app/render/ssao/DepthPyramidPass.cpp
+
 		include/magma/app/render/GBuffer.h
 		src/magma/app/render/GBuffer.cpp
 		include/magma/app/render/MainColorPass.h
@@ -61,8 +57,14 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/app/render/SwapChainImageSupplier.h
 		src/magma/app/render/SwapChainImageSupplier.cpp
 
+		include/magma/app/render/ssao/DepthGather.h
+		src/magma/app/render/ssao/DepthGather.cpp
+		include/magma/app/render/ssao/DepthPyramidPass.h
+		src/magma/app/render/ssao/DepthPyramidPass.cpp
 		include/magma/app/render/ssao/HBAO.h
 		src/magma/app/render/ssao/HBAO.cpp
+		include/magma/app/render/ssao/PyramidSSAO.h
+		src/magma/app/render/ssao/PyramidSSAO.cpp
 
 		include/magma/vk/vulkan_common.h
 		src/magma/vk/vulkan_common.cpp
@@ -111,6 +113,8 @@ add_library(${LIBRARY_NAME} STATIC
 
 		include/magma/vk/textures/TextureManager.h
 		src/magma/vk/textures/TextureManager.cpp
+		include/magma/vk/textures/CombinedImageSampler.h
+		src/magma/vk/textures/CombinedImageSampler.cpp
 		include/magma/vk/textures/CustomImageView.h
 		src/magma/vk/textures/CustomImageView.cpp
 		include/magma/vk/textures/ImageView.h
