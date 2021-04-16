@@ -22,6 +22,7 @@ public:
 
     void writeDescriptorSets(
             const GBuffer &gBuffer,
+            vk::ImageView noiseTexView,
             const TexPyramid &depthPyramid,
             const Buffer &uniformBuffer, uint32_t uboSize,
             const Buffer &inverseProjUniform, uint32_t invProjUboSize);
@@ -37,6 +38,7 @@ private:
     CmdSync _renderFinished;
     const Texture _ssaoTex;
     vk::UniqueSampler _depthNormalsSampler;
+    vk::UniqueSampler _noiseSampler;
     vk::UniqueSampler _depthPyramidSampler;
     vk::Extent2D _extent;
 
@@ -49,5 +51,6 @@ private:
 
     vk::UniqueRenderPass createRenderPass();
     vk::UniqueSampler createDepthNormalsSampler();
+    vk::UniqueSampler createNoiseSampler();
     vk::UniqueSampler createDepthPyramidSampler();
 };

@@ -10,11 +10,13 @@ PyramidSSAO::PyramidSSAO(vk::Device device, Texture ssaoTex, int pyramidSize, Qu
         _cmdBuf(device, queue.cmdPool),
         _renderFinished(device),
         _depthNormalsSampler(createDepthNormalsSampler()),
+        _noiseSampler(createNoiseSampler()),
         _depthPyramidSampler(createDepthPyramidSampler()),
         _renderPass(std::move(createRenderPass())),
         _frameBuffer(_device, {_ssaoTex.getView()},
                      _renderPass.get(), _extent),
         _descriptorSetLayout(_device, DescriptorSetLayoutInfo()
+                .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
                 .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
                 .addCombinedImageSampler(vk::ShaderStageFlagBits::eFragment)
                 .addArrayOfCombinedImageSamplers(vk::ShaderStageFlagBits::eFragment, pyramidSize)
@@ -103,6 +105,31 @@ vk::UniqueSampler PyramidSSAO::createDepthNormalsSampler() {
     return std::move(sampler);
 }
 
+vk::UniqueSampler PyramidSSAO::createNoiseSampler() {
+    vk::SamplerCreateInfo samplerInfo;
+    samplerInfo.magFilter = vk::Filter::eNearest;
+    samplerInfo.minFilter = vk::Filter::eNearest;
+    samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
+    samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
+    samplerInfo.addressModeW = vk::SamplerAddressMode::eRepeat;
+    samplerInfo.anisotropyEnable = VK_FALSE;
+    samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueBlack;
+    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+    samplerInfo.compareEnable = VK_FALSE;
+    samplerInfo.compareOp = vk::CompareOp::eAlways;
+
+    samplerInfo.mipmapMode = vk::SamplerMipmapMode::eNearest;
+    samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.minLod = 0.0f;
+    samplerInfo.maxLod = 0.0f;
+
+    auto[result, sampler] = _device.createSamplerUnique(samplerInfo);
+    VK_CHECK_ERR(result, "failed to create texture sampler!");
+
+    return std::move(sampler);
+}
+
 vk::UniqueSampler PyramidSSAO::createDepthPyramidSampler() {
     vk::SamplerCreateInfo samplerInfo;
     samplerInfo.magFilter = vk::Filter::eLinear;
@@ -130,6 +157,7 @@ vk::UniqueSampler PyramidSSAO::createDepthPyramidSampler() {
 
 void PyramidSSAO::writeDescriptorSets(
         const GBuffer &gBuffer,
+        vk::ImageView noiseTexView,
         const TexPyramid &depthPyramid,
         const Buffer &uniformBuffer, uint32_t uboSize,
         const Buffer &inverseProjUniform, uint32_t invProjUboSize
@@ -144,9 +172,10 @@ void PyramidSSAO::writeDescriptorSets(
     {
         _descriptorSetLayout.bindCombinedImageSampler(0, gBuffer.getDepth().getView(), _depthNormalsSampler.get());
         _descriptorSetLayout.bindCombinedImageSampler(1, gBuffer.getNormals().getView(), _depthNormalsSampler.get());
-        _descriptorSetLayout.bindArrayOfCombinedImageSamplers(2, pyramidImgs);
-        _descriptorSetLayout.bindUniformBuffer(3, uniformBuffer.getBuf(), 0, uboSize);
-        _descriptorSetLayout.bindUniformBuffer(4, inverseProjUniform.getBuf(), 0, invProjUboSize);
+        _descriptorSetLayout.bindCombinedImageSampler(2, noiseTexView, _noiseSampler.get());
+        _descriptorSetLayout.bindArrayOfCombinedImageSamplers(3, pyramidImgs);
+        _descriptorSetLayout.bindUniformBuffer(4, uniformBuffer.getBuf(), 0, uboSize);
+        _descriptorSetLayout.bindUniformBuffer(5, inverseProjUniform.getBuf(), 0, invProjUboSize);
     }
     _descriptorSet = _descriptorSetLayout.recordAndReturnSets()[0];
 }

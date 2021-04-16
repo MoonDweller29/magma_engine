@@ -253,7 +253,7 @@ void App::createResolutionDependentRenderModules() {
     _depthPyramidPass = std::make_unique<DepthPyramidPass>(*_device, _gBuffer->getDepth(), 5, _device->getGraphicsQueue());
     _pyramidSSAO = std::make_unique<PyramidSSAO>(_device->getDevice(), _mainRenderTarget,
                                                  _depthPyramidPass->getDepthPyramid().getSize(), _device->getGraphicsQueue());
-    _pyramidSSAO->writeDescriptorSets(*_gBuffer, _depthPyramidPass->getDepthPyramid(),
+    _pyramidSSAO->writeDescriptorSets(*_gBuffer, _blueNoise.getView(), _depthPyramidPass->getDepthPyramid(),
                                       _uniformBuffer, sizeof(UniformBufferObject),
                                       _inverseProjUniform, sizeof(InverseProjUniform));
     _pyramidSSAO->recordCmdBuffers();
