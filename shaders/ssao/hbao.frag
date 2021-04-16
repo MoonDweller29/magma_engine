@@ -40,7 +40,6 @@ vec2 const_dirs[DIR_COUNT] = {
 	vec2(0.7071, -0.7071),
 	vec2(0.9239, -0.3827)
 };
-float stepSize = 2.0f/960.f;
 int stepCount = 10;
 float R = 0.2f; // influence radius
 
@@ -76,7 +75,7 @@ vec4 toViewSpace(vec4 pos, float z) {
 	return invProjUBO.invProj * pos * z;
 }
 
-float hbaoInDirection(vec2 dir, vec3 pos, vec3 normal, float stepSize) {
+float hbaoInDirection(vec2 dir, vec3 pos, vec3 normal, vec2 stepSize) {
 	vec2 xy = inUV*2.0 - 1.0;
 	float r = R;
 	float sinH = 0; //sin(h(theta)) - sin of elevation angle
@@ -121,6 +120,7 @@ void main() {
 	}
 
 	float ao = 0.0f;
+	vec2 stepSize = 2.0f / invProjUBO.screenSize;
 	for (int i = 0; i < dirCount; ++i) {
 		ao += hbaoInDirection(dirs[i], pos.xyz+0.001*normal, normal, stepSize);
 	}
