@@ -57,6 +57,11 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/app/render/SwapChainImageSupplier.h
 		src/magma/app/render/SwapChainImageSupplier.cpp
 
+		include/magma/app/render/blur/Gauss1D.h
+		src/magma/app/render/blur/Gauss1D.cpp
+		include/magma/app/render/blur/Gauss2D.h
+		src/magma/app/render/blur/Gauss2D.cpp
+
 		include/magma/app/render/ssao/DepthGather.h
 		src/magma/app/render/ssao/DepthGather.cpp
 		include/magma/app/render/ssao/DepthPyramidPass.h

@@ -257,6 +257,9 @@ void App::createResolutionDependentRenderModules() {
                                       _uniformBuffer, sizeof(UniformBufferObject),
                                       _inverseProjUniform, sizeof(InverseProjUniform));
     _pyramidSSAO->recordCmdBuffers();
+    _gauss2D = std::make_unique<Gauss2D>(_device->getDevice(),
+                                         _mainRenderTarget, _ssaoTex, _mainRenderTarget,
+                                         _device->getGraphicsQueue());
 
     _swapChainImageSupplier = std::make_unique<SwapChainImageSupplier>(
             _device->getDevice(), _mainRenderTarget.getView(), *_swapChain, _device->getGraphicsQueue()
@@ -269,10 +272,11 @@ void App::clearResolutionDependentRenderModules() {
     _mainColorPass.reset();
     _gBufferResolve.reset();
     _swapChainImageSupplier.reset();
-    _device->getTextureManager().deleteTexture(_ssaoTex);
     _hbao.reset();
     _depthPyramidPass.reset();
     _pyramidSSAO.reset();
+    _gauss2D.reset();
+    _device->getTextureManager().deleteTexture(_ssaoTex);
 }
 
 void App::cleanupSwapChain() {
@@ -344,8 +348,11 @@ void App::drawFrame() {
     const CmdSync &pyramidSSAOSync = _pyramidSSAO->draw(
             { depthPyramidPassSync.getSemaphore() }, {}
     );
+    const CmdSync &gaussSync = _gauss2D->draw(
+            { pyramidSSAOSync.getSemaphore() }, {}
+    );
     const CmdSync &swapChainImageSupplierSync = _swapChainImageSupplier->draw(
-            imageIndex, { _imageAvailableSemaphores[_currentFrame], pyramidSSAOSync.getSemaphore() }, {}
+            imageIndex, { _imageAvailableSemaphores[_currentFrame], gaussSync.getSemaphore() }, {}
     );
 
 

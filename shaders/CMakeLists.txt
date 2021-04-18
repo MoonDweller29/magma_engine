@@ -4,6 +4,7 @@
 set(SHADER_EXE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 file(MAKE_DIRECTORY ${SHADER_EXE_DIR})
 file(MAKE_DIRECTORY ${SHADER_EXE_DIR}/ssao)
+file(MAKE_DIRECTORY ${SHADER_EXE_DIR}/blur)
 
 # shaders_compilation for linux
 set(SHADER_SRC_DIR ${CMAKE_SOURCE_DIR}/shaders)
@@ -16,6 +17,9 @@ set(SHADERS
         imageProcess.vert
         imageTransfer.frag
         gBufferResolve.frag
+
+        blur/gauss_h.frag
+        blur/gauss_v.frag
 
         ssao/hbao.frag
         ssao/depthGather.frag
