@@ -35,7 +35,7 @@ Texture &TextureManager::loadTexture(const std::string &texName, const std::stri
 
     Texture& texture = createTexture2D(texName,
         vk::Format::eR8G8B8A8Srgb,
-        vk::Extent2D{(uint)img.getWidth(), (uint)img.getHeight()},
+        vk::Extent2D{(uint32_t)img.getWidth(), (uint32_t)img.getHeight()},
         vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
         vk::ImageAspectFlagBits::eColor);
     setLayout(texture, vk::ImageLayout::eTransferDstOptimal);
