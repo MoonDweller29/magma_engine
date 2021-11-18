@@ -46,7 +46,7 @@ QueueFamilyIndices PhysicalDevice::findQueueFamilies(vk::SurfaceKHR surface) {
 
 PhysicalDevice::PhysicalDevice(vk::PhysicalDevice physDevice) :
     _physicalDevice(physDevice),
-    _name(physDevice.getProperties().deviceName)
+    _name(physDevice.getProperties().deviceName.data())
 {}
 
 uint32_t PhysicalDevice::findMemoryTypeInd(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {

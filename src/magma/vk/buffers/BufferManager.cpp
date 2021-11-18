@@ -145,10 +145,11 @@ void BufferManager::copyDataToDeviceBuffer(Buffer &buffer, const void* data, vk:
 }
 
 void BufferManager::deleteBuffer(Buffer &buffer) {
-    _buffers.erase(buffer.getInfo()->name);
-    delete buffer.getInfo();
     _device.getDevice().destroyBuffer(buffer.getBuf());
     _device.getDevice().freeMemory(buffer.getMem());
+    auto info = buffer.getInfo();
+    _buffers.erase(info->name);
+    delete info;
 }
 
 void BufferManager::copyBufferToBuffer(Buffer &srcBuffer, Buffer &dstBuffer) {
