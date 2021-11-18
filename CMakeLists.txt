@@ -133,6 +133,18 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/app/log.hpp
 		src/magma/app/log.cpp
 		include/magma/app/Option.hpp
+
+		external/imgui/imconfig.h
+		external/imgui/imgui.cpp
+		external/imgui/imgui.h
+		external/imgui/imgui_demo.cpp
+		external/imgui/imgui_draw.cpp
+		external/imgui/imgui_internal.h
+		external/imgui/imgui_tables.cpp
+		external/imgui/imgui_widgets.cpp
+		external/imgui/imstb_rectpack.h
+		external/imgui/imstb_textedit.h
+		external/imgui/imstb_truetype.h
 )
 
 target_include_directories(${LIBRARY_NAME}
