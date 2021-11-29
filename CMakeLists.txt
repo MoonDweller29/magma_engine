@@ -145,10 +145,13 @@ add_library(${LIBRARY_NAME} STATIC
 		external/imgui/imstb_rectpack.h
 		external/imgui/imstb_textedit.h
 		external/imgui/imstb_truetype.h
+		external/imgui/backends/imgui_impl_vulkan.h
+		external/imgui/backends/imgui_impl_vulkan.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}
 		PUBLIC include
+		PUBLIC external/imgui
 		PUBLIC ${Vulkan_INCLUDE_DIR}
 )
 target_link_libraries(${LIBRARY_NAME}
