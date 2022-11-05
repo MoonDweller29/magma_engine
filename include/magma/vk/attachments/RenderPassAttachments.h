@@ -5,13 +5,17 @@
 
 class RenderPassAttachments {
 public:
-    RenderPassAttachments(const std::vector<vk::AttachmentDescription> &colorAttachments) {
+    explicit RenderPassAttachments(const std::vector<vk::AttachmentDescription> &colorAttachments) {
+        _descriptions.reserve(colorAttachments.size());
+        _colorAttachmentRefs.reserve(colorAttachments.size());
         for (auto & description: colorAttachments) {
             addColorAttachment(description);
         }
     }
 
     RenderPassAttachments(const std::vector<vk::AttachmentDescription> &colorAttachments, vk::AttachmentDescription depthAttachment) {
+        _descriptions.reserve(colorAttachments.size()+1);
+        _colorAttachmentRefs.reserve(colorAttachments.size());
         for (auto & description: colorAttachments) {
             addColorAttachment(description);
         }
