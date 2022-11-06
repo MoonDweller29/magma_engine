@@ -58,7 +58,7 @@ vk::DescriptorSet DescriptorPool::allocateSet(vk::DescriptorSetLayout layout) {
     return descriptorSets[0];
 }
 
-//can return less descriptors than was required if pool gets full
+//can return fewer descriptors than was required if pool gets full
 std::vector<vk::DescriptorSet> DescriptorPool::allocateSets(vk::DescriptorSetLayout layout, uint32_t count) {
     uint32_t descriptorSetCount = std::min(count, _maxSetCount - _setCount);
     if (descriptorSetCount == 0) {
