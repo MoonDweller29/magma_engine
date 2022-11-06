@@ -4,6 +4,7 @@
 
 #include "magma/app/render/GBuffer.h"
 #include "magma/app/scene/mesh.h"
+#include "magma/vk/attachments/RenderPassAttachments.h"
 
 MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue queue) :
     _device(device), _gBuffer(gBuffer), _queue(queue),
@@ -42,53 +43,32 @@ MainColorPass::MainColorPass(vk::Device device, const GBuffer &gBuffer, Queue qu
 }
 
 vk::UniqueRenderPass MainColorPass::createRenderPass() {
-    vk::AttachmentDescription albedoAttachment;
-    albedoAttachment.format         = _gBuffer.getAlbedo().getInfo()->imageInfo.format;
-    albedoAttachment.samples        = vk::SampleCountFlagBits::e1; //for multisampling
-    albedoAttachment.loadOp         = vk::AttachmentLoadOp::eClear;
-    albedoAttachment.storeOp        = vk::AttachmentStoreOp::eStore;
-    albedoAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
-    albedoAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-    albedoAttachment.initialLayout  = vk::ImageLayout::eUndefined;
-    albedoAttachment.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
+    vk::AttachmentDescription albedoAttachment = AttachmentDescription(_gBuffer.getAlbedo().getInfo()->imageInfo.format)
+            .setLoadStoreOp(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore)
+            .setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
 
     vk::AttachmentDescription normalsAttachment = albedoAttachment;
     normalsAttachment.format = _gBuffer.getNormals().getInfo()->imageInfo.format;
     vk::AttachmentDescription globalPosAttachment = albedoAttachment;
     globalPosAttachment.format = _gBuffer.getGlobalPos().getInfo()->imageInfo.format;
 
-    std::array<vk::AttachmentReference, 3> colorAttachmentRef {
-            vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal),
-            vk::AttachmentReference(1, vk::ImageLayout::eColorAttachmentOptimal),
-            vk::AttachmentReference(2, vk::ImageLayout::eColorAttachmentOptimal)
-    };
+    vk::AttachmentDescription depthAttachment = AttachmentDescription(_gBuffer.getDepth().getInfo()->imageInfo.format)
+            .setLoadStoreOp(vk::AttachmentLoadOp::eLoad, vk::AttachmentStoreOp::eStore)
+            .setLayouts(vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
+    RenderPassAttachments attachments({albedoAttachment, normalsAttachment, globalPosAttachment}, depthAttachment);
 
-    vk::AttachmentDescription depthAttachment;
-    depthAttachment.format          = _gBuffer.getDepth().getInfo()->imageInfo.format;
-    depthAttachment.samples         = vk::SampleCountFlagBits::e1;
-    depthAttachment.loadOp          = vk::AttachmentLoadOp::eLoad;
-    depthAttachment.storeOp         = vk::AttachmentStoreOp::eStore; //@TODO: try with store
-    depthAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
-    depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-    depthAttachment.initialLayout   = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    depthAttachment.finalLayout     = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-    vk::AttachmentReference depthAttachmentRef(3, vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
     vk::SubpassDescription subpass;
     subpass.pipelineBindPoint       = vk::PipelineBindPoint::eGraphics;
-    subpass.colorAttachmentCount    = colorAttachmentRef.size();
-    subpass.pColorAttachments       = colorAttachmentRef.data();
-    subpass.pDepthStencilAttachment = &depthAttachmentRef;
+    subpass.colorAttachmentCount    = attachments.getColorAttachmentRefs().size();
+    subpass.pColorAttachments       = attachments.getColorAttachmentRefs().data();
+    subpass.pDepthStencilAttachment = &attachments.getDepthAttachmentRef();
 
-    std::array<vk::AttachmentDescription, 4> attachments = {
-            albedoAttachment, normalsAttachment, globalPosAttachment, depthAttachment
-    };
 
     vk::RenderPassCreateInfo renderPassInfo;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassInfo.pAttachments = attachments.data();
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.getDescriptions().size());
+    renderPassInfo.pAttachments = attachments.getDescriptions().data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 

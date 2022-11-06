@@ -111,6 +111,9 @@ add_library(${LIBRARY_NAME} STATIC
 		include/magma/vk/textures/Texture.h
 		src/magma/vk/textures/Texture.cpp
 
+		include/magma/vk/attachments/AttachmentDescription.h
+		include/magma/vk/attachments/RenderPassAttachments.h
+
 		include/magma/vk/buffers/BufferManager.h
 		include/magma/vk/buffers/BufferManager.hpp
 		src/magma/vk/buffers/BufferManager.cpp
