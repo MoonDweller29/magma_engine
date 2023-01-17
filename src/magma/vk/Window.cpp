@@ -14,7 +14,7 @@ vk::SurfaceKHR Window::createSurface(vk::Instance hpp_instance, GLFWwindow* wind
     VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
     VK_CHECK_ERR(result, "failed to create window surface!");
 
-    return surface;
+    return vk::SurfaceKHR(surface);
 }
 
 Window::Window(uint32_t width, uint32_t height, vk::Instance instance) :

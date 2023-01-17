@@ -47,7 +47,7 @@ Buffer& BufferManager::createBuffer(const std::string &name, vk::DeviceSize size
 
     vk::MemoryRequirements memRequirements = _device.getDevice().getBufferMemoryRequirements(buffer);
 
-    VkDeviceMemory bufferMemory  = _device.memAlloc(memRequirements, properties);
+    vk::DeviceMemory bufferMemory  = _device.memAlloc(memRequirements, properties);
 
     result = _device.getDevice().bindBufferMemory(buffer, bufferMemory, 0);
     VK_CHECK_ERR(result, "Failed to bind buffer!");

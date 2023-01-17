@@ -14,7 +14,7 @@ public:
     NON_COPYABLE(FrameBuffer);
     ~FrameBuffer();
 
-    VkFramebuffer getFrameBuf() const { return _frameBuffer; }
+    vk::Framebuffer getFrameBuf() const { return _frameBuffer; }
 
 private:
     vk::Framebuffer _frameBuffer;
