@@ -68,7 +68,7 @@ mingw32-make
 
 #### Windows VS build
 * Choose **Open a local folder**
-* Choose vulkan_3d root folder
+* Choose magma_engine root folder
 * Wait for cmake loading
 * Choose target **magma_editor**
 * run
