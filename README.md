@@ -3,12 +3,12 @@
 ## Getting started from git
 * Cloning the repo:
 ```
-git clone --recurse-submodules https://github.com/MoonDweller29/vulkan_3d.git
+git clone --recurse-submodules https://github.com/MoonDweller29/magma_engine.git
 ```
 or
 ```
-git clone https://github.com/MoonDweller29/vulkan_3d
-cd vulkan_3d
+git clone https://github.com/MoonDweller29/magma_engine
+cd magma_engine
 git submodule update --init --recursive
 ```
 
